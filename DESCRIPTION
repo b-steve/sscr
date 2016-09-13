@@ -7,8 +7,9 @@ Author: Ben Stevenson <bcs5@st-andrews.ac.uk>
 Maintainer: Ben Stevenson <bcs5@st-andrews.ac.uk>
 Imports:
     TMB
-VignetteBuilder: knitr
-Description: Functions to fit various second-order spatial correlation structures in spatial capture-recapture models.
+Description: Functions to fit various second-order spatial correlation
+    structures in spatial capture-recapture models.
 License: GPL
 URL: https://github.com/b-steve/sscr
 LazyData: true
+RoxygenNote: 5.0.1
