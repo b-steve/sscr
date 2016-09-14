@@ -14,32 +14,29 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_mask);
   DATA_SCALAR(mask_area);
   // Detection probabilities (from laplace_probs.cpp).
-  DATA_VECTOR(prob_det);
+  DATA_VECTOR(det_probs);
   // Declaring parameters.
   DATA_SCALAR(log_lambda0);
   DATA_SCALAR(log_sigma);
   DATA_SCALAR(log_sigma_u);
   PARAMETER_MATRIX(u);
   Type lambda0 = exp(log_lambda0);
-  ADREPORT(lambda0);
   Type sigma = exp(log_sigma);
-  ADREPORT(sigma);
   Type sigma_u = exp(log_sigma_u);
-  ADREPORT(sigma_u);
   // Hazard rates for mask/trap combinations.
   matrix<Type> haz_mat(n_mask, n_traps);
   // The sum of mask probabilities.
-  Type sum_prob_det = 0;
+  Type sum_det_probs = 0;
   for (int i = 0; i < n_mask; i++){
     Type p_undet = Type(1);
     for (int j = 0; j < n_traps; j++){
       haz_mat(i, j) = lambda0*exp(-pow(mask_dists(i, j), 2)/(2*pow(sigma, 2)));
     }
-    sum_prob_det += prob_det(i);
+    sum_det_probs += det_probs(i);
   }
   // PMF for activity centres across the mask.
   vector<Type> f_loc(n_mask);
-  f_loc = prob_det/sum_prob_det;
+  f_loc = det_probs/sum_det_probs;
   // Joint density of data and latent variables.
   Type f = 0;
   // Likelihood contributions from capture histories.
@@ -50,23 +47,17 @@ Type objective_function<Type>::operator() ()
       Type integrand_mask = 1;
       for (int k = 0; k < n_traps; k++){
 	Type e_count = exp(log(haz_mat(j, k)) + u(i, k)) + DBL_MIN;
-	//Type e_count = exp(log(haz_mat(j, k)));
 	integrand_mask *= dpois(capt(i, k), e_count, false);
       }
       integrand += integrand_mask;
     }
-    //integrand *= mask_area;
     log_sum_integrands += log(integrand + DBL_MIN);
   }
   f -= log_sum_integrands;
-  Type esa = mask_area*sum_prob_det;
-  ADREPORT(esa);
+  Type esa = mask_area*sum_det_probs;
   Type D = n/esa;
-  ADREPORT(D);
   // Extra bit that falls out of log-likelihood.
-  f -= -n*log(sum_prob_det);
-  // Comment out for conditional likelihood.
-  //f -= dpois(Type(n), D*esa, true);
+  f -= -n*log(sum_det_probs);
   // Contribution from latent variables.
   for (int i = 0; i < n; i++){
     for (int j = 0; j < n_traps; j++){

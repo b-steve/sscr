@@ -52,8 +52,6 @@ Type objective_function<Type>::operator() ()
       for (int k = 0; k < n_traps; k++){
 	if (resp_id == 0){
 	  integrand_mask *= pow(prob_mat(j, k), capt(i, k))*pow(1 - prob_mat(j, k), 1 - capt(i, k));
-	  // Function dbinom() doesn't seem to work properly.
-	  //integrand_mask *= dbinom(capt(i, k), Type(1), prob_mat(j, k), false);
 	} else if (resp_id == 1){
 	  integrand_mask *= dpois(capt(i, k), haz_mat(j, k), false);
 	}
@@ -69,8 +67,6 @@ Type objective_function<Type>::operator() ()
   ADREPORT(D);
   // Extra bit that falls out of log-likelihood.
   f -= -n*log(sum_prob_det);
-  // Comment out for conditional likelihood.
-  //f -= dpois(Type(n), D*esa, true);
   //std::cout << "D: " << D << ", lambda0: " << lambda0 << ", sigma: " << sigma << ", f: " << f << std::endl;
   return f;
 }
