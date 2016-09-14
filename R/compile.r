@@ -25,4 +25,19 @@ compile.sscr <- function(){
 }
 
 #' @import TMB
+#' @importFrom spatstat crossdist
+#' @importFrom stats nlminb
+NULL
+
+## Data documentation.
+
+#' Test data
+#'
+#' Data used for unit tests.
+#'
+#' @name test.data
+#' @format A list.
+#' @usage test.data
+#' @docType data
+#' @keywords datasets
 NULL
