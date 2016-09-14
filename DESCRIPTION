@@ -9,7 +9,7 @@ Imports:
     TMB
 Description: Functions to fit various second-order spatial correlation
     structures in spatial capture-recapture models.
-License: GPL
+License: file LICENSE
 URL: https://github.com/b-steve/sscr
 LazyData: true
 RoxygenNote: 5.0.1
