@@ -4,7 +4,8 @@
 \alias{fit.sscr}
 \title{Fitting an SCR model with second-order spatial dependence}
 \usage{
-fit.sscr(capt, traps, mask, resp = "binom", re.structure = "none")
+fit.sscr(capt, traps, mask, resp = "binom", re.structure = "none",
+  trace = FALSE, test = FALSE)
 }
 \arguments{
 \item{capt}{Capture history object.}
@@ -15,7 +16,22 @@ fit.sscr(capt, traps, mask, resp = "binom", re.structure = "none")
 
 \item{resp}{Response distribution for capture history elements.}
 
-\item{re.structure}{Structure of}
+\item{re.structure}{Covariance structure of the random effects. The
+current options are (1) \code{"none"} for no random effects
+(regular SCR), (2) \code{"independent"}, for independent random
+effects (equivalent to counts of detections being
+overdispersed), (3) \code{"constant"}, for independent random
+effects that are restricted to being the same at all traps
+(equivalent to having a random effect on \code{lambda0} for
+each individual), and (4) \code{"exponential"}, for random
+effects with an exponential covariance structure (spatially
+structured random effects).}
+
+\item{trace}{Logical. If \code{TRUE}, parameter values for each
+step of the optimisation algorithm are printed.}
+
+\item{test}{Logical. If \code{TRUE}, the likelihood is calculated
+at parameter start values. If \code{FALSE}, a model is fitted.}
 }
 \description{
 Fits an SSCR model. Estimation is by maximum likelihood. The
