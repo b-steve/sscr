@@ -11,6 +11,7 @@ ind.nll <- function(pars, survey.data){
     n.mask <- survey.data$n.mask
     n.traps <- survey.data$n.traps
     n <- nrow(capt)
+    trace <- survey.data$trace
     ## Calculating mask detection probabilities.
     det.probs <- numeric(n.mask)
     for (i in 1:n.mask){
@@ -37,7 +38,10 @@ ind.nll <- function(pars, survey.data){
                                      log_sigma_u = log.sigma.u),
                          parameters = list(u = matrix(0, nrow = nrow(capt), ncol = n.traps)),
                          random = "u", DLL = "ind_nll", silent = TRUE)
-    cat("lambda0: ", exp(log.lambda0), ", sigma: ", exp(log.sigma), ", sigma.u:", exp(log.sigma.u), ", nll: ", as.numeric(nll.obj$fn()), "\n")
+    if (trace){
+        cat("lambda0: ", exp(log.lambda0), ", sigma:", exp(log.sigma), ", sigma.u:", exp(log.sigma.u),
+            ", nll: ", as.numeric(nll.obj$fn()), "\n", sep = "")
+    }
     as.numeric(nll.obj$fn())
 }
 
