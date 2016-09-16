@@ -2,6 +2,7 @@
 // point for a model with independent random effects.
 #include <TMB.hpp>
 #include <fenv.h>
+using namespace density;
 
 template<class Type>
 Type objective_function<Type>::operator() ()
@@ -29,9 +30,25 @@ Type objective_function<Type>::operator() ()
     Type p_detected = 1 - exp(-er);
     // Running calculation of overall probability of nondetection.
     p_total_evade *= 1 - p_detected;
-    // Contribution to joint density from latent variables.
-    f -= dnorm(u(i), Type(0), sigma_u, true);
+   
+    //f -= dnorm(u(i), Type(0), sigma_u, true);
   }
+  // Variance-covariance matrix for latent variables.
+  matrix<Type> sigma_u_mat(n_traps, n_traps);
+  for (int j = 0; j < n_traps; j++){
+    for (int k = j; k < n_traps; k++){ 
+      if (j == k){
+	sigma_u_mat(j, k) = pow(sigma_u, 2);
+      } else {
+	// Covariance function in here.
+	sigma_u_mat(j, k) = 0;
+	sigma_u_mat(k, j) = 0;
+      }
+    }
+  }
+  // Contribution from latent variables (note MVNORM returns the
+  // negative-log of the density).
+  f += MVNORM(sigma_u_mat)(u);
   // Contribution from probability of detection.
   f -= log(1 - p_total_evade);
   return f;

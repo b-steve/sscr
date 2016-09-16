@@ -2,6 +2,7 @@
 // independent random effects.
 #include <TMB.hpp>
 #include <fenv.h>
+using namespace density;
 
 template<class Type>
 Type objective_function<Type>::operator() ()
@@ -58,11 +59,23 @@ Type objective_function<Type>::operator() ()
   Type D = n/esa;
   // Extra bit that falls out of log-likelihood.
   f -= -n*log(sum_det_probs);
-  // Contribution from latent variables.
   for (int i = 0; i < n; i++){
+    // Variance-covariance matrix for latent variables.
+    matrix<Type> sigma_u_mat(n_traps, n_traps);
     for (int j = 0; j < n_traps; j++){
-      f -= dnorm(u(i, j), Type(0), sigma_u, true);
+      for (int k = j; k < n_traps; k++){ 
+	if (j == k){
+	  sigma_u_mat(j, k) = pow(sigma_u, 2);
+	} else {
+	  // Covariance function in here.
+	  sigma_u_mat(j, k) = 0;
+	  sigma_u_mat(k, j) = 0;
+	}
+      }
     }
+    // Contribution from latent variables (note MVNORM returns the
+    // negative-log of the density).
+    f += MVNORM(sigma_u_mat)(u.row(i));
   }
   return f;
 }
