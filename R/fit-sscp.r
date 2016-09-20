@@ -50,13 +50,16 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", re.structure = "none", t
                         n.mask = n.mask,
                         n.traps = n.traps,
                         trace = trace)
+    model.opts <- list(resp = resp, re.structure = re.structure)
     ## Optimisation object constructor function.
-    make.obj <- switch(re.structure,
-                       none = make.obj.none,
-                       independent = make.obj.independent,
-                       make.obj.error)
+    if (re.structure == "none"){
+        make.obj <- make.obj.none
+    } else {
+        make.obj <- make.obj.dep
+    }
+
     ## Making optimisation object.
-    opt.obj <- make.obj(survey.data, resp)
+    opt.obj <- make.obj(survey.data, model.opts)
     ## Fitting model or testing likelihood.
     if (test){
         fit <- opt.obj$fn(opt.obj$par)

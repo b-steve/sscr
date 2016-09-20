@@ -1,5 +1,5 @@
 ## Functions to make optimisation objects.
-make.obj.none <- function(survey.data, resp){
+make.obj.none <- function(survey.data, model.opts){
     ## Extracting data.
     capt <- survey.data$capt
     mask.dists <- survey.data$mask.dists
@@ -7,6 +7,7 @@ make.obj.none <- function(survey.data, resp){
     n.mask <- survey.data$n.mask
     n.traps <- survey.data$n.traps
     n <- nrow(capt)
+    resp <- model.opts$resp
     ## Packaging data for TMB template.
     data <- list(capt = capt,
                  mask_dists = mask.dists,
@@ -22,8 +23,7 @@ make.obj.none <- function(survey.data, resp){
     MakeADFun(data = data, parameters = pars, DLL = "simple_nll", silent = TRUE)
 }
 
-make.obj.independent <- function(survey.data, resp){
-    ## Extracting data.
+make.obj.dep <- function(survey.data, model.opts){
     ## Extracting data.
     capt <- survey.data$capt
     mask.dists <- survey.data$mask.dists
@@ -39,7 +39,7 @@ make.obj.independent <- function(survey.data, resp){
               log.sigma = log(100),
               log.sigma.u = log(1))
     ## Optimisation object.
-    list(par = pars, fn = nll.closure(pars, survey.data, ind.nll))
+    list(par = pars, fn = nll.closure(pars, survey.data, model.opts, dep.nll))
 }
 
 make.obj.error <- function(survey.data, resp){
@@ -47,8 +47,8 @@ make.obj.error <- function(survey.data, resp){
 }
 
 ## Closure to provide negative log-likelihood function without passing data.
-nll.closure <- function(pars, survey.data, nll.fun){
+nll.closure <- function(pars, survey.data, model.opts, nll.fun){
     function(pars){
-        nll.fun(pars, survey.data)
+        nll.fun(pars, survey.data, model.opts)
     }
 }

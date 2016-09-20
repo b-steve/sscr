@@ -14,6 +14,10 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_traps);
   DATA_INTEGER(n_mask);
   DATA_SCALAR(mask_area);
+  // Indicator for response distribution.
+  DATA_INTEGER(resp_id);
+  // Indicator for dependence structure.
+  DATA_INTEGER(dep_id);
   // Detection probabilities (from laplace_probs.cpp).
   DATA_VECTOR(det_probs);
   // Declaring parameters.
@@ -48,7 +52,12 @@ Type objective_function<Type>::operator() ()
       Type integrand_mask = 1;
       for (int k = 0; k < n_traps; k++){
 	Type e_count = exp(log(haz_mat(j, k)) + u(i, k)) + DBL_MIN;
-	integrand_mask *= dpois(capt(i, k), e_count, false);
+	if (resp_id == 0){
+	  Type e_prob = 1 - exp(-e_count);
+	  integrand_mask *= pow(e_prob, capt(i, k))*pow(1 - e_count, 1 - capt(i, k));
+	} else if (resp_id == 1){
+	  integrand_mask *= dpois(capt(i, k), e_count, false);
+	}
       }
       integrand += integrand_mask;
     }
@@ -68,8 +77,17 @@ Type objective_function<Type>::operator() ()
 	  sigma_u_mat(j, k) = pow(sigma_u, 2);
 	} else {
 	  // Covariance function in here.
-	  sigma_u_mat(j, k) = 0;
-	  sigma_u_mat(k, j) = 0;
+	  if (dep_id == 0){
+	    sigma_u_mat(j, k) = 0;
+	    sigma_u_mat(k, j) = 0;
+	  } else if (dep_id == 1){
+	    // Exponential covariance function in here.
+	  } else if (dep_id == 2){
+	    // Matern covariance function in here.
+	  } else if (dep_id == 3){
+	    sigma_u_mat(j, k) = pow(sigma_u, 2);
+	    sigma_u_mat(k, j) = pow(sigma_u, 2);
+	  }
 	}
       }
     }
