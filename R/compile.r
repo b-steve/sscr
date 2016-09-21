@@ -26,7 +26,7 @@ compile.sscr <- function(){
 
 #' @import TMB
 #' @importFrom spatstat crossdist
-#' @importFrom stats nlminb dist
+#' @importFrom stats dist nlminb sd
 NULL
 
 ## Data documentation.
