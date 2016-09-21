@@ -88,6 +88,7 @@ Type objective_function<Type>::operator() ()
 	  } else if (cov_id == 1){
 	    // Exponential covariance function.
 	    sigma_u_mat(j, k) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
+	    sigma_u_mat(k, j) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
 	  } else if (cov_id == 2){
 	    // Matern covariance function.
 	  } else if (cov_id == 3){

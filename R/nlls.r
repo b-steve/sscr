@@ -47,9 +47,9 @@ cov.nll <- function(pars, survey.data, model.opts){
                          parameters = list(u = matrix(0, nrow = nrow(capt), ncol = n.traps)),
                          random = "u", DLL = "cov_nll", silent = TRUE)
     if (trace){
-        cat("Detection parameters: ", paste(det.pars, collapse = ", "),
-            "; Covariance parameters: ", paste(cov.pars, collapse = ", "),
-            "; nll: ", as.numeric(nll.obj$fn()), "\n", sep = "")
+        cat("Detection parameters: ", paste(format(round(det.pars, 2), nsmall = 2), collapse = ", "),
+            "; Covariance parameters: ", paste(format(round(cov.pars, 2), nsmall = 2), collapse = ", "),
+            "; nll: ", format(round(as.numeric(nll.obj$fn()), 2), nsmall = 2), "\n", sep = "")
     }
     as.numeric(nll.obj$fn())
 }

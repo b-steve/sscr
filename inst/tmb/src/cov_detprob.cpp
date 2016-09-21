@@ -48,6 +48,7 @@ Type objective_function<Type>::operator() ()
 	} else if (cov_id == 1){
 	  // Exponential covariance function.
 	  sigma_u_mat(j, k) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
+	  sigma_u_mat(k, j) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
 	} else if (cov_id == 2){
 	  // Matern covariance function.
 	} else if (cov_id == 3){
@@ -58,6 +59,13 @@ Type objective_function<Type>::operator() ()
       }
     }
   }
+  // for (int i = 0; i < 3; i++){
+  //   for (int j = 0; j < 3; j++){
+  //     std::cout << sigma_u_mat(i, j) << " ";
+  //   }
+  //   std::cout << std::endl;
+  // }
+  // exit(1234);
   // Contribution from latent variables (note MVNORM returns the
   // negative-log of the density).
   f += MVNORM(sigma_u_mat)(u);

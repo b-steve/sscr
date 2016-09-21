@@ -44,15 +44,14 @@ make.obj.cov <- function(survey.data, model.opts){
     ## Indices for detection function parameters.
     det.indices <- c(1, 2)
     ## Start values for detection function parameters.
-    ##det.start <- c(n/mask.area, max(apply(mask.dists, 1, min))/5)
-    det.start <- c(2, 100)
+    det.start <- c(n/mask.area, max(apply(mask.dists, 1, min))/5)
     ## Indices and start values for covariance parameters.
     if (cov.id == 0){
         cov.indices <- 3
         cov.start <- 1
     } else if (cov.id == 1){
         cov.indices <- c(3, 4)
-        cov.start <- c(1, 1)
+        cov.start <- c(1, 1000)
     } else if (cov.id == 2){
         cov.indices <- c(3, 4, 5)
         cov.start <- c(1, 1, 1)
