@@ -4,7 +4,7 @@
 \alias{fit.sscr}
 \title{Fitting an SCR model with second-order spatial dependence}
 \usage{
-fit.sscr(capt, traps, mask, resp = "binom", re.structure = "none",
+fit.sscr(capt, traps, mask, resp = "binom", cov.structure = "none",
   trace = FALSE, test = FALSE)
 }
 \arguments{
@@ -16,7 +16,7 @@ fit.sscr(capt, traps, mask, resp = "binom", re.structure = "none",
 
 \item{resp}{Response distribution for capture history elements.}
 
-\item{re.structure}{Covariance structure of the random effects. The
+\item{cov.structure}{Covariance structure of the random effects. The
 current options are (1) \code{"none"} for no random effects
 (regular SCR), (2) \code{"independent"}, for independent random
 effects (equivalent to counts of detections being
