@@ -15,6 +15,6 @@ test_that(
     {
         test.ind <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois",
-                             re.structure = "independent", test = TRUE)
+                             cov.structure = "independent", test = TRUE, trace = TRUE)
         expect_that(test.ind - 119.5031 < 1e-4, is_true())
     })
