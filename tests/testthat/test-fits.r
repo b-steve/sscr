@@ -16,11 +16,11 @@ test_that(
         ## Independent random effects.
         test.ind <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois",
-                             cov.structure = "independent", test = TRUE, trace = TRUE)
-        expect_that(test.ind - 146.3648 < 1e-4, is_true())
+                             cov.structure = "independent", test = TRUE)
+        expect_that(test.ind - 124.8294 < 1e-4, is_true())
         ## Exponential covariance function.
         test.exp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois",
-                             cov.structure = "exponential", test = TRUE, trace = TRUE)
-        expect_that(test.exp - 146.0436 < 1e-4, is_true())
+                             cov.structure = "exponential", test = TRUE)
+        expect_that(test.exp - 122.9533 < 1e-4, is_true())
     })
