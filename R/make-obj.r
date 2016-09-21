@@ -30,6 +30,7 @@ make.obj.cov <- function(survey.data, model.opts){
     mask.area <- survey.data$mask.area
     n.mask <- survey.data$n.mask
     n.traps <- survey.data$n.traps
+    trap.dists <- survey.data$trap.dists
     n <- nrow(capt)
     ## Indicator for response type.
     resp.id <- switch(model.opts$resp, binom = 0, pois = 1)
@@ -44,14 +45,14 @@ make.obj.cov <- function(survey.data, model.opts){
     ## Indices for detection function parameters.
     det.indices <- c(1, 2)
     ## Start values for detection function parameters.
-    det.start <- c(n/mask.area, max(apply(mask.dists, 1, min))/5)
+    det.start <- c(max(capt)/2, max(apply(mask.dists, 1, min))/5)
     ## Indices and start values for covariance parameters.
     if (cov.id == 0){
         cov.indices <- 3
-        cov.start <- 1
+        cov.start <- sd(capt)
     } else if (cov.id == 1){
         cov.indices <- c(3, 4)
-        cov.start <- c(1, 1000)
+        cov.start <- c(sd(capt), mean(trap.dists))
     } else if (cov.id == 2){
         cov.indices <- c(3, 4, 5)
         cov.start <- c(1, 1, 1)
