@@ -7,6 +7,7 @@ Author: Ben Stevenson <bcs5@st-andrews.ac.uk>
 Maintainer: Ben Stevenson <bcs5@st-andrews.ac.uk>
 Imports:
     spatstat,
+    stats,
     TMB
 Suggests:
     testthat
