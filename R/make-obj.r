@@ -23,7 +23,7 @@ make.obj.none <- function(survey.data, model.opts){
     MakeADFun(data = data, parameters = pars, DLL = "simple_nll", silent = TRUE)
 }
 
-make.obj.dep <- function(survey.data, model.opts){
+make.obj.cov <- function(survey.data, model.opts){
     ## Extracting data.
     capt <- survey.data$capt
     mask.dists <- survey.data$mask.dists
@@ -31,15 +31,40 @@ make.obj.dep <- function(survey.data, model.opts){
     n.mask <- survey.data$n.mask
     n.traps <- survey.data$n.traps
     n <- nrow(capt)
-    ## Start values for optimisation.
-    #pars <- c(log.lambda0 = log(n/mask.area),
-    #          log.sigma = log(max(apply(mask.dists, 1, min))/5),
-    #          log.sigma.u = log(1))
-    pars <- c(log.lambda0 = log(2),
-              log.sigma = log(100),
-              log.sigma.u = log(1))
+    ## Indicator for response type.
+    resp.id <- switch(model.opts$resp, binom = 0, pois = 1)
+    model.opts$resp.id <- resp.id
+    ## Indicator for covariance structure.
+    cov.id <- switch(model.opts$cov.structure,
+                     independent = 0,
+                     exponential = 1,
+                     matern = 2,
+                     full = 3)
+    model.opts$cov.id <- cov.id
+    ## Indices for detection function parameters.
+    det.indices <- c(1, 2)
+    ## Start values for detection function parameters.
+    ##det.start <- c(n/mask.area, max(apply(mask.dists, 1, min))/5)
+    det.start <- c(2, 100)
+    ## Indices and start values for covariance parameters.
+    if (cov.id == 0){
+        cov.indices <- 3
+        cov.start <- 1
+    } else if (cov.id == 1){
+        cov.indices <- c(3, 4)
+        cov.start <- c(1, 1)
+    } else if (cov.id == 2){
+        cov.indices <- c(3, 4, 5)
+        cov.start <- c(1, 1, 1)
+    } else if (cov.id == 3){
+        cov.indices <- 3
+        cov.start <- 1
+    }
+    model.opts$det.indices <- det.indices
+    model.opts$cov.indices <- cov.indices
+    pars <- log(c(det.start, cov.start))
     ## Optimisation object.
-    list(par = pars, fn = nll.closure(pars, survey.data, model.opts, dep.nll))
+    list(par = pars, fn = nll.closure(pars, survey.data, model.opts, cov.nll))
 }
 
 make.obj.error <- function(survey.data, resp){

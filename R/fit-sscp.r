@@ -10,7 +10,7 @@
 #' @param traps Traps object.
 #' @param mask Mask object.
 #' @param resp Response distribution for capture history elements.
-#' @param re.structure Covariance structure of the random effects. The
+#' @param cov.structure Covariance structure of the random effects. The
 #'     current options are (1) \code{"none"} for no random effects
 #'     (regular SCR), (2) \code{"independent"}, for independent random
 #'     effects (equivalent to counts of detections being
@@ -26,7 +26,7 @@
 #'     at parameter start values. If \code{FALSE}, a model is fitted.
 #' 
 #' @export
-fit.sscr <- function(capt, traps, mask, resp = "binom", re.structure = "none", trace = FALSE, test = FALSE){
+fit.sscr <- function(capt, traps, mask, resp = "binom", cov.structure = "none", trace = FALSE, test = FALSE){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -40,7 +40,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", re.structure = "none", t
     ## Number of mask points.
     n.mask <- nrow(mask)
     ## Distances between traps.
-    
+    trap.dists <- as.matrix(dist(traps))
     ## Number of traps.
     n.traps <- nrow(traps)
     ## Packaging the data up into a list.
@@ -48,14 +48,15 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", re.structure = "none", t
                         mask.dists = mask.dists,
                         mask.area = mask.area,
                         n.mask = n.mask,
+                        trap.dists = trap.dists,
                         n.traps = n.traps,
                         trace = trace)
-    model.opts <- list(resp = resp, re.structure = re.structure)
+    model.opts <- list(resp = resp, cov.structure = cov.structure)
     ## Optimisation object constructor function.
-    if (re.structure == "none"){
+    if (cov.structure == "none"){
         make.obj <- make.obj.none
     } else {
-        make.obj <- make.obj.dep
+        make.obj <- make.obj.cov
     }
 
     ## Making optimisation object.

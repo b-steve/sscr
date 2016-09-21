@@ -8,16 +8,17 @@ template<class Type>
 Type objective_function<Type>::operator() ()
 {
   // Distance from mask point to all traps.
-  DATA_VECTOR(dists);
-  // Total number of traps.
+  DATA_VECTOR(mask_dists);
+  // Distances between traps.
+  DATA_MATRIX(trap_dists);
+  // Number of traps.
   DATA_INTEGER(n_traps);
   // Indicator for dependence structure.
-  DATA_INTEGER(dep_id);
-  // Parameter values.
-  DATA_SCALAR(lambda0);
-  DATA_SCALAR(sigma);
-  // Parameters of latent variable process.
-  DATA_SCALAR(sigma_u);
+  DATA_INTEGER(cov_id);
+  // Detection function parmaters.
+  DATA_VECTOR(det_pars);
+  // Covariance parameters.
+  DATA_VECTOR(cov_pars);
   // Latent variables.
   PARAMETER_VECTOR(u);
   // Overall probability of nondetection.
@@ -27,32 +28,32 @@ Type objective_function<Type>::operator() ()
   // Probability of capture.
   for (int i = 0; i < n_traps; i++){
     // Calculating encounter rate.
-    Type er = exp(log(lambda0*exp(-pow(dists(i), 2)/(2*pow(sigma, 2)))) + u(i));
+    Type er = exp(log(det_pars(0)*exp(-pow(mask_dists(i), 2)/(2*pow(det_pars(1), 2)))) + u(i));
     // Calculating probability of detection.
     Type p_detected = 1 - exp(-er);
     // Running calculation of overall probability of nondetection.
     p_total_evade *= 1 - p_detected;
-   
-    //f -= dnorm(u(i), Type(0), sigma_u, true);
   }
   // Variance-covariance matrix for latent variables.
   matrix<Type> sigma_u_mat(n_traps, n_traps);
   for (int j = 0; j < n_traps; j++){
     for (int k = j; k < n_traps; k++){ 
       if (j == k){
-	sigma_u_mat(j, k) = pow(sigma_u, 2);
+	sigma_u_mat(j, k) = pow(cov_pars(0), 2);
       } else {
-	// Covariance function in here.
-	if (dep_id == 0){
+	if (cov_id == 0){
+	  // Independent random effects
 	  sigma_u_mat(j, k) = 0;
 	  sigma_u_mat(k, j) = 0;
-	} else if (dep_id == 1){
-	  // Exponential covariance function in here.
-	} else if (dep_id == 2){
-	  // Matern covariance function in here.
-	} else if (dep_id == 3){
-	  sigma_u_mat(j, k) = pow(sigma_u, 2);
-	  sigma_u_mat(k, j) = pow(sigma_u, 2);
+	} else if (cov_id == 1){
+	  // Exponential covariance function.
+	  sigma_u_mat(j, k) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
+	} else if (cov_id == 2){
+	  // Matern covariance function.
+	} else if (cov_id == 3){
+	  // Total dependence.
+	  sigma_u_mat(j, k) = pow(cov_pars(0), 2);
+	  sigma_u_mat(k, j) = pow(cov_pars(0), 2);
 	}
       }
     }

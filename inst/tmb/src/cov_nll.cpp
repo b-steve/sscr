@@ -7,27 +7,32 @@ using namespace density;
 template<class Type>
 Type objective_function<Type>::operator() ()
 {
-  // Reading in data.
+  // Capture histories
   DATA_MATRIX(capt);
+  // Distance from mask point to all traps.
   DATA_MATRIX(mask_dists);
+  // Distances between traps.
+  DATA_MATRIX(trap_dists);
+  // Number of detected indivduals.
   DATA_INTEGER(n);
+  // Number of traps.
   DATA_INTEGER(n_traps);
+  // Number of mask points.
   DATA_INTEGER(n_mask);
+  // Area of each mask point.
   DATA_SCALAR(mask_area);
   // Indicator for response distribution.
   DATA_INTEGER(resp_id);
   // Indicator for dependence structure.
-  DATA_INTEGER(dep_id);
-  // Detection probabilities (from laplace_probs.cpp).
+  DATA_INTEGER(cov_id);
+  // Detection probabilities (from cov_detprob.cpp).
   DATA_VECTOR(det_probs);
-  // Declaring parameters.
-  DATA_SCALAR(log_lambda0);
-  DATA_SCALAR(log_sigma);
-  DATA_SCALAR(log_sigma_u);
+  // Detection function parameters.
+  DATA_VECTOR(det_pars);
+  // Covariance parameters.
+  DATA_VECTOR(cov_pars);
+  // Latent variables.
   PARAMETER_MATRIX(u);
-  Type lambda0 = exp(log_lambda0);
-  Type sigma = exp(log_sigma);
-  Type sigma_u = exp(log_sigma_u);
   // Hazard rates for mask/trap combinations.
   matrix<Type> haz_mat(n_mask, n_traps);
   // The sum of mask probabilities.
@@ -35,7 +40,7 @@ Type objective_function<Type>::operator() ()
   for (int i = 0; i < n_mask; i++){
     Type p_undet = Type(1);
     for (int j = 0; j < n_traps; j++){
-      haz_mat(i, j) = lambda0*exp(-pow(mask_dists(i, j), 2)/(2*pow(sigma, 2)));
+      haz_mat(i, j) = det_pars(0)*exp(-pow(mask_dists(i, j), 2)/(2*pow(det_pars(1), 2)));
     }
     sum_det_probs += det_probs(i);
   }
@@ -74,19 +79,21 @@ Type objective_function<Type>::operator() ()
     for (int j = 0; j < n_traps; j++){
       for (int k = j; k < n_traps; k++){ 
 	if (j == k){
-	  sigma_u_mat(j, k) = pow(sigma_u, 2);
+	  sigma_u_mat(j, k) = pow(cov_pars(0), 2);
 	} else {
-	  // Covariance function in here.
-	  if (dep_id == 0){
+	  if (cov_id == 0){
+	    // Independent random effects
 	    sigma_u_mat(j, k) = 0;
 	    sigma_u_mat(k, j) = 0;
-	  } else if (dep_id == 1){
-	    // Exponential covariance function in here.
-	  } else if (dep_id == 2){
-	    // Matern covariance function in here.
-	  } else if (dep_id == 3){
-	    sigma_u_mat(j, k) = pow(sigma_u, 2);
-	    sigma_u_mat(k, j) = pow(sigma_u, 2);
+	  } else if (cov_id == 1){
+	    // Exponential covariance function.
+	    sigma_u_mat(j, k) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
+	  } else if (cov_id == 2){
+	    // Matern covariance function.
+	  } else if (cov_id == 3){
+	    // Total dependence.
+	    sigma_u_mat(j, k) = pow(cov_pars(0), 2);
+	    sigma_u_mat(k, j) = pow(cov_pars(0), 2);
 	  }
 	}
       }
