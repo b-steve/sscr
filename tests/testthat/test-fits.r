@@ -11,10 +11,16 @@ test_that(
     })
 
 test_that(
-    "Tests with independent random effects.",
+    "Tests with random effects.",
     {
+        ## Independent random effects.
         test.ind <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois",
                              cov.structure = "independent", test = TRUE, trace = TRUE)
-        expect_that(test.ind - 119.5031 < 1e-4, is_true())
+        expect_that(test.ind - 146.3648 < 1e-4, is_true())
+        ## Exponential covariance function.
+        test.exp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                             mask = test.data$mask, resp = "pois",
+                             cov.structure = "exponential", test = TRUE, trace = TRUE)
+        expect_that(test.exp - 146.0436 < 1e-4, is_true())
     })
