@@ -38,7 +38,6 @@ Type objective_function<Type>::operator() ()
   // The sum of mask probabilities.
   Type sum_det_probs = 0;
   for (int i = 0; i < n_mask; i++){
-    Type p_undet = Type(1);
     for (int j = 0; j < n_traps; j++){
       haz_mat(i, j) = det_pars(0)*exp(-pow(mask_dists(i, j), 2)/(2*pow(det_pars(1), 2)));
     }
@@ -69,8 +68,6 @@ Type objective_function<Type>::operator() ()
     log_sum_integrands += log(integrand + DBL_MIN);
   }
   f -= log_sum_integrands;
-  Type esa = mask_area*sum_det_probs;
-  Type D = n/esa;
   // Extra bit that falls out of log-likelihood.
   f -= -n*log(sum_det_probs);
   for (int i = 0; i < n; i++){
