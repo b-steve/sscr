@@ -3,6 +3,7 @@ cd ~/GitHub/sscr
 rm -rfv man
 rm -rfv inst/tmb/bin
 rm -fv NAMESPACE
+rm -rfv package-build
 R --slave -e "library(roxygen2); roxygenise('.')"
 R CMD build .
 mkdir -p package-build
