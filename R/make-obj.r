@@ -20,7 +20,8 @@ make.obj.none <- function(survey.data, model.opts){
     pars <- list(log_lambda0 = log(n/mask.area),
                  log_sigma = log(max(apply(mask.dists, 1, min))/5))
     ## Making optimisation object with TMB.
-    MakeADFun(data = data, parameters = pars, DLL = "simple_nll", silent = TRUE)
+    obj <- MakeADFun(data = data, parameters = pars, DLL = "simple_nll", silent = TRUE)
+    obj
 }
 
 make.obj.cov <- function(survey.data, model.opts){
@@ -58,13 +59,14 @@ make.obj.cov <- function(survey.data, model.opts){
         cov.start <- c(1, 1, 1)
     } else if (cov.id == 3){
         cov.indices <- 3
-        cov.start <- 1
+        cov.start <- sd(capt)
     }
     model.opts$det.indices <- det.indices
     model.opts$cov.indices <- cov.indices
     pars <- log(c(det.start, cov.start))
     ## Optimisation object.
-    list(par = pars, fn = nll.closure(pars, survey.data, model.opts, cov.nll))
+    list(par = pars, fn = nll.closure(pars, survey.data, model.opts, cov.nll),
+         organise = organise.closure(pars, survey.data, model.opts, cov.organise))
 }
 
 make.obj.error <- function(survey.data, resp){
@@ -75,5 +77,11 @@ make.obj.error <- function(survey.data, resp){
 nll.closure <- function(pars, survey.data, model.opts, nll.fun){
     function(pars){
         nll.fun(pars, survey.data, model.opts)
+    }
+}
+
+organise.closure <- function(fit, survey.data, model.opts, organise.fun){
+    function(fit){
+        organise.fun(fit, survey.data, model.opts)
     }
 }

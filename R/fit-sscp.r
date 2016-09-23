@@ -10,16 +10,17 @@
 #' @param traps Traps object.
 #' @param mask Mask object.
 #' @param resp Response distribution for capture history elements.
-#' @param cov.structure Covariance structure of the random effects. The
-#'     current options are (1) \code{"none"} for no random effects
-#'     (regular SCR), (2) \code{"independent"}, for independent random
-#'     effects (equivalent to counts of detections being
-#'     overdispersed), (3) \code{"constant"}, for independent random
-#'     effects that are restricted to being the same at all traps
-#'     (equivalent to having a random effect on \code{lambda0} for
-#'     each individual), and (4) \code{"exponential"}, for random
-#'     effects with an exponential covariance structure (spatially
-#'     structured random effects).
+#' @param cov.structure Covariance structure of the random
+#'     effects. The current options are (1) \code{"none"} for no
+#'     random effects (regular SCR), (2) \code{"independent"}, for
+#'     independent random effects (equivalent to counts of detections
+#'     being overdispersed), (3) \code{"exponential"}, for random
+#'     effects with an exponential covariance structure, (4)
+#'     \code{"matern"}, for random effects with a Matern covariance
+#'     structure, and (5) \code{"constant"}, for random effects that
+#'     are restricted to being the same at all traps (equivalent to
+#'     having an independent random effect on \code{lambda0} for each
+#'     individual).
 #' @param trace Logical. If \code{TRUE}, parameter values for each
 #'     step of the optimisation algorithm are printed.
 #' @param test Logical. If \code{TRUE}, the likelihood is calculated
@@ -58,14 +59,18 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", cov.structure = "none", 
     } else {
         make.obj <- make.obj.cov
     }
-
     ## Making optimisation object.
     opt.obj <- make.obj(survey.data, model.opts)
     ## Fitting model or testing likelihood.
     if (test){
         fit <- opt.obj$fn(opt.obj$par)
     } else {
-        fit <- nlminb(opt.obj$par, opt.obj$fn, opt.obj$gr)
+        raw.fit <- nlminb(opt.obj$par, opt.obj$fn, opt.obj$gr)
+        if (cov.structure == "none"){
+            fit <- summary(sdreport(opt.obj), "report")[, 1]
+        } else {
+            fit <- opt.obj$organise(raw.fit)
+        }
     }
     fit
 }
