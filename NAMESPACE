@@ -2,8 +2,12 @@
 
 export(compile.sscr)
 export(fit.sscr)
+export(sim.sscr)
 import(TMB)
+importFrom(mvtnorm,rmvnorm)
 importFrom(spatstat,crossdist)
 importFrom(stats,dist)
 importFrom(stats,nlminb)
+importFrom(stats,rpois)
+importFrom(stats,runif)
 importFrom(stats,sd)
