@@ -55,7 +55,7 @@ cov.nll <- function(pars, survey.data, model.opts){
 }
 
 cov.organise <- function(fit, survey.data, model.opts){
-    pars <- fit$pars
+    pars <- fit$par
     ## Extracting model options.
     resp.id <- model.opts$resp.id
     cov.id <- model.opts$cov.id
