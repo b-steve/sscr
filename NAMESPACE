@@ -2,6 +2,7 @@
 
 export(compile.sscr)
 export(fit.sscr)
+export(sim.ou)
 export(sim.sscr)
 import(TMB)
 importFrom(mvtnorm,rmvnorm)

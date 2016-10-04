@@ -4,7 +4,8 @@
 \alias{sim.sscr}
 \title{Simulating SCR data with second-order spatial dependence}
 \usage{
-sim.sscr(traps, mask, resp, cov.structure, D, det.pars, cov.pars)
+sim.sscr(traps, mask, resp, cov.structure, D, det.pars = NULL,
+  cov.pars = NULL)
 }
 \arguments{
 \item{traps}{Traps object.}
