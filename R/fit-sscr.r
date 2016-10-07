@@ -10,6 +10,8 @@
 #' @param traps Traps object.
 #' @param mask Mask object.
 #' @param resp Response distribution for capture history elements.
+#' @param detfn Detection function, given by a character string. Use
+#'     \code{"hn"} for halfnormal and \code{"hr"} for hazard rate.
 #' @param cov.structure Covariance structure of the random
 #'     effects. The current options are (1) \code{"none"} for no
 #'     random effects (regular SCR), (2) \code{"independent"}, for
@@ -27,7 +29,7 @@
 #'     at parameter start values. If \code{FALSE}, a model is fitted.
 #' 
 #' @export
-fit.sscr <- function(capt, traps, mask, resp = "binom", cov.structure = "none", trace = FALSE, test = FALSE){
+fit.sscr <- function(capt, traps, mask, resp = "binom", detfn = "hn", cov.structure = "none", trace = FALSE, test = FALSE){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -52,7 +54,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", cov.structure = "none", 
                         trap.dists = trap.dists,
                         n.traps = n.traps,
                         trace = trace)
-    model.opts <- list(resp = resp, cov.structure = cov.structure)
+    model.opts <- list(resp = resp, detfn = detfn, cov.structure = cov.structure)
     ## Optimisation object constructor function.
     if (cov.structure == "none"){
         make.obj <- make.obj.none

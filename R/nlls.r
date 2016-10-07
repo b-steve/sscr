@@ -2,6 +2,7 @@
 cov.nll <- function(pars, survey.data, model.opts){
     ## Extracting model options.
     resp.id <- model.opts$resp.id
+    detfn.id <- model.opts$detfn.id
     cov.id <- model.opts$cov.id
     det.indices <- model.opts$det.indices
     cov.indices <- model.opts$cov.indices
@@ -23,6 +24,7 @@ cov.nll <- function(pars, survey.data, model.opts){
         detprob.obj <- MakeADFun(data = list(mask_dists = mask.dists[i, ],
                                              trap_dists = trap.dists,
                                              n_traps = n.traps,
+                                             detfn_id = detfn.id,
                                              cov_id = cov.id,
                                              det_pars = det.pars,
                                              cov_pars = cov.pars),
@@ -40,6 +42,7 @@ cov.nll <- function(pars, survey.data, model.opts){
                                      n_mask = n.mask,
                                      mask_area = mask.area,
                                      resp_id = resp.id,
+                                     detfn_id = detfn.id,
                                      cov_id = cov.id,
                                      det_probs = det.probs,
                                      det_pars = det.pars,

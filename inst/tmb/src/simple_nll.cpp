@@ -2,6 +2,7 @@
 // no random effects.
 #include <TMB.hpp>
 #include <fenv.h>
+#include "detfns.h"
 
 template<class Type>
 Type objective_function<Type>::operator() ()
@@ -13,15 +14,16 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_traps);
   DATA_INTEGER(n_mask);
   DATA_SCALAR(mask_area);
-  // Indicator for poisson or binary.
+  // Indicator for response type.
   DATA_INTEGER(resp_id);
+  // Indicator for detection function.
+  DATA_INTEGER(detfn_id);
   // Declaring parameters.
-  PARAMETER(log_lambda0);
-  PARAMETER(log_sigma);
-  Type lambda0 = exp(log_lambda0);
-  ADREPORT(lambda0);
-  Type sigma = exp(log_sigma);
-  ADREPORT(sigma);
+  PARAMETER_VECTOR(log_det_pars);
+  // Back-transforming parameters.
+  vector<Type> det_pars(log_det_pars.size());
+  det_pars = exp(log_det_pars);
+  ADREPORT(det_pars);
   // Hazard rates for mask/trap combinations.
   matrix<Type> haz_mat(n_mask, n_traps);
   // Detection probabilities for mask/trap combinations.
@@ -33,7 +35,7 @@ Type objective_function<Type>::operator() ()
   for (int i = 0; i < n_mask; i++){
     Type p_undet = Type(1);
     for (int j = 0; j < n_traps; j++){
-      haz_mat(i, j) = lambda0*exp(-pow(mask_dists(i, j), 2)/(2*pow(sigma, 2)));
+      haz_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
       prob_mat(i, j) = 1 - exp(-haz_mat(i, j));
       p_undet *= 1 - prob_mat(i, j);
     }

@@ -2,6 +2,7 @@
 // independent random effects.
 #include <TMB.hpp>
 #include <fenv.h>
+#include "detfns.h"
 using namespace density;
 
 template<class Type>
@@ -23,6 +24,8 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(mask_area);
   // Indicator for response distribution.
   DATA_INTEGER(resp_id);
+  // Indicator for detection function ID.
+  DATA_INTEGER(detfn_id);
   // Indicator for dependence structure.
   DATA_INTEGER(cov_id);
   // Detection probabilities (from cov_detprob.cpp).
@@ -39,7 +42,8 @@ Type objective_function<Type>::operator() ()
   Type sum_det_probs = 0;
   for (int i = 0; i < n_mask; i++){
     for (int j = 0; j < n_traps; j++){
-      haz_mat(i, j) = det_pars(0)*exp(-pow(mask_dists(i, j), 2)/(2*pow(det_pars(1), 2)));
+      // Calculating encounter rate.
+      haz_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
     }
     sum_det_probs += det_probs(i);
   }

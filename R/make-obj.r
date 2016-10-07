@@ -8,6 +8,8 @@ make.obj.none <- function(survey.data, model.opts){
     n.traps <- survey.data$n.traps
     n <- nrow(capt)
     resp <- model.opts$resp
+    detfn <- model.opts$detfn
+    detfn.id <- switch(detfn, hn = 0, hr = 1)
     ## Packaging data for TMB template.
     data <- list(capt = capt,
                  mask_dists = mask.dists,
@@ -15,12 +17,19 @@ make.obj.none <- function(survey.data, model.opts){
                  n_traps = n.traps,
                  n_mask = n.mask,
                  mask_area = mask.area,
-                 resp_id = switch(resp, binom = 0, pois = 1))
+                 resp_id = switch(resp, binom = 0, pois = 1, count = 1),
+                 detfn_id = detfn.id)
     ## Start values for optimisation.
-    pars <- list(log_lambda0 = log(n/mask.area),
-                 log_sigma = log(max(apply(mask.dists, 1, min))/5))
+        ## Indices and start values for detection function parameters.
+    if (detfn.id == 0){
+        det.start <- c(max(capt)/2, max(apply(mask.dists, 1, min))/5)
+    } else if (resp.id == 1){
+        det.start <- c(max(capt)/2, max(apply(mask.dists, 1, min))/5, 1)
+    }
+    log.det.pars <- log(det.start)
     ## Making optimisation object with TMB.
-    obj <- MakeADFun(data = data, parameters = pars, DLL = "simple_nll", silent = TRUE)
+    obj <- MakeADFun(data = data, parameters = list(log_det_pars = log.det.pars),
+                     DLL = "simple_nll", silent = TRUE)
     obj
 }
 
@@ -36,6 +45,9 @@ make.obj.cov <- function(survey.data, model.opts){
     ## Indicator for response type.
     resp.id <- switch(model.opts$resp, binom = 0, pois = 1)
     model.opts$resp.id <- resp.id
+    ## Indicator for detection functoin.
+    detfn.id <- switch(model.opts$detfn, hn = 0, hr = 1)
+    model.opts$detfn.id <- detfn.id
     ## Indicator for covariance structure.
     cov.id <- switch(model.opts$cov.structure,
                      independent = 0,
@@ -43,22 +55,27 @@ make.obj.cov <- function(survey.data, model.opts){
                      matern = 2,
                      full = 3)
     model.opts$cov.id <- cov.id
-    ## Indices for detection function parameters.
-    det.indices <- c(1, 2)
-    ## Start values for detection function parameters.
-    det.start <- c(max(capt)/2, max(apply(mask.dists, 1, min))/5)
+    ## Indices and start values for detection function parameters.
+    if (resp.id == 0){
+        det.indices <- 1:2
+        det.start <- c(max(capt)/2, max(apply(mask.dists, 1, min))/5)
+    } else if (resp.id == 1){
+        det.indices <- 1:3
+        det.start <- c(max(capt)/2, max(apply(mask.dists, 1, min))/5, 1)
+    }
     ## Indices and start values for covariance parameters.
+    cov.index.start <- max(det.indices) + 1
     if (cov.id == 0){
-        cov.indices <- 3
+        cov.indices <- cov.index.start
         cov.start <- sd(capt)
     } else if (cov.id == 1){
-        cov.indices <- c(3, 4)
+        cov.indices <- cov.index.start:(cov.index.start + 1)
         cov.start <- c(sd(capt), mean(trap.dists))
     } else if (cov.id == 2){
-        cov.indices <- c(3, 4, 5)
+        cov.indices <- cov.index.start:(cov.index.start + 2)
         cov.start <- c(1, 1, 1)
     } else if (cov.id == 3){
-        cov.indices <- 3
+        cov.indices <- cov.index.start
         cov.start <- sd(capt)
     }
     model.opts$det.indices <- det.indices

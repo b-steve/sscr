@@ -2,6 +2,7 @@
 // point for a model with independent random effects.
 #include <TMB.hpp>
 #include <fenv.h>
+#include "detfns.h"
 using namespace density;
 
 template<class Type>
@@ -13,6 +14,8 @@ Type objective_function<Type>::operator() ()
   DATA_MATRIX(trap_dists);
   // Number of traps.
   DATA_INTEGER(n_traps);
+  // Indicator for detection function.
+  DATA_INTEGER(detfn_id);
   // Indicator for dependence structure.
   DATA_INTEGER(cov_id);
   // Detection function parmaters.
@@ -28,7 +31,7 @@ Type objective_function<Type>::operator() ()
   // Probability of capture.
   for (int i = 0; i < n_traps; i++){
     // Calculating encounter rate.
-    Type er = exp(log(det_pars(0)*exp(-pow(mask_dists(i), 2)/(2*pow(det_pars(1), 2)))) + u(i));
+    Type er = exp(log(detfn(mask_dists(i), det_pars, detfn_id)) + u(i));
     // Calculating probability of detection.
     Type p_detected = 1 - exp(-er);
     // Running calculation of overall probability of nondetection.
