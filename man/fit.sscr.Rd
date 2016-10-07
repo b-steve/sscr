@@ -4,8 +4,8 @@
 \alias{fit.sscr}
 \title{Fitting an SCR model with second-order spatial dependence}
 \usage{
-fit.sscr(capt, traps, mask, resp = "binom", cov.structure = "none",
-  trace = FALSE, test = FALSE)
+fit.sscr(capt, traps, mask, resp = "binom", detfn = "hn",
+  cov.structure = "none", trace = FALSE, test = FALSE)
 }
 \arguments{
 \item{capt}{Capture history object.}
@@ -15,6 +15,9 @@ fit.sscr(capt, traps, mask, resp = "binom", cov.structure = "none",
 \item{mask}{Mask object.}
 
 \item{resp}{Response distribution for capture history elements.}
+
+\item{detfn}{Detection function, given by a character string. Use
+\code{"hn"} for halfnormal and \code{"hr"} for hazard rate.}
 
 \item{cov.structure}{Covariance structure of the random
 effects. The current options are (1) \code{"none"} for no
