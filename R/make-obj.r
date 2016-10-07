@@ -23,7 +23,7 @@ make.obj.none <- function(survey.data, model.opts){
         ## Indices and start values for detection function parameters.
     if (detfn.id == 0){
         det.start <- c(max(capt)/2, max(apply(mask.dists, 1, min))/5)
-    } else if (resp.id == 1){
+    } else if (detfn.id == 1){
         det.start <- c(max(capt)/2, max(apply(mask.dists, 1, min))/5, 1)
     }
     log.det.pars <- log(det.start)
