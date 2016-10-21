@@ -100,7 +100,7 @@ sim.ou <- function(mu, tau, sigma, n.steps, start = NULL){
     if (is.null(start)){
         start <- rmvnorm(1, mu, sigma^2*diag(2))
     }
-    ## Changingo Theo's parameterisation.
+    ## Changing Theo's parameterisation.
     b <- -1/tau
     v <- sigma^2
     out <- matrix(0, nrow = n.steps, ncol = 2)
