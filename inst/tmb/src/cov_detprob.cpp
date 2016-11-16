@@ -1,5 +1,6 @@
 // Template to calculate detection probability at a particular mask
-// point for a model with independent random effects.
+// point for a model with some covariance function for the random
+// effects.
 #include <TMB.hpp>
 #include <fenv.h>
 #include "detfns.h"
