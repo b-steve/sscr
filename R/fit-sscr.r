@@ -22,7 +22,7 @@
 #'     structure, (5) \code{"individual"}, for random effects that are
 #'     restricted to being the same at all traps (equivalent to having
 #'     an independent random effect on \code{lambda0} for each
-#'     individual), or (6) \code{"lc_exponential} for a linear
+#'     individual), or (6) \code{"lc_exponential"} for a linear
 #'     combination of exponential covariance functions.
 #' @param trace Logical. If \code{TRUE}, parameter values for each
 #'     step of the optimisation algorithm are printed.
