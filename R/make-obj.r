@@ -53,7 +53,8 @@ make.obj.cov <- function(survey.data, model.opts){
                      independent = 0,
                      exponential = 1,
                      matern = 2,
-                     full = 3)
+                     individual = 3,
+                     lc_exponential = 4)
     model.opts$cov.id <- cov.id
     ## Indices and start values for detection function parameters.
     if (resp.id == 0){
@@ -66,17 +67,24 @@ make.obj.cov <- function(survey.data, model.opts){
     ## Indices and start values for covariance parameters.
     cov.index.start <- max(det.indices) + 1
     if (cov.id == 0){
+        ## Independent.
         cov.indices <- cov.index.start
         cov.start <- sd(capt)
     } else if (cov.id == 1){
+        ## Exponential.
         cov.indices <- cov.index.start:(cov.index.start + 1)
         cov.start <- c(sd(capt), mean(trap.dists))
     } else if (cov.id == 2){
+        ## Matern.
         cov.indices <- cov.index.start:(cov.index.start + 2)
         cov.start <- c(1, 1, 1)
     } else if (cov.id == 3){
+        ## Individual.
         cov.indices <- cov.index.start
         cov.start <- sd(capt)
+    } else if (cov.id == 4){
+        ## Linear combination of exponentials.
+        cov.indices <- cov.index.start:(cov.index.start + 3)
     }
     model.opts$det.indices <- det.indices
     model.opts$cov.indices <- cov.indices

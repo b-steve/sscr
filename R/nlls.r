@@ -8,7 +8,13 @@ cov.nll <- function(pars, survey.data, model.opts){
     cov.indices <- model.opts$cov.indices
     ## Extracting and unlinking parameters.
     det.pars <- exp(pars[det.indices])
-    cov.pars <- exp(pars[cov.indices])
+   
+    ## TODO: Do fancy shit here to parameterise lc-exponential covariance function.
+    if (cov.id == 4){
+        stop("Covariance function 'lc-exponential' not yet fully implemented")
+    } else {
+        cov.pars <- exp(pars[cov.indices])
+    }
     ## Extracting data.
     capt <- survey.data$capt
     mask.dists <- survey.data$mask.dists
