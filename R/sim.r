@@ -8,7 +8,7 @@
 #' @param cov.pars List of covariance parameters.
 #'
 #' @export
-sim.sscr <- function(traps, mask, resp, cov.structure, D, det.pars = NULL, cov.pars = NULL){
+sim.sscr <- function(traps, mask, resp, resp.pars, cov.structure, D, det.pars = NULL, cov.pars = NULL){
     ## Finding extent of mask object.
     range.x <- range(mask[, 1])
     range.y <- range(mask[, 2])
@@ -35,7 +35,7 @@ sim.sscr <- function(traps, mask, resp, cov.structure, D, det.pars = NULL, cov.p
             locs <- sim.ou(acs[i, ], tau, sigma, n.steps)
             capt[i, ] <- count.dets(locs, traps, epsilon)
         }
-    } else{
+    } else {
         ## Distances between traps.
         trap.dists <- as.matrix(dist(traps))
         ## Extracting parameters.
@@ -69,15 +69,14 @@ sim.sscr <- function(traps, mask, resp, cov.structure, D, det.pars = NULL, cov.p
         u.mat <- rmvnorm(n, rep(0, n.traps), cov)
         ## Generating capture histories.
         full.ers <- exp(log(base.ers) + u.mat)
-        capt <- matrix(rpois(n*n.traps, full.ers), nrow = n)
+        if (resp == "pois"){
+            capt <- matrix(rpois(n*n.traps, full.ers), nrow = n)
+        } else if (resp == "binom"){
+            capt <- matrix(rbinom(n*n.traps, resp.pars, 1 - exp(-full.ers)), nrow = n)
+        }
     }
     ## Removing undetected individuals.
     capt <- capt[apply(capt, 1, function(x) sum(x) > 0), ]
-    if (resp == "binom"){
-        capt[capt > 0] <- 1
-    } else if (resp != "pois" & resp != "count"){
-        stop("Response type not recognised.")
-    }
     capt
 }
 
