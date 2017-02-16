@@ -12,7 +12,9 @@ sim.sscr(traps, mask, resp, cov.structure, D, det.pars = NULL,
 
 \item{mask}{Mask object.}
 
-\item{resp}{Response distribution for capture history elements.}
+\item{resp}{Response distribution for capture history
+elements. Either \code{"binom"} for a binomial distribution, or
+\code{"pois"} for a Poisson distribution.}
 
 \item{cov.structure}{Covariance structure of the random
 effects. The current options are (1) \code{"none"} for no
