@@ -38,6 +38,12 @@ test_that(
                              mask = test.data$mask,
                              cov.structure = "exponential", test = TRUE)
         expect_that(test.bern - 78.60182 < 1e-4, is_true())
+        ## ... with binomial response (simulation not yet run).
+        test.binom <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                               mask = test.data$mask, resp = "binom",
+                               resp.pars = 10, cov.structure = "exponential",
+                               test = TRUE)
+        expect_that(test.binom - 121.3924 < 1e-4, is_true())
         ## Full dependence (individual-level random effect).
         ##test.full <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
         ##                      mask = test.data$mask, resp = "pois",
