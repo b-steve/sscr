@@ -4,6 +4,7 @@
 #include <TMB.hpp>
 #include <fenv.h>
 #include "detfns.h"
+#include "utilities.h"
 using namespace density;
 
 template<class Type>
@@ -17,6 +18,10 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_traps);
   // Indicator for detection function.
   DATA_INTEGER(detfn_id);
+  // Indicator for response type.
+  DATA_INTEGER(resp_id);
+  // Additional response parameters.
+  DATA_VECTOR(resp_pars)
   // Indicator for dependence structure.
   DATA_INTEGER(cov_id);
   // Detection function parmaters.
@@ -37,6 +42,10 @@ Type objective_function<Type>::operator() ()
     Type p_detected = 1 - exp(-er);
     // Running calculation of overall probability of nondetection.
     p_total_evade *= 1 - p_detected;
+  }
+  // If we're dealing with a binomial response, then this is only per session.
+  if (resp_id == 0){
+    p_total_evade = pow(p_total_evade, resp_pars(0));
   }
   // Variance-covariance matrix for latent variables.
   matrix<Type> sigma_u_mat(n_traps, n_traps);

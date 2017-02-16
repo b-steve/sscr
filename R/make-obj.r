@@ -1,3 +1,4 @@
+nom
 ## Functions to make optimisation objects.
 make.obj.none <- function(survey.data, model.opts){
     ## Extracting data.
@@ -28,9 +29,9 @@ make.obj.none <- function(survey.data, model.opts){
     ## Start values for optimisation.
     ## Indices and start values for detection function parameters.
     if (detfn.id == 0){
-        det.start <- c(max(capt)/2, min(trap.dists[trap.dists > 0]))
+        det.start <- c(max(capt)/(2*resp.pars), min(trap.dists[trap.dists > 0]))
     } else if (detfn.id == 1){
-        det.start <- c(max(capt)/2, min(trap.dists[trap.dists > 0]), 1)
+        det.start <- c(max(capt)/(2*resp.pars), min(trap.dists[trap.dists > 0]), 1)
     }
     log.det.pars <- log(det.start)
     ## Making optimisation object with TMB.
@@ -51,6 +52,11 @@ make.obj.cov <- function(survey.data, model.opts){
     ## Indicator for response type.
     resp.id <- switch(model.opts$resp, binom = 0, pois = 1)
     model.opts$resp.id <- resp.id
+    resp.pars <- model.opts$resp.pars
+    if (is.null(resp.pars)){
+        resp.pars <- 1
+    }
+    model.opts$resp.pars <- resp.pars
     ## Indicator for detection functoin.
     detfn.id <- switch(model.opts$detfn, hn = 0, hr = 1)
     model.opts$detfn.id <- detfn.id
@@ -65,7 +71,7 @@ make.obj.cov <- function(survey.data, model.opts){
     ## Indices and start values for detection function parameters.
     if (resp.id == 0){
         det.indices <- 1:2
-        det.start <- c(max(capt)/2, max(apply(mask.dists, 1, min))/5)
+        det.start <- c(max(capt)/(2*resp.pars), max(apply(mask.dists, 1, min))/5)
     } else if (resp.id == 1){
         det.indices <- 1:3
         det.start <- c(max(capt)/2, max(apply(mask.dists, 1, min))/5, 1)

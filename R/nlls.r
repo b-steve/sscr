@@ -2,6 +2,7 @@
 cov.nll <- function(pars, survey.data, model.opts){
     ## Extracting model options.
     resp.id <- model.opts$resp.id
+    resp.pars <- model.opts$resp.pars
     detfn.id <- model.opts$detfn.id
     cov.id <- model.opts$cov.id
     det.indices <- model.opts$det.indices
@@ -31,6 +32,8 @@ cov.nll <- function(pars, survey.data, model.opts){
                                              trap_dists = trap.dists,
                                              n_traps = n.traps,
                                              detfn_id = detfn.id,
+                                             resp_id = resp.id,
+                                             resp_pars = resp.pars,
                                              cov_id = cov.id,
                                              det_pars = det.pars,
                                              cov_pars = cov.pars),
@@ -48,6 +51,7 @@ cov.nll <- function(pars, survey.data, model.opts){
                                      n_mask = n.mask,
                                      mask_area = mask.area,
                                      resp_id = resp.id,
+                                     resp_pars = resp.pars,
                                      detfn_id = detfn.id,
                                      cov_id = cov.id,
                                      det_probs = det.probs,
@@ -67,6 +71,8 @@ cov.organise <- function(fit, survey.data, model.opts){
     pars <- fit$par
     ## Extracting model options.
     resp.id <- model.opts$resp.id
+    resp.pars <- model.opts$resp.pars
+    detfn.id <- model.opts$detfn.id
     cov.id <- model.opts$cov.id
     det.indices <- model.opts$det.indices
     cov.indices <- model.opts$cov.indices
@@ -88,6 +94,9 @@ cov.organise <- function(fit, survey.data, model.opts){
         detprob.obj <- MakeADFun(data = list(mask_dists = mask.dists[i, ],
                                              trap_dists = trap.dists,
                                              n_traps = n.traps,
+                                             detfn_id = detfn.id,
+                                             resp_id = resp.id,
+                                             resp_pars = resp.pars,
                                              cov_id = cov.id,
                                              det_pars = det.pars,
                                              cov_pars = cov.pars),
