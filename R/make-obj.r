@@ -6,8 +6,13 @@ make.obj.none <- function(survey.data, model.opts){
     mask.area <- survey.data$mask.area
     n.mask <- survey.data$n.mask
     n.traps <- survey.data$n.traps
+    trap.dists <- survey.data$trap.dists
     n <- nrow(capt)
     resp <- model.opts$resp
+    resp.pars <- model.opts$resp.pars
+    if (is.null(resp.pars)){
+        resp.pars <- 1
+    }
     detfn <- model.opts$detfn
     detfn.id <- switch(detfn, hn = 0, hr = 1)
     ## Packaging data for TMB template.
@@ -18,13 +23,14 @@ make.obj.none <- function(survey.data, model.opts){
                  n_mask = n.mask,
                  mask_area = mask.area,
                  resp_id = switch(resp, binom = 0, pois = 1, count = 1),
+                 resp_pars = resp.pars,
                  detfn_id = detfn.id)
     ## Start values for optimisation.
-        ## Indices and start values for detection function parameters.
+    ## Indices and start values for detection function parameters.
     if (detfn.id == 0){
-        det.start <- c(max(capt)/2, max(apply(mask.dists, 1, min))/5)
+        det.start <- c(max(capt)/2, min(trap.dists[trap.dists > 0]))
     } else if (detfn.id == 1){
-        det.start <- c(max(capt)/2, max(apply(mask.dists, 1, min))/5, 1)
+        det.start <- c(max(capt)/2, min(trap.dists[trap.dists > 0]), 1)
     }
     log.det.pars <- log(det.start)
     ## Making optimisation object with TMB.

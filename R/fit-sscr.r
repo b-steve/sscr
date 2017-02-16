@@ -9,7 +9,14 @@
 #' @param capt Capture history object.
 #' @param traps Traps object.
 #' @param mask Mask object.
-#' @param resp Response distribution for capture history elements.
+#' @param resp Response distribution for capture history
+#'     elements. Either \code{"binom"} for a binomial distribution, or
+#'     \code{"pois"} for a Poisson distribution.
+#' @param resp.pars A named vector of known, fixed parameters for the
+#'     response distribution. If \code{resp} is \code{"binom"}, then
+#'     this must have a single element named \code{"size"} giving the
+#'     fixed number of trials; if this argument is not provided, then
+#'     the default is 1.
 #' @param detfn Detection function, given by a character string. Use
 #'     \code{"hn"} for halfnormal and \code{"hr"} for hazard rate.
 #' @param cov.structure Covariance structure of the random
@@ -30,7 +37,8 @@
 #'     at parameter start values. If \code{FALSE}, a model is fitted.
 #' 
 #' @export
-fit.sscr <- function(capt, traps, mask, resp = "binom", detfn = "hn", cov.structure = "none", trace = FALSE, test = FALSE){
+fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
+                     cov.structure = "none", trace = FALSE, test = FALSE){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -55,7 +63,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", detfn = "hn", cov.struct
                         trap.dists = trap.dists,
                         n.traps = n.traps,
                         trace = trace)
-    model.opts <- list(resp = resp, detfn = detfn, cov.structure = cov.structure)
+    model.opts <- list(resp = resp, resp.pars = resp.pars, detfn = detfn, cov.structure = cov.structure)
     ## Optimisation object constructor function.
     if (cov.structure == "none"){
         make.obj <- make.obj.none

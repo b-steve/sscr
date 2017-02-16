@@ -3,6 +3,7 @@
 #include <TMB.hpp>
 #include <fenv.h>
 #include "detfns.h"
+#include "utilities.h"
 
 template<class Type>
 Type objective_function<Type>::operator() ()
@@ -16,6 +17,8 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(mask_area);
   // Indicator for response type.
   DATA_INTEGER(resp_id);
+  // Additional response parameters.
+  DATA_SCALAR(resp_pars);
   // Indicator for detection function.
   DATA_INTEGER(detfn_id);
   // Declaring parameters.
@@ -39,7 +42,13 @@ Type objective_function<Type>::operator() ()
       prob_mat(i, j) = 1 - exp(-haz_mat(i, j));
       p_undet *= 1 - prob_mat(i, j);
     }
-    prob_det(i) = 1 - p_undet;
+    // For binomial models, detection function is per *session*. Need
+    // to account for this in overall detection probability.
+    if (resp_id == 0){
+      prob_det(i) = 1 - pow(p_undet, resp_pars);
+    } else {
+      prob_det(i) = 1 - p_undet;
+    }
     sum_prob_det += prob_det(i);
   }
   // PMF for activity centres across the mask.
@@ -53,7 +62,8 @@ Type objective_function<Type>::operator() ()
       Type integrand_mask = 1;
       for (int k = 0; k < n_traps; k++){
 	if (resp_id == 0){
-	  integrand_mask *= pow(prob_mat(j, k), capt(i, k))*pow(1 - prob_mat(j, k), 1 - capt(i, k));
+	  //integrand_mask *= pow(prob_mat(j, k), capt(i, k))*pow(1 - prob_mat(j, k), 1 - capt(i, k));
+	  integrand_mask *= dbinom_sscr(capt(i, k), resp_pars, prob_mat(j, k), false);
 	} else if (resp_id == 1){
 	  integrand_mask *= dpois(capt(i, k), haz_mat(j, k), false);
 	}
@@ -69,6 +79,5 @@ Type objective_function<Type>::operator() ()
   ADREPORT(D);
   // Extra bit that falls out of log-likelihood.
   f -= -n*log(sum_prob_det);
-  //std::cout << "D: " << D << ", lambda0: " << lambda0 << ", sigma: " << sigma << ", f: " << f << std::endl;
   return f;
 }
