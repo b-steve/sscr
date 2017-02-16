@@ -1,4 +1,3 @@
-nom
 ## Functions to make optimisation objects.
 make.obj.none <- function(survey.data, model.opts){
     ## Extracting data.
