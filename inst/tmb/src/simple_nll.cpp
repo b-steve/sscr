@@ -18,7 +18,7 @@ Type objective_function<Type>::operator() ()
   // Indicator for response type.
   DATA_INTEGER(resp_id);
   // Additional response parameters.
-  DATA_SCALAR(resp_pars);
+  DATA_VECTOR(resp_pars);
   // Indicator for detection function.
   DATA_INTEGER(detfn_id);
   // Declaring parameters.
@@ -45,7 +45,7 @@ Type objective_function<Type>::operator() ()
     // For binomial models, detection function is per *session*. Need
     // to account for this in overall detection probability.
     if (resp_id == 0){
-      prob_det(i) = 1 - pow(p_undet, resp_pars);
+      prob_det(i) = 1 - pow(p_undet, resp_pars(0));
     } else {
       prob_det(i) = 1 - p_undet;
     }
@@ -63,7 +63,7 @@ Type objective_function<Type>::operator() ()
       for (int k = 0; k < n_traps; k++){
 	if (resp_id == 0){
 	  //integrand_mask *= pow(prob_mat(j, k), capt(i, k))*pow(1 - prob_mat(j, k), 1 - capt(i, k));
-	  integrand_mask *= dbinom_sscr(capt(i, k), resp_pars, prob_mat(j, k), false);
+	  integrand_mask *= dbinom_sscr(capt(i, k), resp_pars(0), prob_mat(j, k), false);
 	} else if (resp_id == 1){
 	  integrand_mask *= dpois(capt(i, k), haz_mat(j, k), false);
 	}
