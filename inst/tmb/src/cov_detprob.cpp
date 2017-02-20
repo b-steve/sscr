@@ -37,7 +37,7 @@ Type objective_function<Type>::operator() ()
   // Probability of capture.
   for (int i = 0; i < n_traps; i++){
     // Calculating encounter rate.
-    Type er = exp(log(detfn(mask_dists(i), det_pars, detfn_id)) + u(i));
+    Type er = exp(log(detfn(mask_dists(i), det_pars, detfn_id) + 1e-12) + u(i));
     // Calculating probability of detection.
     Type p_detected = 1 - exp(-er);
     // Running calculation of overall probability of nondetection.
@@ -76,13 +76,6 @@ Type objective_function<Type>::operator() ()
       }
     }
   }
-  // for (int i = 0; i < 3; i++){
-  //   for (int j = 0; j < 3; j++){
-  //     std::cout << sigma_u_mat(i, j) << " ";
-  //   }
-  //   std::cout << std::endl;
-  // }
-  // exit(1234);
   // Contribution from latent variables (note MVNORM returns the
   // negative-log of the density).
   f += MVNORM(sigma_u_mat)(u);

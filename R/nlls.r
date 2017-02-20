@@ -42,6 +42,9 @@ cov.nll <- function(pars, survey.data, model.opts){
                                  silent = TRUE)
         det.probs[i] <- exp(-detprob.obj$fn())
     }
+    if (any(is.nan(det.probs))){
+        stop("At least one detection probability is NaN. This is probably a bug.")
+    }
     ## Calculating negative log-likelihood.
     nll.obj <- MakeADFun(data = list(capt = capt,
                                      mask_dists = mask.dists,
