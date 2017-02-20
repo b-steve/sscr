@@ -4,7 +4,7 @@
 \alias{sim.sscr}
 \title{Simulating SCR data with second-order spatial dependence}
 \usage{
-sim.sscr(traps, mask, resp, cov.structure, D, det.pars = NULL,
+sim.sscr(traps, mask, resp, resp.pars, cov.structure, D, det.pars = NULL,
   cov.pars = NULL)
 }
 \arguments{
@@ -15,6 +15,12 @@ sim.sscr(traps, mask, resp, cov.structure, D, det.pars = NULL,
 \item{resp}{Response distribution for capture history
 elements. Either \code{"binom"} for a binomial distribution, or
 \code{"pois"} for a Poisson distribution.}
+
+\item{resp.pars}{A named vector of known, fixed parameters for the
+response distribution. If \code{resp} is \code{"binom"}, then
+this must have a single element named \code{"size"} giving the
+fixed number of trials; if this argument is not provided, then
+the default is 1.}
 
 \item{cov.structure}{Covariance structure of the random
 effects. The current options are (1) \code{"none"} for no
