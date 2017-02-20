@@ -50,7 +50,6 @@ Type objective_function<Type>::operator() ()
     }
     sum_det_probs += det_probs(i);
   }
-  std::cout << "sum_det_probs: " << sum_det_probs << std::endl;
   // PMF for activity centres across the mask.
   vector<Type> f_loc(n_mask);
   f_loc = det_probs/sum_det_probs;
@@ -75,7 +74,6 @@ Type objective_function<Type>::operator() ()
     }
     log_sum_integrands += log(integrand + DBL_MIN);
   }
-  std::cout << "log_sum_integrands: " << log_sum_integrands << std::endl;
   f -= log_sum_integrands;
   // Extra bit that falls out of log-likelihood.
   f -= -n*log(sum_det_probs);
@@ -112,6 +110,5 @@ Type objective_function<Type>::operator() ()
     // negative-log of the density).
     f += MVNORM(sigma_u_mat)(u.row(i));
   }
-  std::cout << "f: " << f << std::endl;
   return f;
 }
