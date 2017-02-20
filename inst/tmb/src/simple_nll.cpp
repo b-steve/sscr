@@ -62,7 +62,6 @@ Type objective_function<Type>::operator() ()
       Type integrand_mask = 1;
       for (int k = 0; k < n_traps; k++){
 	if (resp_id == 0){
-	  //integrand_mask *= pow(prob_mat(j, k), capt(i, k))*pow(1 - prob_mat(j, k), 1 - capt(i, k));
 	  integrand_mask *= dbinom_sscr(capt(i, k), resp_pars(0), prob_mat(j, k), false);
 	} else if (resp_id == 1){
 	  integrand_mask *= dpois(capt(i, k), haz_mat(j, k), false);
