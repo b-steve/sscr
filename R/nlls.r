@@ -62,12 +62,13 @@ cov.nll <- function(pars, survey.data, model.opts){
                                      cov_pars = cov.pars),
                          parameters = list(u = matrix(0, nrow = nrow(capt), ncol = n.traps)),
                          random = "u", DLL = "cov_nll", silent = TRUE)
+    out <- as.numeric(nll.obj$fn())
     if (trace){
         cat("Detection parameters: ", paste(format(round(det.pars, 2), nsmall = 2), collapse = ", "),
             "; Covariance parameters: ", paste(format(round(cov.pars, 2), nsmall = 2), collapse = ", "),
-            "; nll: ", format(round(as.numeric(nll.obj$fn()), 2), nsmall = 2), "\n", sep = "")
+            "; nll: ", format(round(out, 2), nsmall = 2), "\n", sep = "")
     }
-    as.numeric(nll.obj$fn())
+    out
 }
 
 cov.organise <- function(fit, survey.data, model.opts){
