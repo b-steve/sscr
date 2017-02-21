@@ -7,6 +7,7 @@ make.obj.none <- function(survey.data, model.opts){
     n.mask <- survey.data$n.mask
     n.traps <- survey.data$n.traps
     trap.dists <- survey.data$trap.dists
+    trace <- survey.data$trace
     n <- nrow(capt)
     resp <- model.opts$resp
     resp.pars <- model.opts$resp.pars
@@ -36,6 +37,15 @@ make.obj.none <- function(survey.data, model.opts){
     ## Making optimisation object with TMB.
     obj <- MakeADFun(data = data, parameters = list(log_det_pars = log.det.pars),
                      DLL = "simple_nll", silent = TRUE)
+    if (trace){
+        obj$fn.notrace <- obj$fn
+        obj$fn <- function(x, ...){
+            out <- obj$fn.notrace(x, ...)
+            cat("Detection parameters: ", paste(format(round(exp(x), 2), nsmall = 2), collapse = ", "),
+                "; nll: ", format(round(as.numeric(out), 2), nsmall = 2), "\n", sep = "")
+            out
+        }
+    }
     obj
 }
 
