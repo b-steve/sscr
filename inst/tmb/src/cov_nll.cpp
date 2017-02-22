@@ -39,6 +39,17 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(cov_pars);
   // Latent variables.
   PARAMETER_MATRIX(u);
+  // Setting up full u matrix.
+  matrix<Type> u_full(n, n_traps);
+  for (int i = 0; i < n; i++){
+    for (int j = 0; i < n_traps; j++){
+      if (cov_id == 3){
+	u_full(i, j) = u(i, 1);
+      } else {
+	u_full(i, j) = u(i, j);
+      }
+    }
+  }
   // Hazard rates for mask/trap combinations.
   matrix<Type> haz_mat(n_mask, n_traps);
   // The sum of mask probabilities.
@@ -62,7 +73,7 @@ Type objective_function<Type>::operator() ()
     for (int j = 0; j < n_mask; j++){
       Type integrand_mask = 1;
       for (int k = 0; k < n_traps; k++){
-	Type e_count = exp(log(haz_mat(j, k) + 1e-12) + u(i, k)) + DBL_MIN;
+	Type e_count = exp(log(haz_mat(j, k) + 1e-12) + u_full(i, k)) + DBL_MIN;
 	if (resp_id == 0){
 	  Type e_prob = 1 - exp(-e_count);
 	  integrand_mask *= dbinom_sscr(capt(i, k), resp_pars(0), e_prob, false);
@@ -96,7 +107,7 @@ Type objective_function<Type>::operator() ()
 	  } else if (cov_id == 2){
 	    // Matern covariance function.
 	  } else if (cov_id == 3){
-	    // Total dependence.
+	    // Total dependence (individual-level random effects).
 	    sigma_u_mat(j, k) = pow(cov_pars(0), 2);
 	    sigma_u_mat(k, j) = pow(cov_pars(0), 2);
 	  } else if (cov_id == 4){
@@ -108,7 +119,7 @@ Type objective_function<Type>::operator() ()
     }
     // Contribution from latent variables (note MVNORM returns the
     // negative-log of the density).
-    f += MVNORM(sigma_u_mat)(u.row(i));
+    f += MVNORM(sigma_u_mat)(u_full.row(i));
   }
   return f;
 }

@@ -25,6 +25,14 @@ cov.nll <- function(pars, survey.data, model.opts){
     n.traps <- survey.data$n.traps
     n <- nrow(capt)
     trace <- survey.data$trace
+    ## Set up latent variables.
+    if (cov.id == 3){
+        u.detprob <- 0
+        u.nll <- matrix(0, nrow = n, ncol = 1)
+    } else {
+        u.detprob <- numeric(n.traps)
+        u.nll <- matrix(0, nrow = n, ncol = n.traps)
+    }
     ## Calculating mask detection probabilities.
     det.probs <- numeric(n.mask)
     for (i in 1:n.mask){
@@ -37,7 +45,7 @@ cov.nll <- function(pars, survey.data, model.opts){
                                              cov_id = cov.id,
                                              det_pars = det.pars,
                                              cov_pars = cov.pars),
-                                 parameters = list(u = rep(0, n.traps)),
+                                 parameters = list(u = u.detprob),
                                  random = "u", DLL = "cov_detprob",
                                  silent = TRUE)
         det.probs[i] <- exp(-detprob.obj$fn())
@@ -60,7 +68,7 @@ cov.nll <- function(pars, survey.data, model.opts){
                                      det_probs = det.probs,
                                      det_pars = det.pars,
                                      cov_pars = cov.pars),
-                         parameters = list(u = matrix(0, nrow = nrow(capt), ncol = n.traps)),
+                         parameters = list(u = u.nll),
                          random = "u", DLL = "cov_nll", silent = TRUE)
     out <- as.numeric(nll.obj$fn())
     if (trace){

@@ -30,6 +30,15 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(cov_pars);
   // Latent variables.
   PARAMETER_VECTOR(u);
+  // Setting up full u vector.
+  vector<Type> u_full(n_traps);
+  for (int i = 0; i < n_traps; i++){
+    if (cov_id == 3){
+      u_full(i) = u(1);
+    } else {
+      u_full(i) = u(i);
+    }
+  }
   // Overall probability of nondetection.
   Type p_total_evade = 1;
   // Negative-log joint density of probability of detection and latent variables.
@@ -37,7 +46,7 @@ Type objective_function<Type>::operator() ()
   // Probability of capture.
   for (int i = 0; i < n_traps; i++){
     // Calculating encounter rate.
-    Type er = exp(log(detfn(mask_dists(i), det_pars, detfn_id) + 1e-12) + u(i));
+    Type er = exp(log(detfn(mask_dists(i), det_pars, detfn_id) + 1e-12) + u_full(i));
     // Calculating probability of detection.
     Type p_detected = 1 - exp(-er);
     // Running calculation of overall probability of nondetection.
@@ -78,7 +87,7 @@ Type objective_function<Type>::operator() ()
   }
   // Contribution from latent variables (note MVNORM returns the
   // negative-log of the density).
-  f += MVNORM(sigma_u_mat)(u);
+  f += MVNORM(sigma_u_mat)(u_full);
   // Contribution from probability of detection.
   f -= log(1 - p_total_evade);
   return f;
