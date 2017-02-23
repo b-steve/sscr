@@ -39,17 +39,6 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(cov_pars);
   // Latent variables.
   PARAMETER_MATRIX(u);
-  // Setting up full u matrix.
-  matrix<Type> u_full(n, n_traps);
-  for (int i = 0; i < n; i++){
-    for (int j = 0; i < n_traps; j++){
-      if (cov_id == 3){
-	u_full(i, j) = u(i, 1);
-      } else {
-	u_full(i, j) = u(i, j);
-      }
-    }
-  }
   // Hazard rates for mask/trap combinations.
   matrix<Type> haz_mat(n_mask, n_traps);
   // The sum of mask probabilities.
@@ -61,6 +50,7 @@ Type objective_function<Type>::operator() ()
     }
     sum_det_probs += det_probs(i);
   }
+  Type u_use;
   // PMF for activity centres across the mask.
   vector<Type> f_loc(n_mask);
   f_loc = det_probs/sum_det_probs;
@@ -73,7 +63,12 @@ Type objective_function<Type>::operator() ()
     for (int j = 0; j < n_mask; j++){
       Type integrand_mask = 1;
       for (int k = 0; k < n_traps; k++){
-	Type e_count = exp(log(haz_mat(j, k) + 1e-12) + u_full(i, k)) + DBL_MIN;
+	if (cov_id == 3){
+	  u_use = u(i, 0);
+	} else {
+	  u_use = u(i, k);
+	}
+	Type e_count = exp(log(haz_mat(j, k) + 1e-12) + u_use) + DBL_MIN;
 	if (resp_id == 0){
 	  Type e_prob = 1 - exp(-e_count);
 	  integrand_mask *= dbinom_sscr(capt(i, k), resp_pars(0), e_prob, false);
@@ -88,38 +83,44 @@ Type objective_function<Type>::operator() ()
   f -= log_sum_integrands;
   // Extra bit that falls out of log-likelihood.
   f -= -n*log(sum_det_probs);
-  for (int i = 0; i < n; i++){
-    // Variance-covariance matrix for latent variables.
-    matrix<Type> sigma_u_mat(n_traps, n_traps);
-    for (int j = 0; j < n_traps; j++){
-      for (int k = j; k < n_traps; k++){ 
-	if (j == k){
-	  sigma_u_mat(j, k) = pow(cov_pars(0), 2);
-	} else {
-	  if (cov_id == 0){
-	    // Independent random effects
-	    sigma_u_mat(j, k) = 0;
-	    sigma_u_mat(k, j) = 0;
-	  } else if (cov_id == 1){
-	    // Exponential covariance function.
-	    sigma_u_mat(j, k) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
-	    sigma_u_mat(k, j) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
-	  } else if (cov_id == 2){
-	    // Matern covariance function.
-	  } else if (cov_id == 3){
-	    // Total dependence (individual-level random effects).
+  if (cov_id == 3){
+    for (int i = 0; i < n; i++){
+      f -= dnorm(u(i, 0), Type(0), cov_pars(0), true);
+    }
+  } else {
+    for (int i = 0; i < n; i++){
+      // Variance-covariance matrix for latent variables.
+      matrix<Type> sigma_u_mat(n_traps, n_traps);
+      for (int j = 0; j < n_traps; j++){
+	for (int k = j; k < n_traps; k++){ 
+	  if (j == k){
 	    sigma_u_mat(j, k) = pow(cov_pars(0), 2);
-	    sigma_u_mat(k, j) = pow(cov_pars(0), 2);
-	  } else if (cov_id == 4){
-	    sigma_u_mat(j, k) = pow(cov_pars(0), 2)*(cov_pars(1)*exp(-cov_pars(2)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(2)*trap_dists(j, k)), 2) + (1 - cov_pars(1))*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2));
-	    sigma_u_mat(k, j) = pow(cov_pars(0), 2)*(cov_pars(1)*exp(-cov_pars(2)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(2)*trap_dists(j, k)), 2) + (1 - cov_pars(1))*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2));
+	  } else {
+	    if (cov_id == 0){
+	      // Independent random effects
+	      sigma_u_mat(j, k) = 0;
+	      sigma_u_mat(k, j) = 0;
+	    } else if (cov_id == 1){
+	      // Exponential covariance function.
+	      sigma_u_mat(j, k) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
+	      sigma_u_mat(k, j) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
+	    } else if (cov_id == 2){
+	      // Matern covariance function.
+	    } else if (cov_id == 3){
+	      // Total dependence (individual-level random effects).
+	      sigma_u_mat(j, k) = pow(cov_pars(0), 2);
+	      sigma_u_mat(k, j) = pow(cov_pars(0), 2);
+	    } else if (cov_id == 4){
+	      sigma_u_mat(j, k) = pow(cov_pars(0), 2)*(cov_pars(1)*exp(-cov_pars(2)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(2)*trap_dists(j, k)), 2) + (1 - cov_pars(1))*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2));
+	      sigma_u_mat(k, j) = pow(cov_pars(0), 2)*(cov_pars(1)*exp(-cov_pars(2)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(2)*trap_dists(j, k)), 2) + (1 - cov_pars(1))*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2));
+	    }
 	  }
 	}
       }
+      // Contribution from latent variables (note MVNORM returns the
+      // negative-log of the density).
+      f += MVNORM(sigma_u_mat)(u.row(i));
     }
-    // Contribution from latent variables (note MVNORM returns the
-    // negative-log of the density).
-    f += MVNORM(sigma_u_mat)(u_full.row(i));
   }
   return f;
 }
