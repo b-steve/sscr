@@ -33,6 +33,10 @@ test_that(
                              mask = test.data$mask, resp = "pois",
                              cov.structure = "exponential", test = TRUE)
         expect_that(test.exp - 122.9533 < 1e-4, is_true())
+        ## Individual random effect.
+        test.indiv <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                             mask = test.data$mask, resp = "pois",
+                             cov.structure = "individual", test = TRUE)
         ## ... with Bernoulli response.
         test.bern <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
                              mask = test.data$mask,
@@ -50,3 +54,4 @@ test_that(
         ##                      cov.structure = "full", test = TRUE, trace = TRUE)
         ##expect_that(test.full - 0, is_true())
     })
+
