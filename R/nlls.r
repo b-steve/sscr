@@ -102,6 +102,12 @@ cov.organise <- function(fit, survey.data, model.opts){
     trace <- survey.data$trace
     ## Calculating mask detection probabilities.
     det.probs <- numeric(n.mask)
+    ## Set up latent variables.
+    if (cov.id == 3){
+        u.detprob <- 0
+    } else {
+        u.detprob <- numeric(n.traps)
+    }
     for (i in 1:n.mask){
         detprob.obj <- MakeADFun(data = list(mask_dists = mask.dists[i, ],
                                              trap_dists = trap.dists,
@@ -112,7 +118,7 @@ cov.organise <- function(fit, survey.data, model.opts){
                                              cov_id = cov.id,
                                              det_pars = det.pars,
                                              cov_pars = cov.pars),
-                                 parameters = list(u = rep(0, n.traps)),
+                                 parameters = list(u = u.detprob),
                                  random = "u", DLL = "cov_detprob",
                                  silent = TRUE)
         det.probs[i] <- exp(-detprob.obj$fn())
@@ -121,6 +127,6 @@ cov.organise <- function(fit, survey.data, model.opts){
     D <- nrow(capt)/esa
     pars <- c(exp(pars), D = D, esa = esa)
     names(pars)[det.indices] <- paste("det_par_", 1:length(det.indices), sep = "")
-    names(pars)[cov.indices] <- paste("cov_par_", 1:length(det.indices), sep = "")
+    names(pars)[cov.indices] <- paste("cov_par_", 1:length(cov.indices), sep = "")
     pars
 }
