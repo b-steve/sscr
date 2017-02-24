@@ -22,36 +22,36 @@ test_that(
         test.ind.hn <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hn",
                                 cov.structure = "independent", test = TRUE)
-        expect_that(test.ind.hn - 124.8294 < 1e-4, is_true())
+        expect_that(abs(test.ind.hn - 124.8294) < 1e-4, is_true())
         ## ... with hazard rate detection function.
         test.ind.hr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hr",
                                 cov.structure = "independent", test = TRUE)
-        expect_that(test.ind.hr - 150.5247 < 1e-4, is_true())
+        expect_that(abs(test.ind.hr - 150.5247) < 1e-4, is_true())
         ## Exponential covariance function.
         test.exp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois",
                              cov.structure = "exponential", test = TRUE)
-        expect_that(test.exp - 122.9533 < 1e-4, is_true())
+        expect_that(abs(test.exp - 122.9533) < 1e-4, is_true())
+        ## Squared exponential covariance function.
+        test.sqexp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                             mask = test.data$mask, resp = "pois",
+                             cov.structure = "sq_exponential", test = TRUE)
+        expect_that(abs(test.sqexp - 123.7825) < 1e-4, is_true()) ## FAIL
         ## Individual random effect.
         test.indiv <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois",
                              cov.structure = "individual", test = TRUE)
+        expect_that(abs(test.indiv - 122.4532) < 1e-4, is_true()) ## FAIL
         ## ... with Bernoulli response.
         test.bern <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
                              mask = test.data$mask,
                              cov.structure = "exponential", test = TRUE)
-        expect_that(test.bern - 78.60182 < 1e-4, is_true())
-        ## ... with binomial response (simulation not yet run).
+        expect_that(abs(test.bern - 78.60182) < 1e-4, is_true()) ## FAIL
+        ## ... with binomial response.
         test.binom <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "binom",
                                resp.pars = 10, cov.structure = "exponential",
                                test = TRUE)
-        expect_that(test.binom - 121.3924 < 1e-4, is_true())
-        ## Full dependence (individual-level random effect).
-        ##test.full <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
-        ##                      mask = test.data$mask, resp = "pois",
-        ##                      cov.structure = "full", test = TRUE, trace = TRUE)
-        ##expect_that(test.full - 0, is_true())
+        expect_that(abs(test.binom - 121.3924) < 1e-4, is_true())
     })
-
