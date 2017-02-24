@@ -81,6 +81,12 @@ Type objective_function<Type>::operator() ()
 	    // Linear combination of exponential covariance functions.
 	    sigma_u_mat(j, k) = pow(cov_pars(0), 2)*(cov_pars(1)*exp(-cov_pars(2)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(2)*trap_dists(j, k)), 2) + (1 - cov_pars(1))*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2));
 	    sigma_u_mat(k, j) = pow(cov_pars(0), 2)*(cov_pars(1)*exp(-cov_pars(2)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(2)*trap_dists(j, k)), 2) + (1 - cov_pars(1))*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2));
+	  } else if (cov_id == 5){
+	    // Squared exponential covariance function.
+	    sigma_u_mat(j, k) = pow(cov_pars(0), 2)*exp(-pow(trap_dists(j, k), 2)/pow(cov_pars(1), 2));
+	    sigma_u_mat(k, j) = pow(cov_pars(0), 2)*exp(-pow(trap_dists(j, k), 2)/pow(cov_pars(1), 2));
+	  } else {
+	    exit(1111);
 	  }
 	}
       }

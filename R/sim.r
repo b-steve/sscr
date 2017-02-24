@@ -60,10 +60,18 @@ sim.sscr <- function(traps, mask, resp, resp.pars, cov.structure, D, det.pars = 
             cov <- sigma.u*exp(-trap.dists/rho)
         } else if (cov.structure == "matern"){
             stop("Matern covariance not yet implemented.")
-        } else if (cov.structure == "constant"){
+        } else if (cov.structure == "individual"){
             sigma.u <- cov.pars$sigma.u
             cov <- matrix(sigma.u, nrow = n.traps, ncol = n.traps)
             stop("Full covariance not yet implemented.")
+        } else if (cov.structure == "lc_exponential"){
+            stop("Linear combination of exponentials not yet implemented.")
+        } else if (cov.structure == "sq_exponential"){
+            ## Extracting parameters.
+            sigma.u <- cov.pars$sigma.u
+            rho <- cov.pars$rho
+            ## Specifying covariance.
+            cov <- sigma.u*exp(-(trap.dists^2)/(rho^2))
         }
         ## Simulating random effects.
         u.mat <- rmvnorm(n, rep(0, n.traps), cov)
