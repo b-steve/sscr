@@ -78,39 +78,68 @@ make.obj.cov <- function(survey.data, model.opts){
                      lc_exponential = 4,
                      sq_exponential = 5)
     model.opts$cov.id <- cov.id
+    start <- model.opts$start
+    start.names <- names(start)
     ## Indices and start values for detection function parameters.
     if (detfn.id == 0){
         det.indices <- 1:2
-        det.start <- c(max(capt)/(2*resp.pars), max(apply(mask.dists, 1, min))/5)
+        det.start <- numeric(2)
+        det.start[1] <- ifelse(any(start.names == "lambda0"),
+                               start["lambda0"],
+                               max(capt)/(2*resp.pars))
+        det.start[2] <- ifelse(any(start.names == "sigma"),
+                               start["sigma"],
+                               max(apply(mask.dists, 1, min))/5)
     } else if (detfn.id == 1){
         det.indices <- 1:3
-        det.start <- c(max(capt)/2, max(apply(mask.dists, 1, min))/5, 1)
+        det.start <- numeric(3)
+        det.start[1] <- ifelse(any(start.names == "lambda0"),
+                               start["lambda0"],
+                               max(capt)/(2*resp.pars))
+        det.start[2] <- ifelse(any(start.names == "sigma"),
+                               start["sigma"],
+                               max(apply(mask.dists, 1, min))/5)
+        det.start[3] <- ifelse(any(start.names == "z"),
+                               start["z"], 1)
     }
     ## Indices and start values for covariance parameters.
     cov.index.start <- max(det.indices) + 1
     if (cov.id == 0){
         ## Independent.
         cov.indices <- cov.index.start
-        cov.start <- sd(capt)
+        cov.start <- numeric(1)
+        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
+                               start["sigma.u"], sd(capt))
     } else if (cov.id == 1){
         ## Exponential.
         cov.indices <- cov.index.start:(cov.index.start + 1)
-        cov.start <- c(sd(capt), mean(trap.dists))
+        cov.start <- numeric(2)
+        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
+                               start["sigma.u"], sd(capt))
+        cov.start[2] <- ifelse(any(start.names == "rho"),
+                               start["rho"], mean(trap.dists))
     } else if (cov.id == 2){
         ## Matern.
         cov.indices <- cov.index.start:(cov.index.start + 2)
-        cov.start <- c(1, 1, 1)
+        stop("Matern covariance function not yet implemented.")
     } else if (cov.id == 3){
         ## Individual.
         cov.indices <- cov.index.start
-        cov.start <- sd(capt)
+        cov.start <- numeric(1)
+        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
+                               start["sigma.u"], sd(capt))
     } else if (cov.id == 4){
         ## Linear combination of exponentials.
         cov.indices <- cov.index.start:(cov.index.start + 3)
+        stop("Linear combination of exponentials not yet implemented.")
     } else if (cov.id == 5){
         ## Squared exponential.
         cov.indices <- cov.index.start:(cov.index.start + 1)
-        cov.start <- c(sd(capt), mean(trap.dists))
+        cov.start <- numeric(2)
+        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
+                               start["sigma.u"], sd(capt))
+        cov.start[2] <- ifelse(any(start.names == "rho"),
+                               start["rho"], mean(trap.dists))
     }
     model.opts$det.indices <- det.indices
     model.opts$cov.indices <- cov.indices

@@ -25,7 +25,7 @@
 #'     independent random effects (equivalent to counts of detections
 #'     being overdispersed), (3) \code{"exponential"}, for random
 #'     effects with an exponential covariance structure, (4)
-#'     "sq_exponential" ofr random effects with a squared exponential
+#'     "sq_exponential" for random effects with a squared exponential
 #'     covariance structure, (5) \code{"matern"}, for random effects
 #'     with a Matern covariance structure, (5) \code{"individual"},
 #'     for random effects that are restricted to being the same at all
@@ -33,6 +33,7 @@
 #'     \code{lambda0} for each individual), or (6)
 #'     \code{"lc_exponential"} for a linear combination of exponential
 #'     covariance functions.
+#' @param start A named list of parameter start values.
 #' @param trace Logical. If \code{TRUE}, parameter values for each
 #'     step of the optimisation algorithm are printed.
 #' @param test Logical. If \code{TRUE}, the likelihood is calculated
@@ -40,7 +41,7 @@
 #' 
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
-                     cov.structure = "none", trace = FALSE, test = FALSE){
+                     cov.structure = "none", start = NULL, trace = FALSE, test = FALSE){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -65,7 +66,8 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                         trap.dists = trap.dists,
                         n.traps = n.traps,
                         trace = trace)
-    model.opts <- list(resp = resp, resp.pars = resp.pars, detfn = detfn, cov.structure = cov.structure)
+    model.opts <- list(resp = resp, resp.pars = resp.pars, detfn = detfn,
+                       cov.structure = cov.structure, start = start)
     ## Optimisation object constructor function.
     if (cov.structure == "none"){
         make.obj <- make.obj.none
