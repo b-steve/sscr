@@ -23,6 +23,12 @@ test_that(
                                 mask = test.data$mask, resp = "pois", detfn = "hn",
                                 cov.structure = "independent", test = TRUE)
         expect_that(abs(test.ind.hn - 124.8294) < 1e-4, is_true())
+        ## Testing manual start values.
+        test.sv.hn <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                                mask = test.data$mask, resp = "pois", detfn = "hn",
+                                cov.structure = "independent",
+                               start = c(lambda0 = 2, sigma.u = 4), test = TRUE, trace = TRUE)
+        expect_that(abs(test.sv.hn - 147.3844) < 1e-4, is_true())
         ## ... with hazard rate detection function.
         test.ind.hr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hr",
@@ -36,17 +42,17 @@ test_that(
         ## Squared exponential covariance function.
         test.sqexp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois",
-                             cov.structure = "sq_exponential", test = TRUE)
+                             cov.structure = "sq_exponential", test = TRUE, trace = TRUE)
         expect_that(abs(test.sqexp - 123.7825) < 1e-4, is_true()) ## FAIL
         ## Individual random effect.
         test.indiv <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois",
-                             cov.structure = "individual", test = TRUE)
+                             cov.structure = "individual", test = TRUE, trace = TRUE)
         expect_that(abs(test.indiv - 122.4532) < 1e-4, is_true()) ## FAIL
         ## ... with Bernoulli response.
         test.bern <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
                              mask = test.data$mask,
-                             cov.structure = "exponential", test = TRUE)
+                             cov.structure = "exponential", test = TRUE, trace = TRUE)
         expect_that(abs(test.bern - 78.60182) < 1e-4, is_true()) ## FAIL
         ## ... with binomial response.
         test.binom <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
