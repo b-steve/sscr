@@ -28,7 +28,7 @@ random effects (regular SCR), (2) \code{"independent"}, for
 independent random effects (equivalent to counts of detections
 being overdispersed), (3) \code{"exponential"}, for random
 effects with an exponential covariance structure, (4)
-"sq_exponential" ofr random effects with a squared exponential
+"sq_exponential" for random effects with a squared exponential
 covariance structure, (5) \code{"matern"}, for random effects
 with a Matern covariance structure, (5) \code{"individual"},
 for random effects that are restricted to being the same at all

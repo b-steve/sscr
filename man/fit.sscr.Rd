@@ -5,7 +5,8 @@
 \title{Fitting an SCR model with second-order spatial dependence}
 \usage{
 fit.sscr(capt, traps, mask, resp = "binom", resp.pars = NULL,
-  detfn = "hn", cov.structure = "none", trace = FALSE, test = FALSE)
+  detfn = "hn", cov.structure = "none", start = NULL, trace = FALSE,
+  test = FALSE)
 }
 \arguments{
 \item{capt}{Capture history object.}
@@ -33,7 +34,7 @@ random effects (regular SCR), (2) \code{"independent"}, for
 independent random effects (equivalent to counts of detections
 being overdispersed), (3) \code{"exponential"}, for random
 effects with an exponential covariance structure, (4)
-"sq_exponential" ofr random effects with a squared exponential
+"sq_exponential" for random effects with a squared exponential
 covariance structure, (5) \code{"matern"}, for random effects
 with a Matern covariance structure, (5) \code{"individual"},
 for random effects that are restricted to being the same at all
@@ -41,6 +42,8 @@ traps (equivalent to having an independent random effect on
 \code{lambda0} for each individual), or (6)
 \code{"lc_exponential"} for a linear combination of exponential
 covariance functions.}
+
+\item{start}{A named list of parameter start values.}
 
 \item{trace}{Logical. If \code{TRUE}, parameter values for each
 step of the optimisation algorithm are printed.}
