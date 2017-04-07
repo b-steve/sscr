@@ -18,6 +18,33 @@ make.obj.none <- function(survey.data, model.opts){
     detfn.id <- switch(detfn, hn = 0, hr = 1)
     detfn.scale <- model.opts$detfn.scale
     detfn.scale.id <- switch(detfn.scale, er = 0, prob = 1)
+    ## Start values for optimisation.
+    ## Indices and start values for detection function parameters.
+    ## Link 0 is log, 1 is qlogis.
+    ## For detection functions on the hazard scale.
+    if (detfn.scale.id == 0){
+        if (detfn.id == 0){
+            ## .. With a halfnormal detection function.
+            det.start <- c(max(capt)/(2*resp.pars), min(trap.dists[trap.dists > 0]))
+            link.ids <- c(0, 0)
+        } else if (detfn.id == 1){
+            ## .. With a hazard rate detection function.
+            det.start <- c(max(capt)/(2*resp.pars), min(trap.dists[trap.dists > 0]), 1)
+            link.ids <- c(0, 0, 0)
+        }
+        ## For detection functions on the probability scale.
+    } else if (detfn.scale.id == 1){
+        if (detfn.id == 0){
+            ## .. With a halfnormal detection function.
+            det.start <- c(0.5, min(trap.dists[trap.dists > 0]))
+            link.ids <- c(1, 0)
+        } else if (detfn.id == 1){
+            ## .. With a hazard rate detection function.
+            det.start <- c(0.5, min(trap.dists[trap.dists > 0]), 1)
+            link.ids <- c(1, 0, 0)
+        }
+    }
+    link.det.pars <- par.link(det.start, link.ids)
     ## Packaging data for TMB template.
     data <- list(capt = capt,
                  mask_dists = mask.dists,
@@ -28,26 +55,10 @@ make.obj.none <- function(survey.data, model.opts){
                  resp_id = switch(resp, binom = 0, pois = 1, count = 1),
                  resp_pars = resp.pars,
                  detfn_id = detfn.id,
-                 detfn_scale_id = detfn.scale.id)
-    ## Start values for optimisation.
-    ## Indices and start values for detection function parameters.
-    if (detfn.scale.id == 0){
-        if (detfn.id == 0){
-            det.start <- c(max(capt)/(2*resp.pars), min(trap.dists[trap.dists > 0]))
-        } else if (detfn.id == 1){
-            det.start <- c(max(capt)/(2*resp.pars), min(trap.dists[trap.dists > 0]), 1)
-        }
-    } else if (detfn.scale.id == 1){
-        if (detfn.id == 0){
-            ## Intercept is given in odds.
-            det.start <- c(1, min(trap.dists[trap.dists > 0]))
-        } else if (detfn.id == 1){
-            det.start <- c(1, min(trap.dists[trap.dists > 0]), 1)
-        }
-    }
-    log.det.pars <- log(det.start)
+                 detfn_scale_id = detfn.scale.id,
+                 link_ids = link.ids)
     ## Making optimisation object with TMB.
-    obj <- MakeADFun(data = data, parameters = list(log_det_pars = log.det.pars),
+    obj <- MakeADFun(data = data, parameters = list(link_det_pars = link.det.pars),
                      DLL = "simple_nll", silent = TRUE)
     if (trace){
         obj$fn.notrace <- obj$fn
@@ -176,4 +187,25 @@ organise.closure <- function(fit, survey.data, model.opts, organise.fun){
     function(fit){
         organise.fun(fit, survey.data, model.opts)
     }
+}
+
+links <- list(log, qlogis)
+unlinks <- list(exp, plogis)
+
+par.link <- function(pars, link.ids){
+    n.pars <- length(pars)
+    out <- numeric(n.pars)
+    for (i in n.pars){
+        out[i] <- links[[link.ids[i] + 1]](pars[i])
+    }
+    out
+}
+
+par.unlink <- function(link.pars, link.ids){
+    n.pars <- length(link.pars)
+    out <- numeric(n.pars)
+    for (i in n.pars){
+        out[i] <- unlinks[[link.ids[i] + 1]](link.pars[i])
+    }
+    out
 }

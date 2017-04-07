@@ -33,16 +33,47 @@ vector<Type> haz_to_prob (const vector<Type> &haz){
 // For matrices.
 template<class Type>
 matrix<Type> haz_to_prob (const matrix<Type> &haz){
-  int nr = haz.rows();
-  int nc = haz.cols();
+  int nr = haz.col(1).size();
+  int nc = haz.row(1).size();
   matrix<Type> prob(nr, nc);
   for (int i = 0; i < nr; i++){
     for (int j = 0; j < nc; j++){
       prob(i, j) = haz_to_prob(haz(i, j));
     }
   }
+  return prob;
 }
 
-// CONVERSION OF PROBABILITIES TO HAZARDS IN HERE.
+// Converting probabilities to hazards.
+// For scalars.
+template<class Type>
+Type prob_to_haz (const Type &prob){
+  return -log(1 - prob);
+}
+
+// For vectors.
+template<class Type>
+vector<Type> prob_to_haz (const vector<Type> &prob){
+  int n = prob.size();
+  vector<Type> haz(n);
+  for (int i = 0; i < n; i++){
+    haz(i) = prob_to_haz(prob(i));
+  }
+  return haz;
+}
+
+// For matrices.
+template<class Type>
+matrix<Type> prob_to_haz (const matrix<Type> &prob){
+  int nr = prob.col(1).size();
+  int nc = prob.row(1).size();
+  matrix<Type> haz(nr, nc);
+  for (int i = 0; i < nr; i++){
+    for (int j = 0; j < nc; j++){
+      haz(i, j) = prob_to_haz(prob(i, j));
+    }
+  }
+  return haz;
+}
 
 #endif

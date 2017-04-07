@@ -23,11 +23,21 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(detfn_id);
   // Indicator for scale of detection function.
   DATA_INTEGER(detfn_scale_id);
+  // Indicators for parameter link functions.
+  DATA_IVECTOR(link_ids);
   // Declaring parameters.
-  PARAMETER_VECTOR(log_det_pars);
+  PARAMETER_VECTOR(link_det_pars);
+  int n_pars = link_det_pars.size();
   // Back-transforming parameters.
-  vector<Type> det_pars(log_det_pars.size());
-  det_pars = exp(log_det_pars);
+  vector<Type> det_pars(n_pars);
+  // Unlinking parameters.
+  for (int i = 0; i < n_pars; i++){
+    if (link_ids(i) == 0){
+      det_pars(i) = exp(link_det_pars(i));
+    } else if (link_ids(i) == 1){
+      det_pars(i) = 1/(1 + exp(-link_det_pars(i)));
+    }
+  }
   ADREPORT(det_pars);
   // Hazard rates for mask/trap combinations.
   matrix<Type> haz_mat(n_mask, n_traps);
@@ -35,19 +45,32 @@ Type objective_function<Type>::operator() ()
   matrix<Type> prob_mat(n_mask, n_traps);
   // Detection probabilities for each mask point.
   vector<Type> prob_det(n_mask);
+  // Generating hazard and probability matrices.
+  if (detfn_scale_id == 0){
+    for (int i = 0; i < n_mask; i++){
+      for (int j = 0; j < n_traps; j++){
+	haz_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
+      }
+    }
+    prob_mat = haz_to_prob(haz_mat); // Something wrong with this function.
+  } else if (detfn_scale_id == 1){
+    for (int i = 0; i < n_mask; i++){
+      for (int j = 0; j < n_traps; j++){
+	prob_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
+      }
+    }
+    haz_mat = prob_to_haz(prob_mat);
+  }
+  for (int i = 0; i < n_mask; i++){
+    for (int j = 0; j < n_traps; j++){
+      std::cout << "i: " << i << ", j: " << j << ", haz: " << haz_mat(i, j) << std::endl;
+    }
+  }
   // The sum of mask probabilities.
   Type sum_prob_det = 0;
   for (int i = 0; i < n_mask; i++){
     Type p_undet = Type(1);
     for (int j = 0; j < n_traps; j++){
-      if (detfn_scale_id == 0){
-	haz_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
-	prob_mat(i, j) = haz_to_prob(haz_mat(i, j));
-      } else if (detfn_scale_id == 1){
-	// NEED TO GET INVERSE ODDS FOR G0 IN HERE.
-	//prob_mat(i, j) = detfn(mask_dists, det_pars, detfn_id);
-	//haz_mat(i, j) = prob_to_haz(prob_mat(i, j));
-      }
       p_undet *= 1 - prob_mat(i, j);
     }
     // For binomial models, detection function is per *session*. Need
@@ -77,6 +100,7 @@ Type objective_function<Type>::operator() ()
       }
       integrand += integrand_mask;
     }
+    std::cout << "integrand " << i << ": " << integrand << std::endl;
     log_sum_integrands += log(integrand + DBL_MIN);
   }
   Type f = -log_sum_integrands;
@@ -86,6 +110,6 @@ Type objective_function<Type>::operator() ()
   ADREPORT(D);
   // Extra bit that falls out of log-likelihood.
   f -= -n*log(sum_prob_det);
-  std::cout << "Testertester123" << std::endl;
+  std::cout << "esa: " << esa << ", D: " << D << ", f: " << f << std::endl;
   return f;
 }
