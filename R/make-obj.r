@@ -16,6 +16,8 @@ make.obj.none <- function(survey.data, model.opts){
     }
     detfn <- model.opts$detfn
     detfn.id <- switch(detfn, hn = 0, hr = 1)
+    detfn.scale <- model.opts$detfn.scale
+    detfn.scale.id <- switch(detfn.scale, er = 0, prob = 1)
     ## Packaging data for TMB template.
     data <- list(capt = capt,
                  mask_dists = mask.dists,
@@ -25,13 +27,23 @@ make.obj.none <- function(survey.data, model.opts){
                  mask_area = mask.area,
                  resp_id = switch(resp, binom = 0, pois = 1, count = 1),
                  resp_pars = resp.pars,
-                 detfn_id = detfn.id)
+                 detfn_id = detfn.id,
+                 detfn_scale_id = detfn.scale.id)
     ## Start values for optimisation.
     ## Indices and start values for detection function parameters.
-    if (detfn.id == 0){
-        det.start <- c(max(capt)/(2*resp.pars), min(trap.dists[trap.dists > 0]))
-    } else if (detfn.id == 1){
-        det.start <- c(max(capt)/(2*resp.pars), min(trap.dists[trap.dists > 0]), 1)
+    if (detfn.scale.id == 0){
+        if (detfn.id == 0){
+            det.start <- c(max(capt)/(2*resp.pars), min(trap.dists[trap.dists > 0]))
+        } else if (detfn.id == 1){
+            det.start <- c(max(capt)/(2*resp.pars), min(trap.dists[trap.dists > 0]), 1)
+        }
+    } else if (detfn.scale.id == 1){
+        if (detfn.id == 0){
+            ## Intercept is given in odds.
+            det.start <- c(1, min(trap.dists[trap.dists > 0]))
+        } else if (detfn.id == 1){
+            det.start <- c(1, min(trap.dists[trap.dists > 0]), 1)
+        }
     }
     log.det.pars <- log(det.start)
     ## Making optimisation object with TMB.

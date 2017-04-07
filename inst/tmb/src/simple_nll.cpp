@@ -21,6 +21,8 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(resp_pars);
   // Indicator for detection function.
   DATA_INTEGER(detfn_id);
+  // Indicator for scale of detection function.
+  DATA_INTEGER(detfn_scale_id);
   // Declaring parameters.
   PARAMETER_VECTOR(log_det_pars);
   // Back-transforming parameters.
@@ -38,8 +40,14 @@ Type objective_function<Type>::operator() ()
   for (int i = 0; i < n_mask; i++){
     Type p_undet = Type(1);
     for (int j = 0; j < n_traps; j++){
-      haz_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
-      prob_mat(i, j) = 1 - exp(-haz_mat(i, j));
+      if (detfn_scale_id == 0){
+	haz_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
+	prob_mat(i, j) = haz_to_prob(haz_mat(i, j));
+      } else if (detfn_scale_id == 1){
+	// NEED TO GET INVERSE ODDS FOR G0 IN HERE.
+	//prob_mat(i, j) = detfn(mask_dists, det_pars, detfn_id);
+	//haz_mat(i, j) = prob_to_haz(prob_mat(i, j));
+      }
       p_undet *= 1 - prob_mat(i, j);
     }
     // For binomial models, detection function is per *session*. Need
@@ -78,5 +86,6 @@ Type objective_function<Type>::operator() ()
   ADREPORT(D);
   // Extra bit that falls out of log-likelihood.
   f -= -n*log(sum_prob_det);
+  std::cout << "Testertester123" << std::endl;
   return f;
 }
