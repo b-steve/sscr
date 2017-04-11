@@ -25,8 +25,8 @@ test_that(
         expect_that(abs(test.ind.hn - 124.8294) < 1e-4, is_true())
         ## Testing manual start values.
         test.sv.hn <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
-                                mask = test.data$mask, resp = "pois", detfn = "hn",
-                                cov.structure = "independent",
+                               mask = test.data$mask, resp = "pois", detfn = "hn",
+                               cov.structure = "independent",
                                start = c(lambda0 = 2, sigma.u = 4), test = TRUE)
         expect_that(abs(test.sv.hn - 147.3844) < 1e-4, is_true())
         ## ... with hazard rate detection function.
@@ -42,17 +42,17 @@ test_that(
         ## Squared exponential covariance function (not sure we can trust this one).
         test.sqexp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "pois",
-                             cov.structure = "sq_exponential", test = TRUE)
+                               cov.structure = "sq_exponential", test = TRUE)
         expect_that(abs(test.sqexp - 122.4532) < 1e-4, is_true())
         ## Individual random effect.
         test.indiv <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
-                             mask = test.data$mask, resp = "pois",
-                             cov.structure = "individual", test = TRUE)
+                               mask = test.data$mask, resp = "pois",
+                               cov.structure = "individual", test = TRUE)
         expect_that(abs(test.indiv - 122.8704) < 1e-4, is_true())
         ## ... with Bernoulli response.
         test.bern <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
-                             mask = test.data$mask,
-                             cov.structure = "exponential", test = TRUE)
+                              mask = test.data$mask,
+                              cov.structure = "exponential", test = TRUE)
         expect_that(abs(test.bern - 75.09304) < 1e-4, is_true())
         ## ... with binomial response.
         test.binom <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
