@@ -61,11 +61,6 @@ Type objective_function<Type>::operator() ()
     }
     haz_mat = prob_to_haz(prob_mat);
   }
-  for (int i = 0; i < n_mask; i++){
-    for (int j = 0; j < n_traps; j++){
-      std::cout << "i: " << i << ", j: " << j << ", haz: " << haz_mat(i, j) << std::endl;
-    }
-  }
   // The sum of mask probabilities.
   Type sum_prob_det = 0;
   for (int i = 0; i < n_mask; i++){
@@ -100,7 +95,6 @@ Type objective_function<Type>::operator() ()
       }
       integrand += integrand_mask;
     }
-    std::cout << "integrand " << i << ": " << integrand << std::endl;
     log_sum_integrands += log(integrand + DBL_MIN);
   }
   Type f = -log_sum_integrands;
@@ -110,6 +104,5 @@ Type objective_function<Type>::operator() ()
   ADREPORT(D);
   // Extra bit that falls out of log-likelihood.
   f -= -n*log(sum_prob_det);
-  std::cout << "esa: " << esa << ", D: " << D << ", f: " << f << std::endl;
   return f;
 }
