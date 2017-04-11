@@ -19,32 +19,53 @@ make.obj.none <- function(survey.data, model.opts){
     detfn.scale <- model.opts$detfn.scale
     detfn.scale.id <- switch(detfn.scale, er = 0, prob = 1)
     ## Start values for optimisation.
+    start <- model.opts$start
+    start.names <- names(start)
     ## Indices and start values for detection function parameters.
     ## Link 0 is log, 1 is qlogis.
     ## For detection functions on the hazard scale.
     if (detfn.scale.id == 0){
         if (detfn.id == 0){
             ## .. With a halfnormal detection function.
-            det.start <- c(max(capt)/(2*resp.pars), min(trap.dists[trap.dists > 0]))
+            det.start <- numeric(2)
+            det.start[1] <- ifelse(any(start.names == "lambda0") , start["lambda0"],
+                                   max(capt)/(2*resp.pars))
+            det.start[2] <- ifelse(any(start.names == "sigma") , start["sigma"],
+                                   min(trap.dists[trap.dists > 0]))
             link.ids <- c(0, 0)
         } else if (detfn.id == 1){
             ## .. With a hazard rate detection function.
-            det.start <- c(max(capt)/(2*resp.pars), min(trap.dists[trap.dists > 0]), 1)
+            det.start <- numeric(3)
+            det.start[1] <- ifelse(any(start.names == "lambda0") , start["lambda0"],
+                                   max(capt)/(2*resp.pars))
+            det.start[2] <- ifelse(any(start.names == "sigma") , start["sigma"],
+                                   min(trap.dists[trap.dists > 0]))
+            det.start[3] <- ifelse(any(start.names == "z") , start["z"], 1)                   
             link.ids <- c(0, 0, 0)
         }
         ## For detection functions on the probability scale.
     } else if (detfn.scale.id == 1){
         if (detfn.id == 0){
             ## .. With a halfnormal detection function.
-            det.start <- c(0.5, min(trap.dists[trap.dists > 0]))
+            det.start <- numeric(2)
+            det.start[1] <- ifelse(any(start.names == "g0") , start["g0"], 0.5)
+            det.start[2] <- ifelse(any(start.names == "sigma") , start["sigma"],
+                                   min(trap.dists[trap.dists > 0]))
             link.ids <- c(1, 0)
         } else if (detfn.id == 1){
             ## .. With a hazard rate detection function.
-            det.start <- c(0.5, min(trap.dists[trap.dists > 0]), 1)
+            det.start <- numeric(3)
+            det.start[1] <- ifelse(any(start.names == "g0") , start["g0"], 0.5)
+            det.start[2] <- ifelse(any(start.names == "sigma") , start["sigma"],
+                                   min(trap.dists[trap.dists > 0]))
+            det.start[3] <- ifelse(any(start.names == "z") , start["z"], 1)           
             link.ids <- c(1, 0, 0)
         }
     }
-    link.det.pars <- par.link(det.start, link.ids)
+    ## Getting par.link and par.unlink.
+    par.link <- link.closure(link.ids)
+    par.unlink <- unlink.closure(link.ids)
+    link.det.pars <- par.link(det.start)
     ## Packaging data for TMB template.
     data <- list(capt = capt,
                  mask_dists = mask.dists,
@@ -64,7 +85,7 @@ make.obj.none <- function(survey.data, model.opts){
         obj$fn.notrace <- obj$fn
         obj$fn <- function(x, ...){
             out <- obj$fn.notrace(x, ...)
-            cat("Detection parameters: ", paste(format(round(exp(x), 2), nsmall = 2), collapse = ", "),
+            cat("Detection parameters: ", paste(format(round(par.unlink(x), 2), nsmall = 2), collapse = ", "),
                 "; nll: ", format(round(as.numeric(out), 2), nsmall = 2), "\n", sep = "")
             out
         }
@@ -189,23 +210,46 @@ organise.closure <- function(fit, survey.data, model.opts, organise.fun){
     }
 }
 
+## Closure to provide linking function without passing link ids.
+link.closure <- function(link.ids){
+    function(pars){
+        n.pars <- length(pars)
+        out <- numeric(n.pars)
+        for (i in 1:n.pars){
+            out[i] <- links[[link.ids[i] + 1]](pars[i])
+        }
+        out
+    }
+}
+
+unlink.closure <- function(link.ids){
+    function(link.pars){
+        n.pars <- length(link.pars)
+        out <- numeric(n.pars)
+        for (i in 1:n.pars){
+            out[i] <- unlinks[[link.ids[i] + 1]](link.pars[i])
+        }
+        out
+    }
+}
+
 links <- list(log, qlogis)
 unlinks <- list(exp, plogis)
 
-par.link <- function(pars, link.ids){
-    n.pars <- length(pars)
-    out <- numeric(n.pars)
-    for (i in n.pars){
-        out[i] <- links[[link.ids[i] + 1]](pars[i])
-    }
-    out
-}
+## par.link <- function(pars, link.ids){
+##     n.pars <- length(pars)
+##     out <- numeric(n.pars)
+##     for (i in 1:n.pars){
+##         out[i] <- links[[link.ids[i] + 1]](pars[i])
+##     }
+##     out
+## }
 
-par.unlink <- function(link.pars, link.ids){
-    n.pars <- length(link.pars)
-    out <- numeric(n.pars)
-    for (i in n.pars){
-        out[i] <- unlinks[[link.ids[i] + 1]](link.pars[i])
-    }
-    out
-}
+## par.unlink <- function(link.pars, link.ids){
+##     n.pars <- length(link.pars)
+##     out <- numeric(n.pars)
+##     for (i in 1:n.pars){
+##         out[i] <- unlinks[[link.ids[i] + 1]](link.pars[i])
+##     }
+##     out
+## }
