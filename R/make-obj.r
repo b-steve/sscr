@@ -133,6 +133,8 @@ make.obj <- function(survey.data, model.opts, any.cov){
         model.opts$cov.indices <- cov.indices
         pars.start <- c(pars.start, cov.start)
         link.ids <- c(link.ids, cov.link.ids)
+        model.opts$link.ids <- link.ids
+        model.opts$detfn.scale.id <- detfn.scale.id
     }
     ## Getting par.link and par.unlink.
     par.link <- link.closure(link.ids)
@@ -141,10 +143,9 @@ make.obj <- function(survey.data, model.opts, any.cov){
     link.pars.start <- par.link(pars.start)
     ## Creating required object.
     if (any.cov){
-        obj <-  list(par = link.pars.start, fn = nll.closure(link.pars.start, survey.data,
+        obj <-  list(par = link.pars.start, fn = nll.closure(survey.data,
                                                              model.opts, cov.nll),
-                     organise = organise.closure(link.pars.start, survey.data,
-                                                 model.opts, cov.organise))
+                     organise = organise.closure(survey.data, model.opts, cov.organise))
     } else {
         ## Packaging data for TMB template.
         data <- list(capt = capt,
@@ -180,13 +181,13 @@ make.obj.error <- function(survey.data, resp){
 }
 
 ## Closure to provide negative log-likelihood function without passing data.
-nll.closure <- function(pars, survey.data, model.opts, nll.fun){
+nll.closure <- function(survey.data, model.opts, nll.fun){
     function(pars){
         nll.fun(pars, survey.data, model.opts)
     }
 }
 
-organise.closure <- function(fit, survey.data, model.opts, organise.fun){
+organise.closure <- function(survey.data, model.opts, organise.fun){
     function(fit){
         organise.fun(fit, survey.data, model.opts)
     }
@@ -194,24 +195,30 @@ organise.closure <- function(fit, survey.data, model.opts, organise.fun){
 
 ## Closure to provide linking function without passing link ids.
 link.closure <- function(link.ids){
-    function(pars){
+    function(pars, which = NULL){
         n.pars <- length(pars)
+        if (is.null(which)){
+            which <- 1:n.pars
+        }
         out <- numeric(n.pars)
-        for (i in 1:n.pars){
+        for (i in (1:n.pars)[which]){
             out[i] <- links[[link.ids[i] + 1]](pars[i])
         }
-        out
+        out[which]
     }
 }
 
 unlink.closure <- function(link.ids){
-    function(link.pars){
+    function(link.pars, which = NULL){
         n.pars <- length(link.pars)
+        if (is.null(which)){
+            which <- 1:n.pars
+        }
         out <- numeric(n.pars)
-        for (i in 1:n.pars){
+        for (i in (1:n.pars)[which]){
             out[i] <- unlinks[[link.ids[i] + 1]](link.pars[i])
         }
-        out
+        out[which]
     }
 }
 

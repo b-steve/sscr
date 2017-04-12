@@ -18,6 +18,8 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_traps);
   // Indicator for detection function.
   DATA_INTEGER(detfn_id);
+  // Indicator for detection function scale.
+  DATA_INTEGER(detfn_scale_id);
   // Indicator for response type.
   DATA_INTEGER(resp_id);
   // Additional response parameters.
@@ -35,19 +37,33 @@ Type objective_function<Type>::operator() ()
   Type p_total_evade = 1;
   // Negative-log joint density of probability of detection and latent variables.
   Type f = 0;
+  // Baseline hazards and probabilities.
+  Type base_haz;
+  Type base_prob;
+  // Actual hazards and probabilities.
+  Type haz;
+  Type prob;
   // Probability of capture.
   for (int i = 0; i < n_traps; i++){
+    // Calculating baseline hazard rate and probability.
+    if (detfn_scale_id == 0){
+      base_haz = detfn(mask_dists(i), det_pars, detfn_id);
+      base_prob = haz_to_prob(base_haz);
+    } else if (detfn_scale_id == 1){
+      base_prob = detfn(mask_dists(i), det_pars, detfn_id);
+      base_haz = prob_to_haz(base_prob);
+    }
     if (cov_id == 3){
       u_use = u(0);
     } else {
       u_use = u(i);
     }
     // Calculating encounter rate.
-    Type er = exp(log(detfn(mask_dists(i), det_pars, detfn_id) + 1e-12) + u_use);
+    haz = exp(log(base_haz + 1e-12) + u_use) + DBL_MIN;
     // Calculating probability of detection.
-    Type p_detected = 1 - exp(-er);
+    prob = haz_to_prob(haz);
     // Running calculation of overall probability of nondetection.
-    p_total_evade *= 1 - p_detected;
+    p_total_evade *= 1 - prob;
   }
   // If we're dealing with a binomial response, then this is only per session.
   if (resp_id == 0){

@@ -7,15 +7,13 @@ cov.nll <- function(pars, survey.data, model.opts){
     cov.id <- model.opts$cov.id
     det.indices <- model.opts$det.indices
     cov.indices <- model.opts$cov.indices
+    detfn.scale.id <- model.opts$detfn.scale.id
     ## Extracting and unlinking parameters.
-    det.pars <- exp(pars[det.indices])
-   
-    ## TODO: Do fancy shit here to parameterise lc-exponential covariance function.
-    if (cov.id == 4){
-        stop("Covariance function 'lc-exponential' not yet fully implemented")
-    } else {
-        cov.pars <- exp(pars[cov.indices])
-    }
+    link.ids <- model.opts$link.ids
+    par.link <- link.closure(link.ids)
+    par.unlink <- unlink.closure(link.ids)
+    det.pars <- par.unlink(pars, det.indices)
+    cov.pars <- par.unlink(pars, cov.indices)
     ## Extracting data.
     capt <- survey.data$capt
     mask.dists <- survey.data$mask.dists
@@ -40,6 +38,7 @@ cov.nll <- function(pars, survey.data, model.opts){
                                              trap_dists = trap.dists,
                                              n_traps = n.traps,
                                              detfn_id = detfn.id,
+                                             detfn_scale_id = detfn.scale.id,
                                              resp_id = resp.id,
                                              resp_pars = resp.pars,
                                              cov_id = cov.id,
@@ -64,6 +63,7 @@ cov.nll <- function(pars, survey.data, model.opts){
                                      resp_id = resp.id,
                                      resp_pars = resp.pars,
                                      detfn_id = detfn.id,
+                                     detfn_scale_id = detfn.scale.id,
                                      cov_id = cov.id,
                                      det_probs = det.probs,
                                      det_pars = det.pars,

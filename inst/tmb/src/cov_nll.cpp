@@ -27,8 +27,10 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(resp_id);
   // Additional response parameters.
   DATA_VECTOR(resp_pars);
-  // Indicator for detection function ID.
+  // Indicator for detection function.
   DATA_INTEGER(detfn_id);
+  // Indicator for detection function scale.
+  DATA_INTEGER(detfn_scale_id);
   // Indicator for dependence structure.
   DATA_INTEGER(cov_id);
   // Detection probabilities (from cov_detprob.cpp).
@@ -41,13 +43,26 @@ Type objective_function<Type>::operator() ()
   PARAMETER_MATRIX(u);
   // Hazard rates for mask/trap combinations.
   matrix<Type> haz_mat(n_mask, n_traps);
+  // Detection probabilities for mask/trap combinations.
+  matrix<Type> prob_mat(n_mask, n_traps);
+  if (detfn_scale_id == 0){
+    for (int i = 0; i < n_mask; i++){
+      for (int j = 0; j < n_traps; j++){
+	haz_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
+      }
+    }
+    prob_mat = haz_to_prob(haz_mat);
+  } else if (detfn_scale_id == 1){
+    for (int i = 0; i < n_mask; i++){
+      for (int j = 0; j < n_traps; j++){
+	prob_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
+      }
+    }
+    haz_mat = prob_to_haz(prob_mat);
+  }
   // The sum of mask probabilities.
   Type sum_det_probs = 0;
   for (int i = 0; i < n_mask; i++){
-    for (int j = 0; j < n_traps; j++){
-      // Calculating encounter rate.
-      haz_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
-    }
     sum_det_probs += det_probs(i);
   }
   Type u_use;
@@ -68,12 +83,13 @@ Type objective_function<Type>::operator() ()
 	} else {
 	  u_use = u(i, k);
 	}
+	// Stuff for scale of random field in here.
 	Type e_count = exp(log(haz_mat(j, k) + 1e-12) + u_use) + DBL_MIN;
+	Type e_prob = 1 - exp(-e_count);
 	if (resp_id == 0){
-	  Type e_prob = 1 - exp(-e_count);
 	  integrand_mask *= dbinom_sscr(capt(i, k), resp_pars(0), e_prob, false);
 	} else if (resp_id == 1){
-	  integrand_mask *= dpois(capt(i, k), e_count, false);
+	  integrand_mask *= dpois_sscr(capt(i, k), e_count, false);
 	}
       }
       integrand += integrand_mask;
