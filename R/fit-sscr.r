@@ -76,12 +76,12 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                        start = start)
     ## Optimisation object constructor function.
     if (cov.structure == "none"){
-        make.obj <- make.obj.none
+        any.cov <- FALSE
     } else {
-        make.obj <- make.obj.cov
+        any.cov <- TRUE
     }
     ## Making optimisation object.
-    opt.obj <- make.obj(survey.data, model.opts)
+    opt.obj <- make.obj(survey.data, model.opts, any.cov)
     ## Fitting model or testing likelihood.
     if (test){
         fit <- opt.obj$fn(opt.obj$par)
