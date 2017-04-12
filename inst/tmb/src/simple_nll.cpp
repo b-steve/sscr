@@ -52,7 +52,7 @@ Type objective_function<Type>::operator() ()
 	haz_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
       }
     }
-    prob_mat = haz_to_prob(haz_mat); // Something wrong with this function.
+    prob_mat = haz_to_prob(haz_mat);
   } else if (detfn_scale_id == 1){
     for (int i = 0; i < n_mask; i++){
       for (int j = 0; j < n_traps; j++){
@@ -90,7 +90,7 @@ Type objective_function<Type>::operator() ()
 	if (resp_id == 0){
 	  integrand_mask *= dbinom_sscr(capt(i, k), resp_pars(0), prob_mat(j, k), false);
 	} else if (resp_id == 1){
-	  integrand_mask *= dpois(capt(i, k), haz_mat(j, k), false);
+	  integrand_mask *= dpois_sscr(capt(i, k), haz_mat(j, k), false);
 	}
       }
       integrand += integrand_mask;
