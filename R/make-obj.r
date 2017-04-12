@@ -33,10 +33,10 @@ make.obj <- function(survey.data, model.opts, any.cov){
             ## .. With a halfnormal detection function.
             det.indices <- 1:2
             det.start <- numeric(2)
-            det.start[1] <- ifelse(any(start.names == "lambda0") , start["lambda0"],
+            det.start[1] <- ifelse(any(start.names == "lambda0"), start["lambda0"],
                                    max(capt)/(2*resp.pars))
-            det.start[2] <- ifelse(any(start.names == "sigma") , start["sigma"],
-                                   min(trap.dists[trap.dists > 0]))
+            det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
+                                   max(apply(mask.dists, 1, min))/5)
             det.link.ids <- c(0, 0)
         } else if (detfn.id == 1){
             ## .. With a hazard rate detection function.
@@ -44,8 +44,8 @@ make.obj <- function(survey.data, model.opts, any.cov){
             det.start <- numeric(3)
             det.start[1] <- ifelse(any(start.names == "lambda0") , start["lambda0"],
                                    max(capt)/(2*resp.pars))
-            det.start[2] <- ifelse(any(start.names == "sigma") , start["sigma"],
-                                   min(trap.dists[trap.dists > 0]))
+            det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
+                                   max(apply(mask.dists, 1, min))/5)
             det.start[3] <- ifelse(any(start.names == "z") , start["z"], 1)                   
             det.link.ids <- c(0, 0, 0)
         }
@@ -56,16 +56,16 @@ make.obj <- function(survey.data, model.opts, any.cov){
             det.indices <- 1:2
             det.start <- numeric(2)
             det.start[1] <- ifelse(any(start.names == "g0") , start["g0"], 0.5)
-            det.start[2] <- ifelse(any(start.names == "sigma") , start["sigma"],
-                                   min(trap.dists[trap.dists > 0]))
+            det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
+                                   max(apply(mask.dists, 1, min))/5)
             det.link.ids <- c(1, 0)
         } else if (detfn.id == 1){
             ## .. With a hazard rate detection function.
             det.indices <- 1:3
             det.start <- numeric(3)
             det.start[1] <- ifelse(any(start.names == "g0") , start["g0"], 0.5)
-            det.start[2] <- ifelse(any(start.names == "sigma") , start["sigma"],
-                                   min(trap.dists[trap.dists > 0]))
+            det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
+                                   max(apply(mask.dists, 1, min))/5)
             det.start[3] <- ifelse(any(start.names == "z") , start["z"], 1)           
             det.link.ids <- c(1, 0, 0)
         }
