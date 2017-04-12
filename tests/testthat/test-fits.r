@@ -78,8 +78,7 @@ test_that(
         ## With detection function on probability scale.
         test.bern.pr <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
                                  mask = test.data$mask,  cov.structure = "exponential",
-                                 start = c(sigma.u = 0.01, rho = 1), detfn.scale = "prob",
-                                 test = TRUE)
+                                 detfn.scale = "prob", test = TRUE)
         expect_that(abs(test.bern.pr - 73.86672) < 1e-4, is_true())
         ## Binomial response.
         test.binom <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
