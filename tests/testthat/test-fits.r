@@ -33,11 +33,23 @@ test_that(
                                 cov.structure = "independent", test = TRUE)
         expect_that(abs(test.ind.hn - 124.8294) < 1e-4, is_true())
         ## With detection function on probability scale.
-        test.ind.hn.pr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+        test.ind.hn.detpr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                    mask = test.data$mask, resp = "pois", detfn = "hn",
                                    detfn.scale = "prob", cov.structure = "independent",
                                    test = TRUE)
-        expect_that(abs(test.ind.hn.pr - 121.65) < 1e-4, is_true())
+        expect_that(abs(test.ind.hn.detpr - 121.65) < 1e-4, is_true())
+        ## With random effects on the probability scale.
+        test.ind.hn.repr <- test.ind.hn <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                                                    mask = test.data$mask, resp = "pois", detfn = "hn",
+                                                    cov.structure = "independent", re.scale = "prob",
+                                                    test = TRUE, trace = TRUE)
+        expect_that(abs(test.ind.hn.repr - 122.2674) < 1e-4, is_true())
+        ## With detection function and random effects also on probability scale.
+        test.ind.hn.detpr.repr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                                           mask = test.data$mask, resp = "pois", detfn = "hn",
+                                           detfn.scale = "prob", cov.structure = "independent",
+                                           re.scale = "prob", test = TRUE)
+        expect_that(abs(test.ind.hn.detpr.repr - 127.2436) < 1e-4, is_true())
         ## Testing manual start values.
         test.sv.hn <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "pois", detfn = "hn",
@@ -55,11 +67,17 @@ test_that(
                              cov.structure = "exponential", test = TRUE)
         expect_that(abs(test.exp - 122.9533) < 1e-4, is_true())
         ## With detection function on probability scale.
-        test.exp.pr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+        test.exp.detpr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois",
                                 cov.structure = "exponential", detfn.scale = "prob",
                                 test = TRUE)
-        expect_that(abs(test.exp.pr - 120.397) < 1e-4, is_true())
+        expect_that(abs(test.exp.detpr - 120.397) < 1e-4, is_true())
+        ## With random effects on probability scale.
+        test.exp.repr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                                  mask = test.data$mask, resp = "pois",
+                                  cov.structure = "exponential", re.scale = "prob",
+                                  test = TRUE, trace = TRUE)
+        expect_that(abs(test.exp.repr - 123.3313) < 1e-4, is_true())
         ## Squared exponential covariance function (not sure we can trust this one).
         test.sqexp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "pois",
@@ -72,14 +90,19 @@ test_that(
         expect_that(abs(test.indiv - 122.8704) < 1e-4, is_true())
         ## Bernoulli response.
         test.bern <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
-                              mask = test.data$mask,
-                              cov.structure = "exponential", test = TRUE)
+                              mask = test.data$mask, cov.structure = "exponential",
+                              test = TRUE)
         expect_that(abs(test.bern - 75.09304) < 1e-4, is_true())
         ## With detection function on probability scale.
-        test.bern.pr <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
+        test.bern.detpr <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
                                  mask = test.data$mask,  cov.structure = "exponential",
                                  detfn.scale = "prob", test = TRUE)
-        expect_that(abs(test.bern.pr - 73.86672) < 1e-4, is_true())
+        expect_that(abs(test.bern.detpr - 73.86672) < 1e-4, is_true())
+        ## With random effects on probability scale.
+        test.bern.repr <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
+                                   mask = test.data$mask, cov.structure = "exponential",
+                                   re.scale = "prob", test = TRUE)
+        expect_that(abs(test.bern.repr - 73.86672) < 1e-4, is_true())
         ## Binomial response.
         test.binom <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "binom",
