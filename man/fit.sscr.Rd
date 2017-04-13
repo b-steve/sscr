@@ -6,7 +6,7 @@
 \usage{
 fit.sscr(capt, traps, mask, resp = "binom", resp.pars = NULL,
   detfn = "hn", detfn.scale = "er", cov.structure = "none",
-  start = NULL, trace = FALSE, test = FALSE)
+  re.scale = "er", start = NULL, trace = FALSE, test = FALSE)
 }
 \arguments{
 \item{capt}{Capture history object.}
@@ -47,6 +47,11 @@ traps (equivalent to having an independent random effect on
 \code{lambda0} for each individual), or (6)
 \code{"lc_exponential"} for a linear combination of exponential
 covariance functions.}
+
+\item{re.scale}{A character string, either \code{"er"} or
+\code{"prob"}. This indicates whether the Gaussian random
+effects effect the encounter rate (expected number of
+detections) or the probability of detection.}
 
 \item{start}{A named list of parameter start values.}
 
