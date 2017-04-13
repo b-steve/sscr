@@ -37,6 +37,10 @@
 #'     \code{lambda0} for each individual), or (6)
 #'     \code{"lc_exponential"} for a linear combination of exponential
 #'     covariance functions.
+#' @param re.scale A character string, either \code{"er"} or
+#'     \code{"prob"}. This indicates whether the Gaussian random
+#'     effects effect the encounter rate (expected number of
+#'     detections) or the probability of detection.
 #' @param start A named list of parameter start values.
 #' @param trace Logical. If \code{TRUE}, parameter values for each
 #'     step of the optimisation algorithm are printed.
@@ -45,8 +49,8 @@
 #' 
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
-                     detfn.scale = "er", cov.structure = "none", start = NULL,
-                     trace = FALSE, test = FALSE){
+                     detfn.scale = "er", cov.structure = "none", re.scale = "er",
+                     start = NULL, trace = FALSE, test = FALSE){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -73,7 +77,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                         trace = trace)
     model.opts <- list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                        detfn.scale = detfn.scale, cov.structure = cov.structure,
-                       start = start)
+                       re.scale = re.scale, start = start)
     ## Optimisation object constructor function.
     if (cov.structure == "none"){
         any.cov <- FALSE

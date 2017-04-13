@@ -88,4 +88,71 @@ matrix<Type> prob_to_haz (const matrix<Type> &prob){
   return haz;
 }
 
+/* // Logistic function. */
+
+/* // For scalars. */
+
+/* template<class Type> */
+/* Type logit (const Type &prob){ */
+/*   return log(prob/(1 - prob)); */
+/* } */
+
+/* // For vectors. */
+/* template<class Type> */
+/* vector<Type> logit (const vector<Type> &prob){ */
+/*   int n = prob.size(); */
+/*   vector<Type> logodds(n); */
+/*   for (int i = 0; i < n; i++){ */
+/*     logodds(i) = logit(prob(i)); */
+/*   } */
+/*   return logodds; */
+/* } */
+
+/* // For matrices. */
+/* template<class Type> */
+/* matrix<Type> logit (const matrix<Type> &prob){ */
+/*   int nr = prob.col(1).size(); */
+/*   int nc = prob.row(1).size(); */
+/*   matrix<Type> logodds(nr, nc); */
+/*   for (int i = 0; i < nr; i++){ */
+/*     for (int j = 0; j < nc; j++){ */
+/*       logodds(i, j) = logit(prob(i, j)); */
+/*     } */
+/*   } */
+/*   return logodds; */
+/* } */
+
+/* // Inverse logistic function. */
+
+/* template<class Type> */
+/* Type invlogit (const Type &logodds){ */
+/*   return 1/(1 + exp(-logodds)); */
+/* } */
+
+/* // For vectors. */
+/* template<class Type> */
+/* vector<Type> invlogit (const vector<Type> &logodds){ */
+/*   int n = logodds.size(); */
+/*   vector<Type> prob(n); */
+/*   for (int i = 0; i < n; i++){ */
+/*     prob(i) = invlogit(logodds(i)); */
+/*   } */
+/*   return prob; */
+/* } */
+
+/* // For matrices. */
+/* template<class Type> */
+/* matrix<Type> invlogit (const matrix<Type> &logodds){ */
+/*   int nr = logodds.col(1).size(); */
+/*   int nc = logodds.row(1).size(); */
+/*   matrix<Type> prob(nr, nc); */
+/*   for (int i = 0; i < nr; i++){ */
+/*     for (int j = 0; j < nc; j++){ */
+/*       prob(i, j) = invlogit(logodds(i, j)); */
+/*     } */
+/*   } */
+/*   return prob; */
+/* } */
+
+
 #endif

@@ -82,7 +82,8 @@ make.obj <- function(survey.data, model.opts, any.cov){
                          individual = 3,
                          lc_exponential = 4,
                          sq_exponential = 5)
-        model.opts$cov.id <- cov.id
+        re.scale <- model.opts$re.scale
+        re.scale.id <- switch(re.scale, er = 0, prob = 1)     
         ## Indices and start values for covariance parameters.
         cov.index.start <- max(det.indices) + 1
         if (cov.id == 0){
@@ -134,7 +135,9 @@ make.obj <- function(survey.data, model.opts, any.cov){
         pars.start <- c(pars.start, cov.start)
         link.ids <- c(link.ids, cov.link.ids)
         model.opts$link.ids <- link.ids
+        model.opts$cov.id <- cov.id
         model.opts$detfn.scale.id <- detfn.scale.id
+        model.opts$re.scale.id <- re.scale.id
     }
     ## Getting par.link and par.unlink.
     par.link <- link.closure(link.ids)
@@ -224,21 +227,3 @@ unlink.closure <- function(link.ids){
 
 links <- list(log, qlogis)
 unlinks <- list(exp, plogis)
-
-## par.link <- function(pars, link.ids){
-##     n.pars <- length(pars)
-##     out <- numeric(n.pars)
-##     for (i in 1:n.pars){
-##         out[i] <- links[[link.ids[i] + 1]](pars[i])
-##     }
-##     out
-## }
-
-## par.unlink <- function(link.pars, link.ids){
-##     n.pars <- length(link.pars)
-##     out <- numeric(n.pars)
-##     for (i in 1:n.pars){
-##         out[i] <- unlinks[[link.ids[i] + 1]](link.pars[i])
-##     }
-##     out
-## }
