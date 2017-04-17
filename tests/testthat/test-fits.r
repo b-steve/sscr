@@ -102,7 +102,7 @@ test_that(
         test.bern.repr <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
                                    mask = test.data$mask, cov.structure = "exponential",
                                    re.scale = "prob", test = TRUE)
-        expect_that(abs(test.bern.repr - 73.86672) < 1e-4, is_true())
+        expect_that(abs(test.bern.repr - 75.40248) < 1e-4, is_true())
         ## Binomial response.
         test.binom <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "binom",
