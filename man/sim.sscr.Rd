@@ -4,13 +4,15 @@
 \alias{sim.sscr}
 \title{Simulating SCR data with second-order spatial dependence}
 \usage{
-sim.sscr(traps, mask, resp, resp.pars, cov.structure, D, det.pars = NULL,
-  cov.pars = NULL)
+sim.sscr(traps, mask, D, resp, resp.pars, detfn = "hn", detfn.scale = "er",
+  cov.structure, re.scale = "er", det.pars = NULL, cov.pars = NULL)
 }
 \arguments{
 \item{traps}{Traps object.}
 
 \item{mask}{Mask object.}
+
+\item{D}{Animal density (individuals per hectare).}
 
 \item{resp}{Response distribution for capture history
 elements. Either \code{"binom"} for a binomial distribution, or
@@ -21,6 +23,14 @@ response distribution. If \code{resp} is \code{"binom"}, then
 this must have a single element named \code{"size"} giving the
 fixed number of trials; if this argument is not provided, then
 the default is 1.}
+
+\item{detfn}{Detection function, given by a character string. Use
+\code{"hn"} for halfnormal and \code{"hr"} for hazard rate.}
+
+\item{detfn.scale}{A character string, either \code{"er"} or
+\code{"prob"}. This indicates whether the detection function
+should provide the encounter rate (expected number of
+detections) or the probability of detection.}
 
 \item{cov.structure}{Covariance structure of the random
 effects. The current options are (1) \code{"none"} for no
@@ -37,7 +47,10 @@ traps (equivalent to having an independent random effect on
 \code{"lc_exponential"} for a linear combination of exponential
 covariance functions.}
 
-\item{D}{Animal density (individuals per hectare).}
+\item{re.scale}{A character string, either \code{"er"} or
+\code{"prob"}. This indicates whether the Gaussian random
+effects effect the encounter rate (expected number of
+detections) or the probability of detection.}
 
 \item{det.pars}{List of detection function parameters.}
 
