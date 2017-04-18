@@ -27,7 +27,7 @@ compile.sscr <- function(){
 #' @import TMB
 #' @importFrom mvtnorm rmvnorm
 #' @importFrom spatstat crossdist
-#' @importFrom stats dist nlminb qlogis rbinom rpois runif sd
+#' @importFrom stats dist nlminb plogis qlogis rbinom rpois runif sd
 NULL
 
 ## Data documentation.
