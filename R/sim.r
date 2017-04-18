@@ -94,7 +94,7 @@ sim.sscr <- function(traps, mask, D, resp, resp.pars, detfn = "hn", detfn.scale 
         if (resp == "pois"){
             capt <- matrix(rpois(n*n.traps, full.er), nrow = n)
         } else if (resp == "binom"){
-            capt <- matrix(rbinom(n*n.traps, resp.pars, full.prob, nrow = n)
+            capt <- matrix(rbinom(n*n.traps, resp.pars, full.prob), nrow = n)
         }
     }
     ## Removing undetected individuals.
