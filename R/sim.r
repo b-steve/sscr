@@ -8,7 +8,8 @@
 #' @param cov.pars List of covariance parameters.
 #'
 #' @export
-sim.sscr <- function(traps, mask, resp, resp.pars, cov.structure, D, det.pars = NULL, cov.pars = NULL){
+sim.sscr <- function(traps, mask, D, resp, resp.pars, detfn = "hn", detfn.scale = "er",
+                     cov.structure, re.scale = "er", det.pars = NULL, cov.pars = NULL){
     ## Finding extent of mask object.
     range.x <- range(mask[, 1])
     range.y <- range(mask[, 2])
@@ -36,13 +37,12 @@ sim.sscr <- function(traps, mask, resp, resp.pars, cov.structure, D, det.pars = 
             capt[i, ] <- count.dets(locs, traps, epsilon)
         }
     } else {
+        ## Sorting out detection function.
+        calc.detfn <- detfn.closure(detfn, det.pars, detfn.scale)
         ## Distances between traps.
         trap.dists <- as.matrix(dist(traps))
-        ## Extracting parameters.
-        lambda0 <- det.pars$lambda0
-        sigma <- det.pars$sigma
-        ## Calculating "baseline" encounter rates.
-        base.ers <- lambda0*exp(-ac.dists^2/(2*sigma^2))
+        ## Calculating "baseline" encounter rates or probabilities.
+        base <- calc.detfn(ac.dists)
         ## Constructing covariance matrix.
         if (cov.structure == "none"){
             cov <- matrix(0, nrow = n.traps, ncol = n.traps)
@@ -75,12 +75,26 @@ sim.sscr <- function(traps, mask, resp, resp.pars, cov.structure, D, det.pars = 
         }
         ## Simulating random effects.
         u.mat <- rmvnorm(n, rep(0, n.traps), cov)
+        ## Getting full encounter rates and probabilities.
+        if (detfn.scale == "er"){
+            base.er <- base
+            base.prob <- 1 - exp(-base.er)
+        } else  if (detfn.scale == "prob"){
+            base.prob <- base
+            base.er <- -log(1 - base.prob)
+        }
+        if (re.scale == "er"){
+            full.er <- exp(log(base.er) + u.mat)
+            full.prob <- 1 - exp(-full.er)
+        } else if (re.scale == "prob"){
+            full.prob <- plogis(qlogis(base.prob) + u.mat)
+            full.er <- -log(1 - full.prob)
+        }
         ## Generating capture histories.
-        full.ers <- exp(log(base.ers) + u.mat)
         if (resp == "pois"){
-            capt <- matrix(rpois(n*n.traps, full.ers), nrow = n)
+            capt <- matrix(rpois(n*n.traps, full.er), nrow = n)
         } else if (resp == "binom"){
-            capt <- matrix(rbinom(n*n.traps, resp.pars, 1 - exp(-full.ers)), nrow = n)
+            capt <- matrix(rbinom(n*n.traps, resp.pars, full.prob, nrow = n)
         }
     }
     ## Removing undetected individuals.
@@ -127,14 +141,35 @@ count.dets <- function(locs, traps, epsilon){
     apply(loc.dists, 2, function(x, epsilon) sum(x <= epsilon), epsilon = epsilon)
 }
 
-## ac <- c(150, 250)
-## locs <- sim.ou(ac, 80, 75, 1000)
-## traps <- test.data$traps
-## mask <- test.data$mask
-## epsilon <- 0.5*sqrt(10000*attr(mask, "area"))
-## plot(mask, type = "n")
-## points(locs, type = "o")
-## points(ac[1], ac[2], col = "red", pch = 16)
-## points(traps, col = "blue", pch = 16)
-
-## count.dets(locs, traps, 0.7*epsilon)
+## Closure for detection function.
+detfn.closure <- function(detfn, pars, detfn.scale){
+    if (detfn == "hn"){
+        sigma <- pars$sigma
+        if (detfn.scale == "er"){
+            lambda0 <- pars$lambda0
+            out <- function(d){
+                lambda0*exp(-d^2/(2*sigma^2))
+            }
+        } else if (detfn.scale == "prob"){
+            g0 <- pars$g0
+            out <- function(d){
+                g0*exp(-d^2/(2*sigma^2))
+            }
+        }
+    } else if (detfn == "hr"){
+        sigma <- pars$sigma
+        z <- pars$z
+        if (detfn.scale == "er"){
+            lambda0 <- pars$lambda0
+            out <- function(d){
+                lambda0*(1 - exp(-((d/sigma)^-z)))
+            }
+        } else if (detfn.scale == "prob"){
+            g0 <- pars$g0
+            out <- function(d){
+                g0*(1 - exp(-((d/sigma)^-z)))
+            }
+        }
+    }
+    out
+}
