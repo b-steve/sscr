@@ -92,11 +92,11 @@ cov.organise <- function(fit, survey.data, model.opts){
     mask.area <- survey.data$mask.area
     capt <- survey.data$capt
     esa <- sum(det.probs)*mask.area
-    
     D <- nrow(capt)/esa
     link.ids <- model.opts$link.ids
     par.unlink <- unlink.closure(link.ids)
-    pars <- c(par.unlink(pars), D = D, esa = esa)
+    ll <- -fit$objective
+    pars <- c(par.unlink(pars), D = D, esa = esa, LL = ll)
     det.indices <- model.opts$det.indices
     cov.indices <- model.opts$cov.indices
     names(pars)[det.indices] <- paste("det_par_", 1:length(det.indices), sep = "")
