@@ -20,6 +20,17 @@ make.obj <- function(survey.data, model.opts, any.cov){
     detfn.id <- switch(detfn, hn = 0, hr = 1)
     detfn.scale <- model.opts$detfn.scale
     detfn.scale.id <- switch(detfn.scale, er = 0, prob = 1)
+    ## Extracting toa and sorting out indicator.
+    toa <- survey.data$toa
+    if (is.null(toa)){
+        toa.ssq <- as.matrix(0)
+        toa.id <- 0
+    } else {
+        ## Hard-coding speed of sound here.
+        sound.speed <- 330
+        toa.ssq <- make_toa_ssq(toa, t(mask.dists), sound.speed)
+        toa.id <- 1
+    }
     ## Extracting trace.
     trace <- survey.data$trace
     ## Start values for optimisation.
@@ -127,17 +138,17 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                    start["rho"], mean(trap.dists))
             cov.link.ids <- c(0, 0)
         }
-        model.opts$resp.id <- resp.id
-        model.opts$resp.pars <- resp.pars
-        model.opts$detfn.id <- detfn.id
-        model.opts$det.indices <- det.indices
-        model.opts$cov.indices <- cov.indices
         pars.start <- c(pars.start, cov.start)
         link.ids <- c(link.ids, cov.link.ids)
-        model.opts$link.ids <- link.ids
-        model.opts$cov.id <- cov.id
-        model.opts$detfn.scale.id <- detfn.scale.id
-        model.opts$re.scale.id <- re.scale.id
+
+    }
+    ## Start value for TOA parameter.
+    toa.indices <- -1
+    if (toa.id == 1){
+        toa.indices <- length(pars.start) + 1
+        toa.start <- ifelse(any(start.names == "sigma.toa"), start["sigma.toa"], 0.003)
+        pars.start <- c(pars.start, toa.start)
+        link.ids <- c(link.ids, 0)
     }
     ## Getting par.link and par.unlink.
     par.link <- link.closure(link.ids)
@@ -146,6 +157,15 @@ make.obj <- function(survey.data, model.opts, any.cov){
     link.pars.start <- par.link(pars.start)
     ## Creating required object.
     if (any.cov){
+        model.opts$resp.id <- resp.id
+        model.opts$resp.pars <- resp.pars
+        model.opts$detfn.id <- detfn.id
+        model.opts$det.indices <- det.indices
+        model.opts$cov.indices <- cov.indices
+        model.opts$link.ids <- link.ids
+        model.opts$cov.id <- cov.id
+        model.opts$detfn.scale.id <- detfn.scale.id
+        model.opts$re.scale.id <- re.scale.id
         obj <-  list(par = link.pars.start, fn = nll.closure(survey.data,
                                                              model.opts, cov.nll),
                      organise = organise.closure(survey.data, model.opts, cov.organise))
@@ -161,9 +181,13 @@ make.obj <- function(survey.data, model.opts, any.cov){
                      resp_pars = resp.pars,
                      detfn_id = detfn.id,
                      detfn_scale_id = detfn.scale.id,
-                     link_ids = link.ids)
+                     link_ids = link.ids,
+                     toa_id = toa.id,
+                     toa_ssq = toa.ssq,
+                     det_indices = det.indices - 1,
+                     toa_indices = toa.indices - 1)
         ## Making optimisation object with TMB.
-        obj <- MakeADFun(data = data, parameters = list(link_det_pars = link.pars.start),
+        obj <- MakeADFun(data = data, parameters = list(link_pars = link.pars.start),
                          DLL = "simple_nll", silent = TRUE)
         ## Making function for trace.
         if (trace){

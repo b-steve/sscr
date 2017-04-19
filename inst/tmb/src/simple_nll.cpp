@@ -25,26 +25,46 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(detfn_scale_id);
   // Indicators for parameter link functions.
   DATA_IVECTOR(link_ids);
+  // Indicator for time-of-arrival data.
+  DATA_INTEGER(toa_id);
+  // Time-of-arrival data.
+  DATA_MATRIX(toa_ssq);
+  // Detection function parameter indices.
+  DATA_IVECTOR(det_indices);
+  // TOA parameter indices.
+  DATA_INTEGER(toa_indices);
   // Declaring parameters.
-  PARAMETER_VECTOR(link_det_pars);
-  int n_pars = link_det_pars.size();
+  PARAMETER_VECTOR(link_pars);
+  int n_pars = link_pars.size();
   // Back-transforming parameters.
-  vector<Type> det_pars(n_pars);
-  // Unlinking parameters.
+  vector<Type> pars(n_pars);
   for (int i = 0; i < n_pars; i++){
     if (link_ids(i) == 0){
-      det_pars(i) = exp(link_det_pars(i));
+      pars(i) = exp(link_pars(i));
     } else if (link_ids(i) == 1){
-      det_pars(i) = 1/(1 + exp(-link_det_pars(i)));
+      pars(i) = 1/(1 + exp(-link_pars(i)));
     }
   }
-  ADREPORT(det_pars);
+  ADREPORT(pars);
+  // Extracting detection function parameters.
+  int n_det_pars = det_indices.size();
+  vector<Type> det_pars(n_det_pars);
+  for (int i = 0; i < n_det_pars; i++){
+    det_pars(i) = pars(det_indices(i));
+  }
+  // Extracting sigma_toa parameter.
+  Type sigma_toa;
+  if (toa_id == 1){
+    sigma_toa = pars(toa_indices);
+  }
   // Hazard rates for mask/trap combinations.
   matrix<Type> haz_mat(n_mask, n_traps);
   // Detection probabilities for mask/trap combinations.
   matrix<Type> prob_mat(n_mask, n_traps);
   // Detection probabilities for each mask point.
   vector<Type> prob_det(n_mask);
+  // Number of detections of each animal.
+  vector<Type> n_dets(n);
   // Generating hazard and probability matrices.
   if (detfn_scale_id == 0){
     for (int i = 0; i < n_mask; i++){
@@ -83,16 +103,25 @@ Type objective_function<Type>::operator() ()
   // Likelihood contributions from capture histories.
   Type log_sum_integrands = 0;
   for (int i = 0; i < n; i++){
+    n_dets(i) = 0;
     Type integrand = 0;
     for (int j = 0; j < n_mask; j++){
       Type integrand_mask = 1;
       for (int k = 0; k < n_traps; k++){
+	if (capt(i, k) > 0){
+	  n_dets(i) = n_dets(i) + 1;
+	}
 	if (resp_id == 0){
 	  integrand_mask *= dbinom_sscr(capt(i, k), resp_pars(0), prob_mat(j, k), false);
 	} else if (resp_id == 1){
 	  integrand_mask *= dpois_sscr(capt(i, k), haz_mat(j, k), false);
 	}
       }
+      Type log_toa_contrib = 0;
+      if (toa_id == 1){
+	log_toa_contrib = (1 - n_dets(i))*log(sigma_toa) - (toa_ssq(i, j)/(2*pow(sigma_toa, 2)));
+      }
+      integrand_mask *= exp(log_toa_contrib);
       integrand += integrand_mask;
     }
     log_sum_integrands += log(integrand + DBL_MIN);

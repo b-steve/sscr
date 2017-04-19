@@ -6,9 +6,12 @@
 #' calculated by integrating over these random effects using the
 #' Laplace approximation.
 #'
-#' @param capt Capture history object.
-#' @param traps Traps object.
-#' @param mask Mask object.
+#' @param capt A capture history object. It should be a matrix, where
+#'     the jth element of the ith row should provide a detection
+#'     record of the ith individual at the jth detector.
+#' @param traps A matrix with two columns, providing the Cartesian
+#'     coordinates of the detector locations.
+#' @param mask A mask object for integration over the survey area.
 #' @param resp Response distribution for capture history
 #'     elements. Either \code{"binom"} for a binomial distribution, or
 #'     \code{"pois"} for a Poisson distribution.
@@ -42,6 +45,8 @@
 #'     effects effect the encounter rate (expected number of
 #'     detections) or the probability of detection.
 #' @param start A named list of parameter start values.
+#' @param toa A matrix with the same dimensions as \code{capt} that
+#'     provides time-of-arrival information for acoustic detections.
 #' @param trace Logical. If \code{TRUE}, parameter values for each
 #'     step of the optimisation algorithm are printed.
 #' @param test Logical. If \code{TRUE}, the likelihood is calculated
@@ -50,7 +55,7 @@
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
                      detfn.scale = "er", cov.structure = "none", re.scale = "er",
-                     start = NULL, trace = FALSE, test = FALSE){
+                     start = NULL, toa = NULL, trace = FALSE, test = FALSE){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -74,6 +79,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                         n.mask = n.mask,
                         trap.dists = trap.dists,
                         n.traps = n.traps,
+                        toa = toa,
                         trace = trace)
     model.opts <- list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                        detfn.scale = detfn.scale, cov.structure = cov.structure,
