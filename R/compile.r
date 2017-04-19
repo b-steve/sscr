@@ -24,10 +24,11 @@ compile.sscr <- function(){
     setwd(wd)
 }
 
-#' @import TMB
+#' @import TMB Rcpp
 #' @importFrom mvtnorm rmvnorm
 #' @importFrom spatstat crossdist
 #' @importFrom stats dist nlminb plogis qlogis rbinom rpois runif sd
+#' @useDynLib sscr
 NULL
 
 ## Data documentation.
