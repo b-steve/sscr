@@ -6,14 +6,18 @@
 \usage{
 fit.sscr(capt, traps, mask, resp = "binom", resp.pars = NULL,
   detfn = "hn", detfn.scale = "er", cov.structure = "none",
-  re.scale = "er", start = NULL, trace = FALSE, test = FALSE)
+  re.scale = "er", start = NULL, toa = NULL, trace = FALSE,
+  test = FALSE)
 }
 \arguments{
-\item{capt}{Capture history object.}
+\item{capt}{A capture history object. It should be a matrix, where
+the jth element of the ith row should provide a detection
+record of the ith individual at the jth detector.}
 
-\item{traps}{Traps object.}
+\item{traps}{A matrix with two columns, providing the Cartesian
+coordinates of the detector locations.}
 
-\item{mask}{Mask object.}
+\item{mask}{A mask object for integration over the survey area.}
 
 \item{resp}{Response distribution for capture history
 elements. Either \code{"binom"} for a binomial distribution, or
@@ -54,6 +58,9 @@ effects effect the encounter rate (expected number of
 detections) or the probability of detection.}
 
 \item{start}{A named list of parameter start values.}
+
+\item{toa}{A matrix with the same dimensions as \code{capt} that
+provides time-of-arrival information for acoustic detections.}
 
 \item{trace}{Logical. If \code{TRUE}, parameter values for each
 step of the optimisation algorithm are printed.}

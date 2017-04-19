@@ -8,9 +8,10 @@ sim.sscr(traps, mask, D, resp, resp.pars, detfn = "hn", detfn.scale = "er",
   cov.structure, re.scale = "er", det.pars = NULL, cov.pars = NULL)
 }
 \arguments{
-\item{traps}{Traps object.}
+\item{traps}{A matrix with two columns, providing the Cartesian
+coordinates of the detector locations.}
 
-\item{mask}{Mask object.}
+\item{mask}{A mask object for integration over the survey area.}
 
 \item{D}{Animal density (individuals per hectare).}
 
