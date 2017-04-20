@@ -85,7 +85,7 @@ cov.nll <- function(pars, survey.data, model.opts, only.detprobs = FALSE){
                                          toa_ssq = toa.ssq,
                                          det_pars = det.pars,
                                          cov_pars = cov.pars,
-                                         sigma_toa = sigma.toa),
+                                         sigma_toa = sigma.toa/1000),
                              parameters = list(u = u.nll),
                              random = "u", DLL = "cov_nll", silent = TRUE)
         out <- as.numeric(nll.obj$fn())
@@ -94,9 +94,9 @@ cov.nll <- function(pars, survey.data, model.opts, only.detprobs = FALSE){
                 "; Covariance parameters: ", paste(format(round(cov.pars, 2), nsmall = 2), collapse = ", "),
                 "; nll: ", format(round(out, 2), nsmall = 2), sep = "")
             if (toa.id == 1){
-                cat("; TOA parameter: ", paste(format(round(sigma.toa, 2), nsmall = 2), collapse = ", "), sep = "")
+                cat("; TOA parameter: ", format(round(sigma.toa, 2), nsmall = 2), sep = "")
             }
-            cat("\n")
+            cat("; nll: ", format(round(out, 2), nsmall = 2), "\n", sep = "")
         }
     }
     out

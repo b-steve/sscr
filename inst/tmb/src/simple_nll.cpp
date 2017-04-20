@@ -56,7 +56,7 @@ Type objective_function<Type>::operator() ()
   // Extracting sigma_toa parameter.
   Type sigma_toa;
   if (toa_id == 1){
-    sigma_toa = pars(toa_indices);
+    sigma_toa = pars(toa_indices)/1000;
   }
   // Hazard rates for mask/trap combinations.
   matrix<Type> haz_mat(n_mask, n_traps);

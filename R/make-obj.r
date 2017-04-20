@@ -147,7 +147,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
     toa.indices <- -1
     if (toa.id == 1){
         toa.indices <- length(pars.start) + 1
-        toa.start <- ifelse(any(start.names == "sigma.toa"), start["sigma.toa"], 0.003)
+        toa.start <- ifelse(any(start.names == "sigma.toa"), start["sigma.toa"], 3)
         pars.start <- c(pars.start, toa.start)
         link.ids <- c(link.ids, 0)
     }
