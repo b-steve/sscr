@@ -92,7 +92,7 @@ cov.nll <- function(pars, survey.data, model.opts, only.detprobs = FALSE){
         if (trace){
             cat("Detection parameters: ", paste(format(round(det.pars, 2), nsmall = 2), collapse = ", "),
                 "; Covariance parameters: ", paste(format(round(cov.pars, 2), nsmall = 2), collapse = ", "),
-                "; nll: ", format(round(out, 2), nsmall = 2), sep = "")
+                sep = "")
             if (toa.id == 1){
                 cat("; TOA parameter: ", format(round(sigma.toa, 2), nsmall = 2), sep = "")
             }
