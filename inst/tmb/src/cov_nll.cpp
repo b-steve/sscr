@@ -9,8 +9,10 @@ using namespace density;
 template<class Type>
 Type objective_function<Type>::operator() ()
 {
-  // Capture histories
+  // Capture histories.
   DATA_MATRIX(capt);
+  // Number of detections.
+  DATA_IVECTOR(n_dets);
   // Distance from mask point to all traps.
   DATA_MATRIX(mask_dists);
   // Distances between traps.
@@ -37,10 +39,16 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(re_scale_id);
   // Detection probabilities (from cov_detprob.cpp).
   DATA_VECTOR(det_probs);
+  // Indicator for time-of-arrival data.
+  DATA_INTEGER(toa_id);
+  // Time-of-arrival data.
+  DATA_MATRIX(toa_ssq);
   // Detection function parameters.
   DATA_VECTOR(det_pars);
   // Covariance parameters.
   DATA_VECTOR(cov_pars);
+  // Time-of-arrival paramter.
+  DATA_SCALAR(sigma_toa);
   // Latent variables.
   PARAMETER_MATRIX(u);
   // Hazard rates for mask/trap combinations.
@@ -78,7 +86,7 @@ Type objective_function<Type>::operator() ()
   for (int i = 0; i < n; i++){
     Type integrand = 0;
     for (int j = 0; j < n_mask; j++){
-      Type integrand_mask = 1;
+      Type integrand_mask = 0;
       for (int k = 0; k < n_traps; k++){
 	if (cov_id == 3){
 	  u_use = u(i, 0);
@@ -96,12 +104,16 @@ Type objective_function<Type>::operator() ()
 	  e_count = prob_to_haz(e_prob);
 	}
 	if (resp_id == 0){
-	  integrand_mask *= dbinom_sscr(capt(i, k), resp_pars(0), e_prob, false);
+	  integrand_mask += dbinom_sscr(capt(i, k), resp_pars(0), e_prob, true);
 	} else if (resp_id == 1){
-	  integrand_mask *= dpois_sscr(capt(i, k), e_count, false);
+	  integrand_mask += dpois_sscr(capt(i, k), e_count, true);
 	}
       }
-      integrand += integrand_mask;
+      // Time-of-arrival component.
+      if (toa_id == 1){
+	integrand_mask += (1 - n_dets(i))*log(sigma_toa) - (toa_ssq(i, j)/(2*pow(sigma_toa, 2)));
+      }
+      integrand += exp(integrand_mask);
     }
     log_sum_integrands += log(integrand + DBL_MIN);
   }

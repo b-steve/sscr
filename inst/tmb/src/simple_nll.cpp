@@ -10,6 +10,7 @@ Type objective_function<Type>::operator() ()
 {
   // Reading in data.
   DATA_MATRIX(capt);
+  DATA_IVECTOR(n_dets);
   DATA_MATRIX(mask_dists);
   DATA_INTEGER(n);
   DATA_INTEGER(n_traps);
@@ -63,8 +64,6 @@ Type objective_function<Type>::operator() ()
   matrix<Type> prob_mat(n_mask, n_traps);
   // Detection probabilities for each mask point.
   vector<Type> prob_det(n_mask);
-  // Number of detections of each animal.
-  vector<Type> n_dets(n);
   // Generating hazard and probability matrices.
   if (detfn_scale_id == 0){
     for (int i = 0; i < n_mask; i++){
@@ -103,26 +102,21 @@ Type objective_function<Type>::operator() ()
   // Likelihood contributions from capture histories.
   Type log_sum_integrands = 0;
   for (int i = 0; i < n; i++){
-    n_dets(i) = 0;
     Type integrand = 0;
     for (int j = 0; j < n_mask; j++){
-      Type integrand_mask = 1;
+      Type integrand_mask = 0;
       for (int k = 0; k < n_traps; k++){
-	if (capt(i, k) > 0){
-	  n_dets(i) = n_dets(i) + 1;
-	}
 	if (resp_id == 0){
-	  integrand_mask *= dbinom_sscr(capt(i, k), resp_pars(0), prob_mat(j, k), false);
+	  integrand_mask += dbinom_sscr(capt(i, k), resp_pars(0), prob_mat(j, k), true);
 	} else if (resp_id == 1){
-	  integrand_mask *= dpois_sscr(capt(i, k), haz_mat(j, k), false);
+	  integrand_mask += dpois_sscr(capt(i, k), haz_mat(j, k), true);
 	}
       }
-      Type log_toa_contrib = 0;
+      // Time-of-arrival component.
       if (toa_id == 1){
-	log_toa_contrib = (1 - n_dets(i))*log(sigma_toa) - (toa_ssq(i, j)/(2*pow(sigma_toa, 2)));
+	integrand_mask += (1 - n_dets(i))*log(sigma_toa) - (toa_ssq(i, j)/(2*pow(sigma_toa, 2)));
       }
-      integrand_mask *= exp(log_toa_contrib);
-      integrand += integrand_mask;
+      integrand += exp(integrand_mask);
     }
     log_sum_integrands += log(integrand + DBL_MIN);
   }

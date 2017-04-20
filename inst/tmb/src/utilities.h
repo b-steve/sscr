@@ -7,7 +7,7 @@ Type dbinom_sscr (const Type &k, const Type &size, const Type &prob, const int &
   Type out;
   out = exp(lgamma(size + 1) - lgamma(k + 1) - lgamma(size - k + 1))*pow(prob, k)*pow(1 - prob, size - k);
   if (give_log){
-    out = log(out);
+    out = log(out + DBL_MIN);
   }
   return out;
 }
@@ -18,7 +18,7 @@ Type dpois_sscr (const Type &x, const Type &lambda, const int &give_log){
   Type out;
   out = pow(lambda, x)*exp(-lambda)/exp(lgamma(x + 1));
   if (give_log){
-    out = log(out);
+    out = log(out + DBL_MIN);
   }
   return out;
 }
@@ -60,7 +60,7 @@ matrix<Type> haz_to_prob (const matrix<Type> &haz){
 // For scalars.
 template<class Type>
 Type prob_to_haz (const Type &prob){
-  return -log(1 - prob);
+  return -log(1 - prob + DBL_MIN);
 }
 
 // For vectors.

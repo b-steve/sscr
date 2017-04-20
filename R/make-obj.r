@@ -2,6 +2,7 @@
 make.obj <- function(survey.data, model.opts, any.cov){
     ## Extracting data.
     capt <- survey.data$capt
+    n.dets <- apply(capt, 1, function(x) sum(x > 0))
     mask.dists <- survey.data$mask.dists
     mask.area <- survey.data$mask.area
     n.mask <- survey.data$n.mask
@@ -157,21 +158,26 @@ make.obj <- function(survey.data, model.opts, any.cov){
     link.pars.start <- par.link(pars.start)
     ## Creating required object.
     if (any.cov){
+        survey.data$n.dets <- n.dets
+        survey.data$toa.ssq <- toa.ssq
         model.opts$resp.id <- resp.id
         model.opts$resp.pars <- resp.pars
         model.opts$detfn.id <- detfn.id
         model.opts$det.indices <- det.indices
         model.opts$cov.indices <- cov.indices
+        model.opts$toa.indices <- toa.indices
         model.opts$link.ids <- link.ids
         model.opts$cov.id <- cov.id
         model.opts$detfn.scale.id <- detfn.scale.id
         model.opts$re.scale.id <- re.scale.id
+        model.opts$toa.id <- toa.id
         obj <-  list(par = link.pars.start, fn = nll.closure(survey.data,
                                                              model.opts, cov.nll),
                      organise = organise.closure(survey.data, model.opts, cov.organise))
     } else {
         ## Packaging data for TMB template.
         data <- list(capt = capt,
+                     n_dets = n.dets,
                      mask_dists = mask.dists,
                      n = n,
                      n_traps = n.traps,

@@ -9,19 +9,27 @@ cov.nll <- function(pars, survey.data, model.opts, only.detprobs = FALSE){
     cov.indices <- model.opts$cov.indices
     detfn.scale.id <- model.opts$detfn.scale.id
     re.scale.id <- model.opts$re.scale.id
+    toa.id <- model.opts$toa.id
     ## Extracting and unlinking parameters.
     link.ids <- model.opts$link.ids
     par.link <- link.closure(link.ids)
     par.unlink <- unlink.closure(link.ids)
     det.pars <- par.unlink(pars, det.indices)
     cov.pars <- par.unlink(pars, cov.indices)
+    sigma.toa <- 0
+    if (toa.id == 1){
+        toa.indices <- model.opts$toa.indices
+        sigma.toa <- par.unlink(pars, toa.indices)
+    }
     ## Extracting data.
     capt <- survey.data$capt
+    n.dets <- survey.data$n.dets
     mask.dists <- survey.data$mask.dists
     mask.area <- survey.data$mask.area
     n.mask <- survey.data$n.mask
     trap.dists <- survey.data$trap.dists
     n.traps <- survey.data$n.traps
+    toa.ssq <- survey.data$toa.ssq
     n <- nrow(capt)
     trace <- survey.data$trace
     ## Set up latent variables.
@@ -59,6 +67,7 @@ cov.nll <- function(pars, survey.data, model.opts, only.detprobs = FALSE){
     } else {
         ## Calculating negative log-likelihood.
         nll.obj <- MakeADFun(data = list(capt = capt,
+                                         n_dets = n.dets,
                                          mask_dists = mask.dists,
                                          trap_dists = trap.dists,
                                          n = n,
@@ -72,15 +81,22 @@ cov.nll <- function(pars, survey.data, model.opts, only.detprobs = FALSE){
                                          cov_id = cov.id,
                                          re_scale_id = re.scale.id,
                                          det_probs = det.probs,
+                                         toa_id = toa.id,
+                                         toa_ssq = toa.ssq,
                                          det_pars = det.pars,
-                                         cov_pars = cov.pars),
+                                         cov_pars = cov.pars,
+                                         sigma_toa = sigma.toa),
                              parameters = list(u = u.nll),
                              random = "u", DLL = "cov_nll", silent = TRUE)
         out <- as.numeric(nll.obj$fn())
         if (trace){
             cat("Detection parameters: ", paste(format(round(det.pars, 2), nsmall = 2), collapse = ", "),
                 "; Covariance parameters: ", paste(format(round(cov.pars, 2), nsmall = 2), collapse = ", "),
-                "; nll: ", format(round(out, 2), nsmall = 2), "\n", sep = "")
+                "; nll: ", format(round(out, 2), nsmall = 2), sep = "")
+            if (toa.id == 1){
+                cat("; TOA parameter: ", paste(format(round(sigma.toa, 2), nsmall = 2), collapse = ", "), sep = "")
+            }
+            cat("\n")
         }
     }
     out
