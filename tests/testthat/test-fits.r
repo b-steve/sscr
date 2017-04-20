@@ -42,7 +42,7 @@ test_that(
         test.ind.hn.repr <- test.ind.hn <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                                     mask = test.data$mask, resp = "pois", detfn = "hn",
                                                     cov.structure = "independent", re.scale = "prob",
-                                                    test = TRUE, trace = TRUE)
+                                                    test = TRUE)
         expect_that(abs(test.ind.hn.repr - 122.2674) < 1e-4, is_true())
         ## With detection function and random effects also on probability scale.
         test.ind.hn.detpr.repr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
@@ -76,7 +76,7 @@ test_that(
         test.exp.repr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                   mask = test.data$mask, resp = "pois",
                                   cov.structure = "exponential", re.scale = "prob",
-                                  test = TRUE, trace = TRUE)
+                                  test = TRUE)
         expect_that(abs(test.exp.repr - 123.3313) < 1e-4, is_true())
         ## Squared exponential covariance function (not sure we can trust this one).
         test.sqexp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
