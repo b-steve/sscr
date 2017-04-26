@@ -12,4 +12,3 @@ test.data
 Data used for unit tests.
 }
 \keyword{datasets}
-

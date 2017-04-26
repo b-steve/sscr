@@ -75,4 +75,3 @@ effects for each detected individual. The likelihood function is
 calculated by integrating over these random effects using the
 Laplace approximation.
 }
-

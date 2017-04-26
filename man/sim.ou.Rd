@@ -25,4 +25,3 @@ Simulates animal movement from an Ornstein-Uhlenbeck process.
 This is a modified version of a function provided by Theo
     Michelot.
 }
-

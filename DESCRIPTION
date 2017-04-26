@@ -20,4 +20,4 @@ Description: Functions to fit various second-order spatial correlation
 License: file LICENSE
 URL: https://github.com/b-steve/sscr
 LazyData: true
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

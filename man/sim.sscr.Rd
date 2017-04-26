@@ -60,4 +60,3 @@ detections) or the probability of detection.}
 \description{
 Simulates SSCR data.
 }
-
