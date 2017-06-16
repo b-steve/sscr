@@ -5,8 +5,8 @@ rm -rfv inst/tmb/bin
 rm -fv NAMESPACE
 rm -fv src/*.o src/RcppExports.cpp src/ascr.so R/RcppExports.R
 rm -rfv package-build
-R --slave -e "library(Rcpp); compileAttributes()"
 R --slave -e "library(roxygen2); roxygenise('.')"
+R --slave -e "library(Rcpp); compileAttributes()"
 R CMD build .
 mkdir -p package-build
 mv sscr_*.tar.gz package-build/
