@@ -49,6 +49,10 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(cov_pars);
   // Time-of-arrival paramter.
   DATA_SCALAR(sigma_toa);
+  // Indicator for conditional likelihood.
+  DATA_INTEGER(conditional_n);
+  // Density parameter. Required if likelihood is not conditional.
+  DATA_SCALAR(D);
   // Latent variables.
   PARAMETER_MATRIX(u);
   // Hazard rates for mask/trap combinations.
@@ -120,6 +124,10 @@ Type objective_function<Type>::operator() ()
   f -= log_sum_integrands;
   // Extra bit that falls out of log-likelihood.
   f -= -n*log(sum_det_probs);
+  // Likelihood component due to n.
+  if (conditional_n == 0){
+    f -= dpois_sscr(Type(n), Type(D*mask_area*sum_det_probs), true);
+  }
   if (cov_id == 3){
     for (int i = 0; i < n; i++){
       f -= dnorm(u(i, 0), Type(0), cov_pars(0), true);

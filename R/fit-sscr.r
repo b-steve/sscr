@@ -83,7 +83,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                         trace = trace)
     model.opts <- list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                        detfn.scale = detfn.scale, cov.structure = cov.structure,
-                       re.scale = re.scale, start = start)
+                       re.scale = re.scale, start = start, conditional.n = TRUE)
     ## Optimisation object constructor function.
     if (cov.structure == "none"){
         any.cov <- FALSE
@@ -101,6 +101,11 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
             fit <- summary(sdreport(opt.obj), "report")[, 1]
         } else {
             fit <- opt.obj$organise(raw.fit)
+            model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
+                                     detfn.scale = detfn.scale, cov.structure = cov.structure,
+                                     re.scale = re.scale, start = fit, conditional.n = FALSE)
+            opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
+            hess <- optimHess(opt.obj.hess$par, opt.obj.hess$fn, opt.obj$gr)
         }
     }
     fit

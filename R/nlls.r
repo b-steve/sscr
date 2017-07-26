@@ -7,15 +7,18 @@ cov.nll <- function(pars, survey.data, model.opts, only.detprobs = FALSE){
     cov.id <- model.opts$cov.id
     det.indices <- model.opts$det.indices
     cov.indices <- model.opts$cov.indices
+    D.indices <- model.opts$D.indices
     detfn.scale.id <- model.opts$detfn.scale.id
     re.scale.id <- model.opts$re.scale.id
     toa.id <- model.opts$toa.id
+    conditional.n <- as.numeric(model.opts$conditional.n)
     ## Extracting and unlinking parameters.
     link.ids <- model.opts$link.ids
     par.link <- link.closure(link.ids)
     par.unlink <- unlink.closure(link.ids)
     det.pars <- par.unlink(pars, det.indices)
     cov.pars <- par.unlink(pars, cov.indices)
+    D <- par.unlink(pars, D.indices)
     sigma.toa <- 0
     if (toa.id == 1){
         toa.indices <- model.opts$toa.indices
@@ -85,7 +88,9 @@ cov.nll <- function(pars, survey.data, model.opts, only.detprobs = FALSE){
                                          toa_ssq = toa.ssq,
                                          det_pars = det.pars,
                                          cov_pars = cov.pars,
-                                         sigma_toa = sigma.toa/1000),
+                                         sigma_toa = sigma.toa/1000,
+                                         conditional_n = conditional_n,
+                                         D = D),
                              parameters = list(u = u.nll),
                              random = "u", DLL = "cov_nll", silent = TRUE)
         out <- as.numeric(nll.obj$fn())

@@ -34,6 +34,8 @@ make.obj <- function(survey.data, model.opts, any.cov){
     }
     ## Extracting trace.
     trace <- survey.data$trace
+    ## Indicator for conditional likelihood.
+    conditional.n <- model.opts$conditional.n
     ## Start values for optimisation.
     start <- model.opts$start
     start.names <- names(start)
@@ -141,7 +143,15 @@ make.obj <- function(survey.data, model.opts, any.cov){
         }
         pars.start <- c(pars.start, cov.start)
         link.ids <- c(link.ids, cov.link.ids)
-
+      
+    }
+    ## Start value for density parameter.
+    D.indices <- -1
+    if (conditional.n){
+        D.indices <- length(pars.start) + 1
+        pars.start <- ifelse(any(start.names == "D"),
+                             start["D"], 5)
+        link.ids <- c(link.ids, 0)
     }
     ## Start value for TOA parameter.
     toa.indices <- -1
@@ -165,6 +175,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
         model.opts$detfn.id <- detfn.id
         model.opts$det.indices <- det.indices
         model.opts$cov.indices <- cov.indices
+        model.opts$D.indices <- D.indices
         model.opts$toa.indices <- toa.indices
         model.opts$link.ids <- link.ids
         model.opts$cov.id <- cov.id
