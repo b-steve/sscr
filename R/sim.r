@@ -57,7 +57,7 @@ sim.sscr <- function(traps, mask, D, resp, resp.pars, detfn = "hn", detfn.scale 
             sigma.u <- cov.pars$sigma.u
             rho <- cov.pars$rho
             ## Specifying covariance.
-            cov <- sigma.u*exp(-trap.dists/rho)
+            cov <- sigma.u^2*exp(-trap.dists/rho)
         } else if (cov.structure == "matern"){
             stop("Matern covariance not yet implemented.")
         } else if (cov.structure == "individual"){
@@ -71,7 +71,7 @@ sim.sscr <- function(traps, mask, D, resp, resp.pars, detfn = "hn", detfn.scale 
             sigma.u <- cov.pars$sigma.u
             rho <- cov.pars$rho
             ## Specifying covariance.
-            cov <- sigma.u*exp(-(trap.dists^2)/(rho^2))
+            cov <- sigma.u^2*exp(-(trap.dists^2)/(rho^2))
         }
         ## Simulating random effects.
         u.mat <- rmvnorm(n, rep(0, n.traps), cov)
