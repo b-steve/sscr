@@ -7,7 +7,7 @@
 fit.sscr(capt, traps, mask, resp = "binom", resp.pars = NULL,
   detfn = "hn", detfn.scale = "er", cov.structure = "none",
   re.scale = "er", start = NULL, toa = NULL, trace = FALSE,
-  test = FALSE)
+  test = FALSE, hess = FALSE)
 }
 \arguments{
 \item{capt}{A capture history object. It should be a matrix, where
