@@ -18,7 +18,11 @@ cov.nll <- function(pars, survey.data, model.opts, only.detprobs = FALSE){
     par.unlink <- unlink.closure(link.ids)
     det.pars <- par.unlink(pars, det.indices)
     cov.pars <- par.unlink(pars, cov.indices)
-    D <- par.unlink(pars, D.indices)
+    if (conditional.n){
+        D <- 1
+    } else {
+        D <- par.unlink(pars, D.indices)
+    }
     sigma.toa <- 0
     if (toa.id == 1){
         toa.indices <- model.opts$toa.indices
@@ -89,7 +93,7 @@ cov.nll <- function(pars, survey.data, model.opts, only.detprobs = FALSE){
                                          det_pars = det.pars,
                                          cov_pars = cov.pars,
                                          sigma_toa = sigma.toa/1000,
-                                         conditional_n = conditional_n,
+                                         conditional_n = conditional.n,
                                          D = D),
                              parameters = list(u = u.nll),
                              random = "u", DLL = "cov_nll", silent = TRUE)
@@ -117,10 +121,7 @@ cov.organise <- function(fit, survey.data, model.opts){
     link.ids <- model.opts$link.ids
     par.unlink <- unlink.closure(link.ids)
     ll <- -fit$objective
-    pars <- c(par.unlink(pars), D = D, esa = esa, LL = ll)
-    det.indices <- model.opts$det.indices
-    cov.indices <- model.opts$cov.indices
-    names(pars)[det.indices] <- paste("det_par_", 1:length(det.indices), sep = "")
-    names(pars)[cov.indices] <- paste("cov_par_", 1:length(cov.indices), sep = "")
+    pars <- c(par.unlink(pars), D, esa, ll)
+    names(pars) <- c(model.opts$par.names, "D", "esa", "LL")
     pars
 }

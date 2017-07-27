@@ -55,7 +55,7 @@
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
                      detfn.scale = "er", cov.structure = "none", re.scale = "er",
-                     start = NULL, toa = NULL, trace = FALSE, test = FALSE){
+                     start = NULL, toa = NULL, trace = FALSE, test = FALSE, hess = FALSE){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -95,17 +95,39 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
     ## Fitting model or testing likelihood.
     if (test){
         fit <- opt.obj$fn(opt.obj$par)
+        if (hess){
+            if (trace){
+                cat("Computing Hessian...\n")
+            }
+            fit.dummy <- list(pars = opt.obj$par, objective = fit)
+            fit.org <- opt.obj$organise(fit.dummy)
+            ## Optimisation object for calculation of the Hessian.
+            model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
+                                     detfn.scale = detfn.scale, cov.structure = cov.structure,
+                                     re.scale = re.scale, start = fit.org[1:(length(opt.obj) + 1)],
+                                     conditional.n = FALSE)
+            opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
+            fit.vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
+            fit <- list(nll = fit, hess.link = fit.vcov)
+        }
     } else {
         raw.fit <- nlminb(opt.obj$par, opt.obj$fn, opt.obj$gr)
         if (cov.structure == "none"){
             fit <- summary(sdreport(opt.obj), "report")[, 1]
         } else {
             fit <- opt.obj$organise(raw.fit)
-            model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
-                                     detfn.scale = detfn.scale, cov.structure = cov.structure,
-                                     re.scale = re.scale, start = fit, conditional.n = FALSE)
-            opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
-            hess <- optimHess(opt.obj.hess$par, opt.obj.hess$fn, opt.obj$gr)
+            if (hess){
+                if (trace){
+                    cat("Computing Hessian...\n")
+                } 
+                model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
+                                         detfn.scale = detfn.scale, cov.structure = cov.structure,
+                                         re.scale = re.scale, start = fit[1:(length(opt.obj) + 1)],
+                                         conditional.n = FALSE)
+                opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
+                fit.vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
+                fit <- list(pars = fit, vcov = fit.vcov)
+            }
         }
     }
     fit

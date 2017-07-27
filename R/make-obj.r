@@ -52,6 +52,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
             det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
                                    max(apply(mask.dists, 1, min))/5)
             det.link.ids <- c(0, 0)
+            par.names <- c("lambda0", "sigma")
         } else if (detfn.id == 1){
             ## .. With a hazard rate detection function.
             det.indices <- 1:3
@@ -62,6 +63,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                    max(apply(mask.dists, 1, min))/5)
             det.start[3] <- ifelse(any(start.names == "z") , start["z"], 1)                   
             det.link.ids <- c(0, 0, 0)
+            par.names <- c("lambda0", "sigma", "z")
         }
         ## For detection functions on the probability scale.
     } else if (detfn.scale.id == 1){
@@ -73,6 +75,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
             det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
                                    max(apply(mask.dists, 1, min))/5)
             det.link.ids <- c(1, 0)
+            par.names <- c("g0", "sigma")
         } else if (detfn.id == 1){
             ## .. With a hazard rate detection function.
             det.indices <- 1:3
@@ -82,6 +85,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                    max(apply(mask.dists, 1, min))/5)
             det.start[3] <- ifelse(any(start.names == "z") , start["z"], 1)           
             det.link.ids <- c(1, 0, 0)
+            par.names <- c("g0", "sigma", "z")
         }
     }
     pars.start <- det.start
@@ -107,6 +111,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
             cov.start[1] <- ifelse(any(start.names == "sigma.u"),
                                    start["sigma.u"], sd(capt))
             cov.link.ids <- 0
+            par.names <- c(par.names, "sigma.u")
         } else if (cov.id == 1){
             ## Exponential.
             cov.indices <- cov.index.start:(cov.index.start + 1)
@@ -116,6 +121,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
             cov.start[2] <- ifelse(any(start.names == "rho"),
                                    start["rho"], mean(trap.dists))
             cov.link.ids <- c(0, 0)
+            par.names <- c(par.names, "sigma.u", "rho")
         } else if (cov.id == 2){
             ## Matern.
             cov.indices <- cov.index.start:(cov.index.start + 2)
@@ -127,6 +133,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
             cov.start[1] <- ifelse(any(start.names == "sigma.u"),
                                    start["sigma.u"], sd(capt))
             cov.link.ids <- 0
+            par.names <- c(par.names, "sigma.u")
         } else if (cov.id == 4){
             ## Linear combination of exponentials.
             cov.indices <- cov.index.start:(cov.index.start + 3)
@@ -140,6 +147,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
             cov.start[2] <- ifelse(any(start.names == "rho"),
                                    start["rho"], mean(trap.dists))
             cov.link.ids <- c(0, 0)
+            par.names <- c(par.names, "sigma.u", "rho")
         }
         pars.start <- c(pars.start, cov.start)
         link.ids <- c(link.ids, cov.link.ids)
@@ -147,11 +155,13 @@ make.obj <- function(survey.data, model.opts, any.cov){
     }
     ## Start value for density parameter.
     D.indices <- -1
-    if (conditional.n){
+    if (!conditional.n){
         D.indices <- length(pars.start) + 1
-        pars.start <- ifelse(any(start.names == "D"),
-                             start["D"], 5)
+        D.start <- ifelse(any(start.names == "D"),
+                          start["D"], 5)
+        pars.start <- c(pars.start, D.start)
         link.ids <- c(link.ids, 0)
+        par.names <- c(par.names, "D")
     }
     ## Start value for TOA parameter.
     toa.indices <- -1
@@ -160,10 +170,12 @@ make.obj <- function(survey.data, model.opts, any.cov){
         toa.start <- ifelse(any(start.names == "sigma.toa"), start["sigma.toa"], 3)
         pars.start <- c(pars.start, toa.start)
         link.ids <- c(link.ids, 0)
+        par.names <- c(par.names, "sigma.toa")
     }
     ## Getting par.link and par.unlink.
     par.link <- link.closure(link.ids)
     par.unlink <- unlink.closure(link.ids)
+    par.dlink <- dlink.closure(link.ids)
     ## Converting parameters to link scale.
     link.pars.start <- par.link(pars.start)
     ## Creating required object.
@@ -178,12 +190,14 @@ make.obj <- function(survey.data, model.opts, any.cov){
         model.opts$D.indices <- D.indices
         model.opts$toa.indices <- toa.indices
         model.opts$link.ids <- link.ids
+        model.opts$par.names <- par.names
         model.opts$cov.id <- cov.id
         model.opts$detfn.scale.id <- detfn.scale.id
         model.opts$re.scale.id <- re.scale.id
         model.opts$toa.id <- toa.id
-        obj <-  list(par = link.pars.start, fn = nll.closure(survey.data,
-                                                             model.opts, cov.nll),
+        fn <- nll.closure(survey.data, model.opts, cov.nll)
+        vcov <- vcov.closure(survey.data, model.opts, fn, par.dlink)
+        obj <-  list(par = link.pars.start, fn = fn, vcov = vcov,
                      organise = organise.closure(survey.data, model.opts, cov.organise))
     } else {
         ## Packaging data for TMB template.
@@ -231,6 +245,19 @@ nll.closure <- function(survey.data, model.opts, nll.fun){
     }
 }
 
+## Closure to provide variance-covariance calculation, given parameter estimates.
+vcov.closure <- function(survey.data, model.opts, nll, dlink.fun){
+    function(pars){
+        hess.link <- optimHess(pars, nll)
+        vcov.link <- solve(hess.link)
+        n.pars <- length(pars)
+        jacobian <- diag(n.pars)
+        diag(jacobian) <- dlink.fun(pars)
+        jacobian %*% vcov.link %*% t(jacobian)
+    }
+}
+
+## Closure to provide organisation function stuff after model fitting.
 organise.closure <- function(survey.data, model.opts, organise.fun){
     function(fit){
         organise.fun(fit, survey.data, model.opts)
@@ -266,5 +293,20 @@ unlink.closure <- function(link.ids){
     }
 }
 
+dlink.closure <- function(link.ids){
+    function(link.pars, which = NULL){
+        n.pars <- length(link.pars)
+        if (is.null(which)){
+            which <- 1:n.pars
+        }
+        out <- numeric(n.pars)
+        for (i in (1:n.pars)[which]){
+            out[i] <- dlinks[[link.ids[i] + 1]](link.pars[i])
+        }
+        out[which]
+    }
+}
+
 links <- list(log, qlogis)
 unlinks <- list(exp, plogis)
+dlinks <- list(exp, dlogis)
