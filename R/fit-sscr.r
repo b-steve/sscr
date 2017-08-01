@@ -104,7 +104,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
             ## Optimisation object for calculation of the Hessian.
             model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                      detfn.scale = detfn.scale, cov.structure = cov.structure,
-                                     re.scale = re.scale, start = fit.org[1:(length(opt.obj) + 1)],
+                                     re.scale = re.scale, start = fit.org,
                                      conditional.n = FALSE)
             opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
             fit.vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
@@ -122,7 +122,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                 } 
                 model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                          detfn.scale = detfn.scale, cov.structure = cov.structure,
-                                         re.scale = re.scale, start = fit[1:(length(opt.obj) + 1)],
+                                         re.scale = re.scale, start = fit,
                                          conditional.n = FALSE)
                 opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
                 fit.vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
