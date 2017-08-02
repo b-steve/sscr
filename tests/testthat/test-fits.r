@@ -30,7 +30,7 @@ test_that(
         ## Independent random effects.
         test.ind.hn <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hn",
-                                cov.structure = "independent", test = TRUE)
+                                cov.structure = "independent", test = TRUE, new = TRUE)
         expect_that(abs(test.ind.hn - 124.8294) < 1e-4, is_true())
         ## With detection function on probability scale.
         test.ind.hn.detpr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,

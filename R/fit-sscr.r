@@ -55,7 +55,7 @@
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
                      detfn.scale = "er", cov.structure = "none", re.scale = "er",
-                     start = NULL, toa = NULL, trace = FALSE, test = FALSE, hess = FALSE){
+                     start = NULL, toa = NULL, trace = FALSE, test = FALSE, hess = FALSE, new = FALSE){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -91,7 +91,9 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
         any.cov <- TRUE
     }
     ## Making optimisation object.
+    opt.obj2 <- make.obj2(survey.data, model.opts, any.cov)
     opt.obj <- make.obj(survey.data, model.opts, any.cov)
+    browser()
     ## Fitting model or testing likelihood.
     if (test){
         fit <- opt.obj$fn(opt.obj$par)
