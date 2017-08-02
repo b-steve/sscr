@@ -80,9 +80,6 @@ Type objective_function<Type>::operator() ()
     sum_det_probs += det_probs(i);
   }
   Type u_use;
-  // PMF for activity centres across the mask.
-  vector<Type> f_loc(n_mask);
-  f_loc = det_probs/sum_det_probs;
   // Joint density of data and latent variables.
   Type f = 0;
   // Likelihood contributions from capture histories.
