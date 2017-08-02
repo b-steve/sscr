@@ -129,7 +129,7 @@ Type objective_function<Type>::operator() ()
     std::cout << "f before: " << f << std::endl;
     std::cout << "n: " << n << std::endl;
     std::cout << "pmf(n): " << dpois_sscr(Type(n), Type(D*mask_area*sum_det_probs), true) << std::endl;
-    f -= dpois_sscr(Type(n), Type(D*mask_area*sum_det_probs), true);
+    f -= dpois(Type(n), Type(D*mask_area*sum_det_probs), true);
     std::cout << "f after: " << f << std::endl;
   }
   if (cov_id == 3){

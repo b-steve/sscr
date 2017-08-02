@@ -2,6 +2,6 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 make_toa_ssq <- function(capt, dists, sound_speed) {
-    .Call('sscr_make_toa_ssq', PACKAGE = 'sscr', capt, dists, sound_speed)
+    .Call('_sscr_make_toa_ssq', PACKAGE = 'sscr', capt, dists, sound_speed)
 }
 
