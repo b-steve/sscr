@@ -574,6 +574,19 @@ make.obj2 <- function(survey.data, model.opts, any.cov){
                 }
                 if (fun == "nll"){
                     out <- nll.obj$fn(link.pars)
+                    if (trace){
+                        cat("Detection parameters: ", paste(format(round(par.unlink(link.pars, det.indices), 2), nsmall = 2),
+                                                            collapse = ", "),
+                            "; Covariance parameters: ", paste(format(round(par.unlink(link.pars, cov.indices), 2), nsmall = 2),
+                                                               collapse = ", "))
+                        if (!conditional.n){
+                            cat("; D: ", format(round(D, 2), nsmall = 2), sep = "")
+                        }
+                        if (toa.id == 1){
+                            cat("; TOA parameter: ", format(round(sigma.toa, 2), nsmall = 2), sep = "")
+                        }
+                        cat("; nll: ", format(round(out, 2), nsmall = 2), "\n", sep = "")
+                    }
                 } else if (fun == "gr"){
                     out <- nll.obj$gr(link.pars) + n*apply(neglog.det.probs.grads, 1, function(x) sum(-exp(-neglog.det.probs)*x))/sum(det.probs)
                 } else if (fun == "det.probs"){
