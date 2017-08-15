@@ -153,6 +153,8 @@ Type objective_function<Type>::operator() ()
   f -= -n*log(sum_det_probs);
   // Likelihood component due to n.
   if (conditional_n == 0){
+    std::cout << "n = " << n << "; mask_area = " << mask_area << "; sum_det_probs = " << sum_det_probs << "; exp_n = " << Type(D*mask_area*sum_det_probs) << std::endl;
+    std::cout << "dpois(n, exp_n) = " << D*mask_area*sum_det_probs << std::endl;
     f -= dpois(Type(n), Type(D*mask_area*sum_det_probs), true);
   }
   if (cov_id == 3){
