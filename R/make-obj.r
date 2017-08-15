@@ -529,7 +529,7 @@ make.obj2 <- function(survey.data, model.opts, any.cov){
                                                        link_cov_ids = link.ids[cov.indices]),
                                            parameters = list(link_det_pars = link.pars.start[det.indices],
                                                              link_cov_pars = link.pars.start[cov.indices],
-                                                             link_sigma_toa = ifelse(toa.id, link.pars.start[toa.indices], 1)/1000,
+                                                             link_sigma_toa = ifelse(toa.id, link.pars.start[toa.indices], 1),
                                                              link_D = ifelse(conditional.n, 1, link.pars.start[D.indices]),
                                                              u = u.detprob),
                                            map = map, random = "u", DLL = "cov_detprob2", silent = TRUE)
@@ -567,7 +567,7 @@ make.obj2 <- function(survey.data, model.opts, any.cov){
                                                      link_cov_ids = link.ids[cov.indices]),
                                          parameters = list(link_det_pars = link.pars[det.indices],
                                                            link_cov_pars = link.pars[cov.indices],
-                                                           link_sigma_toa = ifelse(toa.id, link.pars[toa.indices], 1)/1000,
+                                                           link_sigma_toa = ifelse(toa.id, link.pars[toa.indices], 1),
                                                            link_D = ifelse(conditional.n, 1, link.pars[D.indices]),
                                                            u = u.nll),
                                          map = map, random = "u", DLL = "cov_nll2", silent = TRUE)

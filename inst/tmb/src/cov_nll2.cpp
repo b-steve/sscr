@@ -81,8 +81,8 @@ Type objective_function<Type>::operator() ()
       cov_pars(i) = 1/(1 + exp(-link_cov_pars(i)));
     }
   }
-  // Back-transforming sigma_toa.
-  Type sigma_toa = exp(link_sigma_toa);
+  // Back-transforming sigma_toa, including readjustment to ms.
+  Type sigma_toa = exp(link_sigma_toa)/1000;
   // Back-transforming density parameter.
   Type D = exp(link_D);
   // Hazard rates for mask/trap combinations.
