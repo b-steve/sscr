@@ -55,7 +55,7 @@
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
                      detfn.scale = "er", cov.structure = "none", re.scale = "er",
-                     start = NULL, toa = NULL, trace = FALSE, test = FALSE, hess = FALSE, new = FALSE){
+                     start = NULL, toa = NULL, trace = FALSE, test = FALSE, hess = FALSE, new = FALSE, Rhess = FALSE){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -83,7 +83,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                         trace = trace)
     model.opts <- list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                        detfn.scale = detfn.scale, cov.structure = cov.structure,
-                       re.scale = re.scale, start = start, conditional.n = TRUE)
+                       re.scale = re.scale, start = start, conditional.n = TRUE, Rhess = FALSE)
     ## Optimisation object constructor function.
     if (cov.structure == "none"){
         any.cov <- FALSE
@@ -108,10 +108,10 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
             model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                      detfn.scale = detfn.scale, cov.structure = cov.structure,
                                      re.scale = re.scale, start = fit.org,
-                                     conditional.n = FALSE)
+                                     conditional.n = FALSE, Rhess = Rhess)
             opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
             fit.vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
-            fit <- list(nll = fit, hess.link = fit.vcov)
+            fit <- list(nll = fit, vcov = fit.vcov)
         }
     } else {
         raw.fit <- nlminb(opt.obj$par, opt.obj$fn, opt.obj$gr)
