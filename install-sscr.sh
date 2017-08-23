@@ -3,7 +3,7 @@ cd ~/GitHub/sscr
 rm -rfv man
 rm -rfv inst/tmb/bin
 rm -fv NAMESPACE
-rm -fv src/*.o src/RcppExports.cpp src/ascr.so R/RcppExports.R
+rm -fv src/*.o src/RcppExports.cpp R/RcppExports.R
 rm -rfv package-build
 R --slave -e "library(roxygen2); roxygenise('.')"
 R --slave -e "library(Rcpp); compileAttributes()"
