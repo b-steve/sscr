@@ -203,5 +203,8 @@ Type objective_function<Type>::operator() ()
       f += MVNORM(sigma_u_mat)(u.row(i));
     }
   }
+  if (conditional_n == 0){
+    std::cout << f << std::endl;
+  }
   return f;
 }
