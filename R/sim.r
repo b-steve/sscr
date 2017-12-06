@@ -112,12 +112,13 @@ sim.sscr <- function(traps, mask, D, resp, resp.pars, detfn = "hn", detfn.scale 
 #' @param start Coordinates of starting location. Default is to
 #'     generate a location from the long-term stationary distribution.
 #' @param n.steps Total number of time steps.
-#'
+#' @param centre Logial, if \code{TRUE}
+#' 
 #' @author This is a modified version of a function provided by Theo
 #'     Michelot.
 #' 
 #' @export
-sim.ou <- function(mu, tau, sigma, n.steps, start = NULL){
+sim.ou <- function(mu, tau, sigma, n.steps, start = NULL, centre = FALSE){
     if (is.null(start)){
         start <- rmvnorm(1, mu, sigma^2*diag(2))
     }
