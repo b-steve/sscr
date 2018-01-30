@@ -51,6 +51,8 @@
 #'     step of the optimisation algorithm are printed.
 #' @param test Logical. If \code{TRUE}, the likelihood is calculated
 #'     at parameter start values. If \code{FALSE}, a model is fitted.
+#' @param hess Logical. If \code{TRUE}, a Hessian is computed. Or at
+#'     least it is attempted. But I don't think this works, yet.
 #' @param new Logical. If \code{TRUE}, the exact-gradient stuff is
 #'     used, I think.
 #' @param Rhess Logical. If \code{TRUE}, the Hessian is somehow
