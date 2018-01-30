@@ -51,11 +51,17 @@
 #'     step of the optimisation algorithm are printed.
 #' @param test Logical. If \code{TRUE}, the likelihood is calculated
 #'     at parameter start values. If \code{FALSE}, a model is fitted.
+#' @param new Logical. If \code{TRUE}, the exact-gradient stuff is
+#'     used, I think.
+#' @param Rhess Logical. If \code{TRUE}, the Hessian is somehow
+#'     computed differently, but it is not clear to me how this
+#'     happens.
 #' 
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
                      detfn.scale = "er", cov.structure = "none", re.scale = "er",
-                     start = NULL, toa = NULL, trace = FALSE, test = FALSE, hess = FALSE, new = FALSE, Rhess = FALSE){
+                     start = NULL, toa = NULL, trace = FALSE, test = FALSE, hess = FALSE,
+                     new = FALSE, Rhess = FALSE){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
