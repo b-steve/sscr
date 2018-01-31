@@ -534,7 +534,7 @@ make.obj2 <- function(survey.data, model.opts, any.cov){
                                            parameters = list(link_det_pars = link.pars.start[det.indices],
                                                              link_cov_pars = link.pars.start[cov.indices],
                                                              link_sigma_toa = ifelse(toa.id, link.pars.start[toa.indices], 1),
-                                                             link_D = ifelse(conditional.n & !Rhess, 1, link.pars.start[D.indices]),
+                                                             link_D = ifelse(conditional.n | Rhess, 1, link.pars.start[D.indices]),
                                                              u = u.detprob),
                                            map = map, random = "u", DLL = "cov_detprob2", silent = TRUE)
         }
@@ -571,13 +571,13 @@ make.obj2 <- function(survey.data, model.opts, any.cov){
                                                      det_probs = det.probs,
                                                      toa_id = toa.id,
                                                      toa_ssq = toa.ssq,
-                                                     conditional_n = as.numeric(conditional.n & !Rhess),
+                                                     conditional_n = as.numeric(conditional.n  | Rhess),
                                                      link_det_ids = link.ids[det.indices],
                                                      link_cov_ids = link.ids[cov.indices]),
                                          parameters = list(link_det_pars = link.pars[det.indices],
                                                            link_cov_pars = link.pars[cov.indices],
                                                            link_sigma_toa = ifelse(toa.id, link.pars[toa.indices], 1),
-                                                           link_D = ifelse(conditional.n & !Rhess, 1, link.pars[D.indices]),
+                                                           link_D = ifelse(conditional.n | Rhess, 1, link.pars[D.indices]),
                                                            u = u.nll),
                                          map = map, random = "u", DLL = "cov_nll2", silent = TRUE)
                 }
@@ -606,11 +606,12 @@ make.obj2 <- function(survey.data, model.opts, any.cov){
                     if (Rhess){
                         out <- numeric(length(link.pars))
                         out[-D.indices] <- nll.obj$gr(link.pars.tmb) + exp(link.pars[D.indices])*mask.area*apply(neglog.det.probs.grads, 1, function(x) sum(-exp(-neglog.det.probs)*x))
-                        ## Might be something wrong here; maybe swap this to make it negative.
                         out[D.indices] <- mask.area*sum(det.probs)*exp(link.pars[D.indices]) - n
-                        } else {
-                            out <- nll.obj$gr(link.pars.tmb) + n*apply(neglog.det.probs.grads, 1, function(x) sum(-exp(-neglog.det.probs)*x))/sum(det.probs)
-                        }
+                    } else if (!conditional.n){
+                        out <- nll.obj$gr(link.pars.tmb) + exp(link.pars[D.indices])*mask.area*apply(neglog.det.probs.grads, 1, function(x) sum(-exp(-neglog.det.probs)*x))
+                    } else {
+                        out <- nll.obj$gr(link.pars.tmb) + n*apply(neglog.det.probs.grads, 1, function(x) sum(-exp(-neglog.det.probs)*x))/sum(det.probs)    
+                    }
                     cat("grads: ", paste(out, collapse = " "), "\n")
                 } else if (fun == "det.probs"){
                     out <- det.probs
