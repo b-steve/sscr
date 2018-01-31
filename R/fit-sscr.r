@@ -49,8 +49,13 @@
 #'     provides time-of-arrival information for acoustic detections.
 #' @param trace Logical. If \code{TRUE}, parameter values for each
 #'     step of the optimisation algorithm are printed.
-#' @param test Logical. If \code{TRUE}, the likelihood is calculated
-#'     at parameter start values. If \code{FALSE}, a model is fitted.
+#' @param test Logical. If \code{TRUE}, the negative log-likelihood is
+#'     calculated at parameter start values. If \code{FALSE}, a model
+#'     is fitted. Alternatively, a character string. If \code{"nll"},
+#'     then the negative log-likelihood is calculated. If \code{"gr"},
+#'     then the partial derivatives of the negative log-likelihood
+#'     function with respect to the parameters is also calculated. If
+#'     \code{"hess"} then the Hessian if also calculated.
 #' @param hess Logical. If \code{TRUE}, a Hessian is computed. Or at
 #'     least it is attempted. But I don't think this works, yet.
 #' @param new Logical. If \code{TRUE}, the exact-gradient stuff is
@@ -64,6 +69,9 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                      detfn.scale = "er", cov.structure = "none", re.scale = "er",
                      start = NULL, toa = NULL, trace = FALSE, test = FALSE, hess = FALSE,
                      new = FALSE, Rhess = FALSE){
+    if (Rhess & !new){
+        stop("Rhess only implemented with new.")
+    }
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -104,22 +112,34 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
     }
     opt.obj <- make.obj(survey.data, model.opts, any.cov)
     ## Fitting model or testing likelihood.
-    if (test){
-        fit <- opt.obj$fn(opt.obj$par)
-        if (hess){
-            if (trace){
-                cat("Computing Hessian...\n")
+    if (is.logical(test)){
+        if (test){
+            test <- "nll"
+        }
+    }
+    if (test %in% c("nll", "gr", "hess")){
+        fit <- list()
+        fit$nll <- opt.obj$fn(opt.obj$par)
+        if (test %in% c("gr", "hess")){
+            if (is.null(opt.obj$gr)){
+                opt.obj$gr <- function(x){
+                    message("Determining test gradients numerically...")
+                    grad(opt.obj$fn, x)
+                }
             }
-            fit.dummy <- list(pars = opt.obj$par, objective = fit)
-            fit.org <- opt.obj$organise(fit.dummy)
-            ## Optimisation object for calculation of the Hessian.
-            model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
-                                     detfn.scale = detfn.scale, cov.structure = cov.structure,
-                                     re.scale = re.scale, start = fit.org,
-                                     conditional.n = FALSE, Rhess = Rhess)
-            opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
-            fit.vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
-            fit <- list(nll = fit, vcov = fit.vcov)
+            fit$gr <- opt.obj$gr(opt.obj$par)
+            if (test %in% "hess"){
+                fit.dummy <- list(pars = opt.obj$par, objective = fit$nll)
+                fit.org <- opt.obj$organise(fit.dummy)
+                ## Optimisation object for calculation of the Hessian.
+                model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
+                                         detfn.scale = detfn.scale, cov.structure = cov.structure,
+                                         re.scale = re.scale, start = fit.org,
+                                         conditional.n = FALSE, Rhess = Rhess)
+                opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
+                fit$vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
+               
+            }
         }
     } else {
         raw.fit <- nlminb(opt.obj$par, opt.obj$fn, opt.obj$gr)
@@ -134,7 +154,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                 model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                          detfn.scale = detfn.scale, cov.structure = cov.structure,
                                          re.scale = re.scale, start = fit,
-                                         conditional.n = FALSE)
+                                         conditional.n = FALSE, Rhess = Rhess)
                 opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
                 fit.vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
                 fit <- list(pars = fit, vcov = fit.vcov)
