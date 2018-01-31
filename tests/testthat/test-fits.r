@@ -27,10 +27,63 @@ test_that(
 test_that(
     "Tests with random effects.",
     {
-        ## Independent random effects.
-        test.ind.hn <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+        library(numDeriv)
+        ## Testing exact vs not-exact gradients.
+        obj.exact <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hn",
-                                cov.structure = "independent", test = TRUE, new = TRUE)
+                              cov.structure = "exponential", new = TRUE, return.obj = TRUE)
+        opt.obj.exact <- opt.obj
+        f.exact <- opt.obj.exact$fn(opt.obj.exact$par)
+        gr.exact <- opt.obj.exact$gr(opt.obj.exact$par)
+
+        obj.notexact <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                                 mask = test.data$mask, resp = "pois", detfn = "hn",
+                                 cov.structure = "exponential", new = FALSE, return.obj = TRUE)
+        opt.obj.notexact <- opt.obj
+        f.notexact <- opt.obj.notexact$fn(opt.obj.notexact$par)
+        gr.notexact <- grad(opt.obj.notexact$fn, opt.obj.notexact$par)
+
+        
+        obj.exact <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                              mask = test.data$mask, resp = "pois", detfn = "hn",
+                              cov.structure = "exponential", new = TRUE, return.obj = TRUE,
+                              conditional.n = FALSE, Rhess = TRUE)
+        opt.obj.exact <- opt.obj
+        f.exact <- opt.obj.exact$fn(opt.obj.exact$par)
+        gr.exact <- opt.obj.exact$gr(opt.obj.exact$par)
+
+        obj.notexact <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                                 mask = test.data$mask, resp = "pois", detfn = "hn",
+                                 cov.structure = "exponential", new = FALSE, return.obj = TRUE,
+                                 conditional.n = FALSE)
+        opt.obj.notexact <- opt.obj
+        f.notexact <- opt.obj.notexact$fn(opt.obj.notexact$par)
+        library(numDeriv)
+        gr.notexact <- grad(opt.obj.notexact$fn, opt.obj.notexact$par)
+
+        obj.notrexact <-  fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                                   mask = test.data$mask, resp = "pois", detfn = "hn",
+                                   cov.structure = "exponential", new = TRUE, return.obj = TRUE,
+                                   conditional.n = FALSE, Rhess = FALSE)
+        opt.obj.notrexact <- opt.obj
+        f.notrexact <- opt.obj.notrexact$fn(opt.obj.notrexact$par)
+        gr.notrexact <- opt.obj.notrexact$gr(opt.obj.notrexact$par)
+
+        ## All three should give same answer.
+        fit <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                        mask = test.data$mask, resp = "pois", detfn = "hn",
+                        cov.structure = "exponential", new = TRUE,
+                        test = "gr")
+        fit <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                        mask = test.data$mask, resp = "pois", detfn = "hn",
+                        cov.structure = "exponential", new = TRUE, Rhess = TRUE,
+                        test = "gr")
+        fit <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                        mask = test.data$mask, resp = "pois", detfn = "hn",
+                        cov.structure = "exponential", new = FALSE,
+                        test = "gr")
+        
+        
         expect_that(abs(test.ind.hn - 124.8294) < 1e-4, is_true())
         ## With detection function on probability scale.
         test.ind.hn.detpr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
