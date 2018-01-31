@@ -26,6 +26,7 @@ compile.sscr <- function(){
 
 #' @import TMB Rcpp
 #' @importFrom mvtnorm rmvnorm
+#' @importFrom numDeriv grad
 #' @importFrom spatstat crossdist
 #' @importFrom stats dist dpois nlminb optimHess plogis qlogis rbinom rpois runif sd
 #' @useDynLib sscr
