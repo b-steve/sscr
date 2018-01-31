@@ -65,8 +65,23 @@ provides time-of-arrival information for acoustic detections.}
 \item{trace}{Logical. If \code{TRUE}, parameter values for each
 step of the optimisation algorithm are printed.}
 
-\item{test}{Logical. If \code{TRUE}, the likelihood is calculated
-at parameter start values. If \code{FALSE}, a model is fitted.}
+\item{test}{Logical. If \code{TRUE}, the negative log-likelihood is
+calculated at parameter start values. If \code{FALSE}, a model
+is fitted. Alternatively, a character string. If \code{"nll"},
+then the negative log-likelihood is calculated. If \code{"gr"},
+then the partial derivatives of the negative log-likelihood
+function with respect to the parameters is also calculated. If
+\code{"hess"} then the Hessian if also calculated.}
+
+\item{hess}{Logical. If \code{TRUE}, a Hessian is computed. Or at
+least it is attempted. But I don't think this works, yet.}
+
+\item{new}{Logical. If \code{TRUE}, the exact-gradient stuff is
+used, I think.}
+
+\item{Rhess}{Logical. If \code{TRUE}, the Hessian is somehow
+computed differently, but it is not clear to me how this
+happens.}
 }
 \description{
 Fits an SSCR model. Estimation is by maximum likelihood. The
