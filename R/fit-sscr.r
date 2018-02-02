@@ -56,6 +56,9 @@
 #'     then the partial derivatives of the negative log-likelihood
 #'     function with respect to the parameters is also calculated. If
 #'     \code{"hess"} then the Hessian if also calculated.
+#' @param test.conditional.n Logical. If \code{TRUE}, tests are
+#'     computed for models that condition on the number of detected
+#'     animals.
 #' @param hess Logical. If \code{TRUE}, a Hessian is computed. Or at
 #'     least it is attempted. But I don't think this works, yet.
 #' @param new Logical. If \code{TRUE}, the exact-gradient stuff is
@@ -67,8 +70,8 @@
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
                      detfn.scale = "er", cov.structure = "none", re.scale = "er",
-                     start = NULL, toa = NULL, trace = FALSE, test = FALSE, hess = FALSE,
-                     new = FALSE, Rhess = FALSE){
+                     start = NULL, toa = NULL, trace = FALSE, test = FALSE,
+                     test.conditional.n = TRUE, hess = FALSE, new = FALSE, Rhess = FALSE){
     if (Rhess & !new){
         stop("Rhess only implemented with new.")
     }
@@ -118,26 +121,27 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
         }
     }
     if (test %in% c("nll", "gr", "hess")){
+        model.opts.test <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
+                                 detfn.scale = detfn.scale, cov.structure = cov.structure,
+                                 re.scale = re.scale, start = start,
+                                 conditional.n = test.conditional.n, Rhess = Rhess)
+        opt.obj.test <- make.obj(survey.data, model.opts.test, any.cov)
+        ## Setting up output list.
         fit <- list()
-        fit$nll <- opt.obj$fn(opt.obj$par)
+        ## Computing negative log-likelihood.
+        fit$nll <- opt.obj.test$fn(opt.obj.test$par)
         if (test %in% c("gr", "hess")){
-            if (is.null(opt.obj$gr)){
-                opt.obj$gr <- function(x){
+            ## Creating numerical gradient function for non-exact methods.
+            if (is.null(opt.obj.test$gr)){
+                opt.obj.test$gr <- function(x){
                     message("Determining test gradients numerically...")
-                    grad(opt.obj$fn, x)
+                    grad(opt.obj.test$fn, x)
                 }
             }
-            fit$gr <- opt.obj$gr(opt.obj$par)
+            ## Calculating 
+            fit$gr <- opt.obj.test$gr(opt.obj.test$par)
             if (test %in% "hess"){
-                fit.dummy <- list(pars = opt.obj$par, objective = fit$nll)
-                fit.org <- opt.obj$organise(fit.dummy)
-                ## Optimisation object for calculation of the Hessian.
-                model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
-                                         detfn.scale = detfn.scale, cov.structure = cov.structure,
-                                         re.scale = re.scale, start = fit.org,
-                                         conditional.n = FALSE, Rhess = Rhess)
-                opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
-                fit$vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
+                fit$vcov <- opt.obj.test$vcov(opt.obj.test.test$par)
                
             }
         }
