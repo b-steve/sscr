@@ -72,7 +72,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                      detfn.scale = "er", cov.structure = "none", re.scale = "er",
                      start = NULL, toa = NULL, trace = FALSE, test = FALSE,
                      test.conditional.n = TRUE, hess = FALSE, new = FALSE, Rhess = FALSE){
-    if (!is.null(toa) & !Rhess){
+    if (!is.null(toa) & !Rhess & new){
         stop("Time-of-arrival models only seem to work with Rhess = TRUE")
     }
     if (Rhess & !new){
