@@ -6,10 +6,22 @@
 #' @param D Animal density (individuals per hectare).
 #' @param det.pars List of detection function parameters.
 #' @param cov.pars List of covariance parameters.
+#' @param toa.pars List of time-of-arrival parameters.000
 #'
 #' @export
-sim.sscr <- function(traps, mask, D, resp, resp.pars, detfn = "hn", detfn.scale = "er",
-                     cov.structure, re.scale = "er", det.pars = NULL, cov.pars = NULL){
+sim.sscr <- function(traps, mask, D, resp, resp.pars = NULL,
+                     detfn = "hn", detfn.scale = "er", cov.structure,
+                     re.scale = "er", det.pars = NULL,
+                     cov.pars = NULL, toa.pars = NULL){
+    if (is.null(resp.pars)){
+        resp.pars <- 1
+    }
+    sim.toa <- !is.null(toa.pars)
+    if (sim.toa & (resp != "binom")){
+        if (resp.pars$size != 1){
+            stop("Time of arrival can only be simulated if the response distribution is Bernoulli.")
+        }
+    }
     ## Finding extent of mask object.
     range.x <- range(mask[, 1])
     range.y <- range(mask[, 2])
@@ -96,10 +108,24 @@ sim.sscr <- function(traps, mask, D, resp, resp.pars, detfn = "hn", detfn.scale 
         } else if (resp == "binom"){
             capt <- matrix(rbinom(n*n.traps, resp.pars, full.prob), nrow = n)
         }
+        ## Generating times of arrival.
+        if (sim.toa){
+            n.dets <- sum(capt > 0)
+            toa <- matrix(0, nrow = n, ncol = n.traps)
+            toa[capt > 0] <- ac.dists[capt > 0]/toa.pars$sound.speed +
+                rnorm(n.dets, 0, toa.pars$sigma.toa/1000)
+        }
     }
     ## Removing undetected individuals.
-    capt <- capt[apply(capt, 1, function(x) sum(x) > 0), ]
-    capt
+    if (sim.toa){
+        toa <- toa[apply(capt, 1, function(x) sum(x) > 0), ]
+        capt <- capt[apply(capt, 1, function(x) sum(x) > 0), ]
+        out <- list(capt = capt, toa = toa)
+    } else {
+        capt <- capt[apply(capt, 1, function(x) sum(x) > 0), ]
+        out <- capt
+    }
+    out
 }
 
 #' Simulating an Ornstein-Uhlenbeck process
