@@ -4,8 +4,9 @@
 \alias{sim.sscr}
 \title{Simulating SCR data with second-order spatial dependence}
 \usage{
-sim.sscr(traps, mask, D, resp, resp.pars, detfn = "hn", detfn.scale = "er",
-  cov.structure, re.scale = "er", det.pars = NULL, cov.pars = NULL)
+sim.sscr(traps, mask, D, resp, resp.pars = NULL, detfn = "hn",
+  detfn.scale = "er", cov.structure, re.scale = "er", det.pars = NULL,
+  cov.pars = NULL, toa.pars = NULL)
 }
 \arguments{
 \item{traps}{A matrix with two columns, providing the Cartesian
@@ -56,6 +57,8 @@ detections) or the probability of detection.}
 \item{det.pars}{List of detection function parameters.}
 
 \item{cov.pars}{List of covariance parameters.}
+
+\item{toa.pars}{List of time-of-arrival parameters.000}
 }
 \description{
 Simulates SSCR data.
