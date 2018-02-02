@@ -141,7 +141,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
             ## Calculating 
             fit$gr <- opt.obj.test$gr(opt.obj.test$par)
             if (test %in% "hess"){
-                fit$vcov <- opt.obj.test$vcov(opt.obj.test.test$par)
+                fit$vcov <- opt.obj.test$vcov(opt.obj.test$par)
                
             }
         }
