@@ -71,9 +71,12 @@
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
                      detfn.scale = "er", cov.structure = "none", re.scale = "er",
                      start = NULL, toa = NULL, trace = FALSE, test = FALSE,
-                     test.conditional.n = TRUE, hess = FALSE, new = FALSE, Rhess = FALSE){
+                     test.conditional.n = !Rhess, hess = FALSE, new = FALSE, Rhess = FALSE){
     if (!is.null(toa) & !Rhess & new){
-        stop("Time-of-arrival models only seem to work with Rhess = TRUE")
+        warning("Time-of-arrival models only seem to work with Rhess = TRUE. Don't trust gradients or the Hessian that involve parameter D.")
+    }
+    if (Rhess & test.conditional.n){
+        stop("If Rhess = TRUE then test.conditional.n must be FALSE.")
     }
     if (Rhess & !new){
         stop("Rhess only implemented with new.")
