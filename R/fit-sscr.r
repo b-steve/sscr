@@ -155,7 +155,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
         raw.fit <- nlminb(opt.obj$par, opt.obj$fn, opt.obj$gr)
         if (cov.structure == "none"){
             fit <- summary(sdreport(opt.obj), "report")[, 1]
-            fit <- c(fit, LL = opt.obj$fn(raw.fit$par))
+            fit <- c(fit, LL = -opt.obj$fn(raw.fit$par))
         } else {
             fit <- opt.obj$organise(raw.fit)
             if (hess){
