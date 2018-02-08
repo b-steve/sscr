@@ -7,7 +7,7 @@
 fit.sscr(capt, traps, mask, resp = "binom", resp.pars = NULL,
   detfn = "hn", detfn.scale = "er", cov.structure = "none",
   re.scale = "er", start = NULL, toa = NULL, trace = FALSE,
-  test = FALSE, test.conditional.n = TRUE, hess = FALSE, new = FALSE,
+  test = FALSE, test.conditional.n = !Rhess, hess = FALSE, new = FALSE,
   Rhess = FALSE)
 }
 \arguments{
