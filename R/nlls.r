@@ -111,22 +111,7 @@ cov.nll <- function(pars, survey.data, model.opts, only.detprobs = FALSE){
     out
 }
 
-cov.organise <- function(fit, survey.data, model.opts, detp.probs.fun = NULL){
-    pars <- fit$par
-    det.probs <- cov.nll(pars, survey.data, model.opts, only.detprobs = TRUE)
-    mask.area <- survey.data$mask.area
-    capt <- survey.data$capt
-    esa <- sum(det.probs)*mask.area
-    D <- nrow(capt)/esa
-    link.ids <- model.opts$link.ids
-    par.unlink <- unlink.closure(link.ids)
-    ll <- -fit$objective
-    pars <- c(par.unlink(pars), D, esa, ll)
-    names(pars) <- c(model.opts$par.names, "D", "esa", "LL")
-    pars
-}
-
-cov.organise2 <- function(fit, survey.data, model.opts, det.probs.fun){
+cov.organise <- function(fit, survey.data, model.opts, det.probs.fun){
     pars <- fit$par
     det.probs <- det.probs.fun(pars)
     mask.area <- survey.data$mask.area

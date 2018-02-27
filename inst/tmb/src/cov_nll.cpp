@@ -43,18 +43,48 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(toa_id);
   // Time-of-arrival data.
   DATA_MATRIX(toa_ssq);
-  // Detection function parameters.
-  DATA_VECTOR(det_pars);
-  // Covariance parameters.
-  DATA_VECTOR(cov_pars);
-  // Time-of-arrival paramter.
-  DATA_SCALAR(sigma_toa);
   // Indicator for conditional likelihood.
   DATA_INTEGER(conditional_n);
-  // Density parameter. Required if likelihood is not conditional.
-  DATA_SCALAR(D);
+  // Indicators for detection parameter link functions.
+  DATA_IVECTOR(link_det_ids);
+  // Number of detection function parameters.
+  int n_det_pars = link_det_ids.size();
+  // Indicators for covariance parameter link functions.
+  DATA_IVECTOR(link_cov_ids);
+  // Number of covariance function parameters.
+  int n_cov_pars = link_cov_ids.size();
+  // Detection function parmaters.
+  PARAMETER_VECTOR(link_det_pars);
+  // Covariance parameters.
+  PARAMETER_VECTOR(link_cov_pars);
+  // Time-of-arrival parameter.
+  PARAMETER(link_sigma_toa);
+  // Density parameter.
+  PARAMETER(link_D);
   // Latent variables.
   PARAMETER_MATRIX(u);
+  // Back-transforming detection function parameters.
+  vector<Type> det_pars(n_det_pars);
+  for (int i = 0; i < n_det_pars; i++){
+    if (link_det_ids(i) == 0){
+      det_pars(i) = exp(link_det_pars(i));
+    } else if (link_det_ids(i) == 1){
+      det_pars(i) = 1/(1 + exp(-link_det_pars(i)));
+    }
+  }
+  // Back-transforming covariance function parameters.
+  vector<Type> cov_pars(n_cov_pars);
+  for (int i = 0; i < n_cov_pars; i++){
+    if (link_cov_ids(i) == 0){
+      cov_pars(i) = exp(link_cov_pars(i));
+    } else if (link_cov_ids(i) == 1){
+      cov_pars(i) = 1/(1 + exp(-link_cov_pars(i)));
+    }
+  }
+  // Back-transforming sigma_toa, including readjustment to ms.
+  Type sigma_toa = exp(link_sigma_toa)/1000;
+  // Back-transforming density parameter.
+  Type D = exp(link_D);
   // Hazard rates for mask/trap combinations.
   matrix<Type> haz_mat(n_mask, n_traps);
   // Detection probabilities for mask/trap combinations.
@@ -170,6 +200,9 @@ Type objective_function<Type>::operator() ()
       // negative-log of the density).
       f += MVNORM(sigma_u_mat)(u.row(i));
     }
+  }
+  if (conditional_n == 0){
+    std::cout << f << std::endl;
   }
   return f;
 }

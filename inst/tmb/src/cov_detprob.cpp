@@ -28,12 +28,47 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(cov_id);
   // Indicator for random effects scale.
   DATA_INTEGER(re_scale_id);
+  // Indicators for detection parameter link functions.
+  DATA_IVECTOR(link_det_ids);
+  // Number of detection function parameters.
+  int n_det_pars = link_det_ids.size();
+  // Indicators for covariance parameter link functions.
+  DATA_IVECTOR(link_cov_ids);
+  // Number of covariance function parameters.
+  int n_cov_pars = link_cov_ids.size();
   // Detection function parmaters.
-  DATA_VECTOR(det_pars);
+  PARAMETER_VECTOR(link_det_pars);
   // Covariance parameters.
-  DATA_VECTOR(cov_pars);
+  PARAMETER_VECTOR(link_cov_pars);
+  // Time-of-arrival parameter.
+  PARAMETER(link_sigma_toa);
+  // Density parameter.
+  PARAMETER(link_D);
   // Latent variables.
   PARAMETER_VECTOR(u);
+  // Back-transforming detection function parameters.
+  vector<Type> det_pars(n_det_pars);
+  for (int i = 0; i < n_det_pars; i++){
+    if (link_det_ids(i) == 0){
+      det_pars(i) = exp(link_det_pars(i));
+    } else if (link_det_ids(i) == 1){
+      det_pars(i) = 1/(1 + exp(-link_det_pars(i)));
+    }
+  }
+  // Back-transforming covariance function parameters.
+  vector<Type> cov_pars(n_cov_pars);
+  for (int i = 0; i < n_cov_pars; i++){
+    if (link_cov_ids(i) == 0){
+      cov_pars(i) = exp(link_cov_pars(i));
+    } else if (link_cov_ids(i) == 1){
+      cov_pars(i) = 1/(1 + exp(-link_cov_pars(i)));
+    }
+  }
+  // Back-transforming sigma_toa.
+  Type sigma_toa = exp(link_sigma_toa);
+  // Back-transforming density parameter.
+  Type D = exp(link_D);
+  // Declaring latent variables.
   Type u_use;
   // Overall probability of nondetection.
   Type p_total_evade = 1;

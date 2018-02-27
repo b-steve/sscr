@@ -61,8 +61,6 @@
 #'     animals.
 #' @param hess Logical. If \code{TRUE}, a Hessian is computed. Or at
 #'     least it is attempted. But I don't think this works, yet.
-#' @param new Logical. If \code{TRUE}, the exact-gradient stuff is
-#'     used, I think.
 #' @param Rhess Logical. If \code{TRUE}, the Hessian is somehow
 #'     computed differently, but it is not clear to me how this
 #'     happens.
@@ -71,15 +69,12 @@
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
                      detfn.scale = "er", cov.structure = "none", re.scale = "er",
                      start = NULL, toa = NULL, trace = FALSE, test = FALSE,
-                     test.conditional.n = !Rhess, hess = FALSE, new = FALSE, Rhess = FALSE){
-    if (!is.null(toa) & !Rhess & new){
+                     test.conditional.n = !Rhess, hess = FALSE, Rhess = FALSE){
+    if (!is.null(toa) & !Rhess){
         warning("Time-of-arrival models only seem to work with Rhess = TRUE. Don't trust gradients or the Hessian that involve parameter D.")
     }
     if (Rhess & test.conditional.n){
         stop("If Rhess = TRUE then test.conditional.n must be FALSE.")
-    }
-    if (Rhess & !new){
-        stop("Rhess only implemented with new.")
     }
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
@@ -114,10 +109,6 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
         any.cov <- FALSE
     } else {
         any.cov <- TRUE
-    }
-    ## Making optimisation object.
-    if (new){
-        make.obj <- make.obj2
     }
     opt.obj <- make.obj(survey.data, model.opts, any.cov)
     ## Fitting model or testing likelihood.
@@ -154,8 +145,12 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
     } else {
         raw.fit <- nlminb(opt.obj$par, opt.obj$fn, opt.obj$gr)
         if (cov.structure == "none"){
-            fit <- summary(sdreport(opt.obj), "report")[, 1]
+            sd.rep <- sdreport(opt.obj)
+            fit <- summary(sd.rep, "report")[, 1]
             fit <- c(fit, LL = -opt.obj$fn(raw.fit$par))
+            if (hess){
+                fit <- list(pars = fit, vcov = sd.rep$cov)
+            }
         } else {
             fit <- opt.obj$organise(raw.fit)
             if (hess){
