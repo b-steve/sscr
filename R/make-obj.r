@@ -264,7 +264,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                      det_probs = det.probs,
                                                      toa_id = toa.id,
                                                      toa_ssq = toa.ssq,
-                                                     conditional_n = as.numeric(conditional.n  | Rhess),
+                                                     conditional_n = as.numeric(conditional.n | Rhess),
                                                      link_det_ids = link.ids[det.indices],
                                                      link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices]),
                                          parameters = list(link_det_pars = link.pars[det.indices],
@@ -281,12 +281,19 @@ make.obj <- function(survey.data, model.opts, any.cov){
                     if (Rhess){
                         out <- out - dpois(n, exp(link.pars[D.indices])*mask.area*
                                               sum(det.probs), TRUE)
+                    } else if (conditional.n){
+                        ## Making the condtional-n likelihood look
+                        ## like the non-conditional-n likelihood for
+                        ## consistency (the conditional-n likelihood
+                        ## is only used so that maximisation happens
+                        ## over one fewer parameter).
+                        out <- out - dpois(n, n, TRUE)
                     }
                     if (trace){
                         cat("Detection parameters: ", paste(format(round(par.unlink(link.pars, det.indices), 2), nsmall = 2),
                                                             collapse = ", "),
-                            "; Covariance parameters: ", paste(format(round(par.unlink(link.pars, cov.indices), 2), nsmall = 2),
-                                                               collapse = ", "))
+                            "; Covariance parameters: "[cov.id != 6], paste(format(round(par.unlink(link.pars, cov.indices), 2), nsmall = 2),
+                                                               collapse = ", ")[cov.id != 6])
                         if (!conditional.n){
                             cat("; D: ", format(round(par.unlink(link.pars, D.indices), 2), nsmall = 2), sep = "")
                         }
