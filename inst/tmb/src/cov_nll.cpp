@@ -119,7 +119,9 @@ Type objective_function<Type>::operator() ()
     for (int j = 0; j < n_mask; j++){
       Type integrand_mask = 0;
       for (int k = 0; k < n_traps; k++){
-	if (cov_id == 3){
+	if (cov_id == 6){
+	  u_use = 0;
+	} else if (cov_id == 3){
 	  u_use = u(i, 0);
 	} else {
 	  u_use = u(i, k);
@@ -159,7 +161,7 @@ Type objective_function<Type>::operator() ()
     for (int i = 0; i < n; i++){
       f -= dnorm(u(i, 0), Type(0), cov_pars(0), true);
     }
-  } else {
+  } else if (cov_id != 6){
     for (int i = 0; i < n; i++){
       // Variance-covariance matrix for latent variables.
       matrix<Type> sigma_u_mat(n_traps, n_traps);

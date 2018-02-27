@@ -90,7 +90,9 @@ Type objective_function<Type>::operator() ()
       base_prob = detfn(mask_dists(i), det_pars, detfn_id);
       base_haz = prob_to_haz(base_prob);
     }
-    if (cov_id == 3){
+    if (cov_id == 6){
+      u_use = 0;
+    } else if (cov_id == 3){
       u_use = u(0);
     } else {
       u_use = u(i);
@@ -112,7 +114,7 @@ Type objective_function<Type>::operator() ()
   }
   if (cov_id == 3){
     f -= dnorm(u(0), Type(0), cov_pars(0), true);
-  } else {
+  } else if (cov_id != 6){
     // Variance-covariance matrix for latent variables.
     matrix<Type> sigma_u_mat(n_traps, n_traps);
     for (int j = 0; j < n_traps; j++){

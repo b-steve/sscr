@@ -94,7 +94,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
     }
     pars.start <- det.start
     link.ids <- det.link.ids
-    if (any.cov){
+    #if (any.cov){
         ## Stuff only for covariance structures.
         cov.structure <- model.opts$cov.structure
         cov.id <- switch(model.opts$cov.structure,
@@ -103,7 +103,8 @@ make.obj <- function(survey.data, model.opts, any.cov){
                          matern = 2,
                          individual = 3,
                          lc_exponential = 4,
-                         sq_exponential = 5)
+                         sq_exponential = 5,
+                         none = 6)
         re.scale <- model.opts$re.scale
         re.scale.id <- switch(re.scale, er = 0, prob = 1)     
         ## Indices and start values for covariance parameters.
@@ -152,10 +153,16 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                    start["rho"], mean(trap.dists))
             cov.link.ids <- c(0, 0)
             par.names <- c(par.names, "sigma.u", "rho")
+        } else if (cov.id == 6){
+            ## No covariance.
+            cov.indices <- -1
+            cov.start <- NULL
+            cov.link.ids <- NULL
+            map[["link_cov_pars"]] <- factor(NA)
         }
         pars.start <- c(pars.start, cov.start)
         link.ids <- c(link.ids, cov.link.ids)
-    }
+    #}
     ## Start value for density parameter.
     D.indices <- -1
     if (!conditional.n){
@@ -188,17 +195,24 @@ make.obj <- function(survey.data, model.opts, any.cov){
     par.dlink <- dlink.closure(link.ids)
     ## Converting parameters to link scale.
     link.pars.start <- par.link(pars.start)
-    if (any.cov){
-        detprob.objs <- list()
+    ##if (any.cov){
+    detprob.objs <- list()
         ## Making detprob AD objects.
-        if (cov.id == 3){
+        if (cov.id == 6){
+            u.detprob <- 0
+            u.nll <- matrix(0, nrow = 1, ncol = 1)
+            random.comp <- NULL
+            map[["u"]] <- factor(NA)
+        } else if (cov.id == 3){
             u.detprob <- 0
             u.nll <- matrix(0, nrow = n, ncol = 1)
+            random.comp <- "u"
         } else {
             u.detprob <- numeric(n.traps)
             u.nll <- matrix(0, nrow = n, ncol = n.traps)
+            random.comp <- "u"
         }
-        for (i in 1:n.mask){
+    for (i in 1:n.mask){
             detprob.objs[[i]] <- MakeADFun(data = list(mask_dists = mask.dists[i, ],
                                                        trap_dists = trap.dists,
                                                        n_traps = n.traps,
@@ -209,13 +223,13 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                        cov_id = cov.id,
                                                        re_scale_id = re.scale.id,
                                                        link_det_ids = link.ids[det.indices],
-                                                       link_cov_ids = link.ids[cov.indices]),
+                                                       link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices]),
                                            parameters = list(link_det_pars = link.pars.start[det.indices],
-                                                             link_cov_pars = link.pars.start[cov.indices],
+                                                             link_cov_pars = if (cov.id == 6) 1 else link.pars.start[cov.indices],
                                                              link_sigma_toa = ifelse(toa.id, link.pars.start[toa.indices], 1),
                                                              link_D = ifelse(conditional.n | Rhess, 1, link.pars.start[D.indices]),
                                                              u = u.detprob),
-                                           map = map, random = "u", DLL = "cov_detprob", silent = TRUE)
+                                           map = map, random = random.comp, DLL = "cov_detprob", silent = TRUE)
         }
         get.fn.gr <- function(fun = "nll"){
             function(link.pars){
@@ -252,9 +266,9 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                      toa_ssq = toa.ssq,
                                                      conditional_n = as.numeric(conditional.n  | Rhess),
                                                      link_det_ids = link.ids[det.indices],
-                                                     link_cov_ids = link.ids[cov.indices]),
+                                                     link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices]),
                                          parameters = list(link_det_pars = link.pars[det.indices],
-                                                           link_cov_pars = link.pars[cov.indices],
+                                                           link_cov_pars = if (cov.id == 6) 1 else link.pars[cov.indices],
                                                            link_sigma_toa = ifelse(toa.id, link.pars[toa.indices], 1),
                                                            link_D = ifelse(conditional.n | Rhess, 1, link.pars[D.indices]),
                                                            u = u.nll),
@@ -305,38 +319,38 @@ make.obj <- function(survey.data, model.opts, any.cov){
         obj.organise <- organise.closure(survey.data, model.opts, cov.organise, get.fn.gr(fun = "det.probs"))
         obj <- list(par = link.pars.start, fn = obj.fn, gr = obj.gr,
                     vcov = obj.vcov, organise = obj.organise)
-    } else {
-        ## Packaging data for TMB template.
-        data <- list(capt = capt,
-                     n_dets = n.dets,
-                     mask_dists = mask.dists,
-                     n = n,
-                     n_traps = n.traps,
-                     n_mask = n.mask,
-                     mask_area = mask.area,
-                     resp_id = resp.id,
-                     resp_pars = resp.pars,
-                     detfn_id = detfn.id,
-                     detfn_scale_id = detfn.scale.id,
-                     link_ids = link.ids,
-                     toa_id = toa.id,
-                     toa_ssq = toa.ssq,
-                     det_indices = det.indices - 1,
-                     toa_indices = toa.indices - 1)
-        ## Making optimisation object with TMB.
-        obj <- MakeADFun(data = data, parameters = list(link_pars = link.pars.start),
-                         DLL = "simple_nll", silent = TRUE)
-        ## Making function for trace.
-        if (trace){
-            obj$fn.notrace <- obj$fn
-            obj$fn <- function(x, ...){
-                out <- obj$fn.notrace(x, ...)
-                cat("Detection parameters: ", paste(format(round(par.unlink(x), 2), nsmall = 2), collapse = ", "),
-                    "; nll: ", format(round(as.numeric(out), 2), nsmall = 2), "\n", sep = "")
-                out
-            }
-        }
-    }
+    ## } else {
+    ##     ## Packaging data for TMB template.
+    ##     data <- list(capt = capt,
+    ##                  n_dets = n.dets,
+    ##                  mask_dists = mask.dists,
+    ##                  n = n,
+    ##                  n_traps = n.traps,
+    ##                  n_mask = n.mask,
+    ##                  mask_area = mask.area,
+    ##                  resp_id = resp.id,
+    ##                  resp_pars = resp.pars,
+    ##                  detfn_id = detfn.id,
+    ##                  detfn_scale_id = detfn.scale.id,
+    ##                  link_ids = link.ids,
+    ##                  toa_id = toa.id,
+    ##                  toa_ssq = toa.ssq,
+    ##                  det_indices = det.indices - 1,
+    ##                  toa_indices = toa.indices - 1)
+    ##     ## Making optimisation object with TMB.
+    ##     obj <- MakeADFun(data = data, parameters = list(link_pars = link.pars.start),
+    ##                      DLL = "simple_nll", silent = TRUE)
+    ##     ## Making function for trace.
+    ##     if (trace){
+    ##         obj$fn.notrace <- obj$fn
+    ##         obj$fn <- function(x, ...){
+    ##             out <- obj$fn.notrace(x, ...)
+    ##             cat("Detection parameters: ", paste(format(round(par.unlink(x), 2), nsmall = 2), collapse = ", "),
+    ##                 "; nll: ", format(round(as.numeric(out), 2), nsmall = 2), "\n", sep = "")
+    ##             out
+    ##         }
+    ##     }
+    ## }
     obj
 }
 

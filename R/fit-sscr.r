@@ -144,28 +144,20 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
         }
     } else {
         raw.fit <- nlminb(opt.obj$par, opt.obj$fn, opt.obj$gr)
-        if (cov.structure == "none"){
-            sd.rep <- sdreport(opt.obj)
-            fit <- summary(sd.rep, "report")[, 1]
-            fit <- c(fit, LL = -opt.obj$fn(raw.fit$par))
-            if (hess){
-                fit <- list(pars = fit, vcov = sd.rep$cov)
-            }
-        } else {
-            fit <- opt.obj$organise(raw.fit)
-            if (hess){
-                if (trace){
-                    cat("Computing Hessian...\n")
-                } 
-                model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
-                                         detfn.scale = detfn.scale, cov.structure = cov.structure,
-                                         re.scale = re.scale, start = fit,
-                                         conditional.n = FALSE, Rhess = Rhess)
-                opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
-                fit.vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
-                fit <- list(pars = fit, vcov = fit.vcov)
-            }
+        fit <- opt.obj$organise(raw.fit)
+        if (hess){
+            if (trace){
+                cat("Computing Hessian...\n")
+            } 
+            model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
+                                     detfn.scale = detfn.scale, cov.structure = cov.structure,
+                                     re.scale = re.scale, start = fit,
+                                     conditional.n = FALSE, Rhess = Rhess)
+            opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
+            fit.vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
+            fit <- list(pars = fit, vcov = fit.vcov)
         }
+        
     }
     fit
 }
