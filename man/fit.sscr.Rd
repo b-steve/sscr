@@ -7,7 +7,7 @@
 fit.sscr(capt, traps, mask, resp = "binom", resp.pars = NULL,
   detfn = "hn", detfn.scale = "er", cov.structure = "none",
   re.scale = "er", start = NULL, toa = NULL, trace = FALSE,
-  test = FALSE, test.conditional.n = !Rhess, hess = FALSE, new = FALSE,
+  test = FALSE, test.conditional.n = !Rhess, hess = FALSE,
   Rhess = FALSE)
 }
 \arguments{
@@ -80,9 +80,6 @@ animals.}
 
 \item{hess}{Logical. If \code{TRUE}, a Hessian is computed. Or at
 least it is attempted. But I don't think this works, yet.}
-
-\item{new}{Logical. If \code{TRUE}, the exact-gradient stuff is
-used, I think.}
 
 \item{Rhess}{Logical. If \code{TRUE}, the Hessian is somehow
 computed differently, but it is not clear to me how this
