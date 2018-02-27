@@ -58,23 +58,12 @@ test_that(
                                test.conditional.n = FALSE, Rhess = TRUE)
         expect_that(max(abs(fit.exact$gr - c(59.61226, 419.31909, 29.11101, -13.36349, 255.16827))) < 1e-4, is_true())
         expect_that(max(abs(fit.rexact$gr - c(59.61226, 419.31909, 29.11101, -13.36349, 255.16827))) < 1e-4, is_true())
-        ## fit.notexact <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
-        ##                          mask = test.data$mask, resp = "pois", detfn = "hn",
-        ##                          cov.structure = "exponential", test = "gr",
-        ##                          test.conditional.n = FALSE, new = FALSE)
-        ## fit.notexact
         ## ... and for conditional-n models.
         fit.exact.n <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hn",
                                 cov.structure = "exponential", test = "gr", new = TRUE,
                                 test.conditional.n = TRUE)
         expect_that(max(abs(fit.exact.n$gr - c(4.058224, -2.900307, 5.428064, -1.282832))) < 1e-4, is_true())
-        ## fit.notexact.n <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
-        ##                            mask = test.data$mask, resp = "pois", detfn = "hn",
-        ##                            cov.structure = "exponential", test = "gr",
-        ##                            new = FALSE, test.conditional.n = TRUE)
-
-        
         ## Independent random effects.
         test.ind.hn <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hn",
