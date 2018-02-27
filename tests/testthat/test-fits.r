@@ -6,22 +6,22 @@ test_that(
         compile.sscr()
         ## Poisson.
         fit.pois <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, "pois")
-        expect_that(max(abs(fit.pois - c(2.876451, 93.388203, 30.7750916, 0.4549133))) < 1e-4, is_true())
+        expect_that(max(abs(fit.pois - c(2.876451, 93.388203, 30.7750916, 0.4549133, -126.7372800))) < 1e-4, is_true())
         ## Poisson with detection function on probability scale.
         fit.pois.pr <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, "pois", detfn.scale = "prob")
-        expect_that(max(abs(fit.pois.pr - c(1.0000000, 117.5138450, 32.4247192, 0.4317694 ))) < 1e-4, is_true())
+        expect_that(max(abs(fit.pois.pr - c(1.0000000, 117.5138450, 32.4247192, 0.4317694, -122.1427591))) < 1e-4, is_true())
         ## Bernoulli.
         fit.bern <- fit.sscr(test.data$bin.capt, test.data$traps, test.data$mask)
-        expect_that(max(abs(fit.bern - c(1.105443, 144.338956, 44.8268028, 0.3123132))) < 1e-4, is_true())
+        expect_that(max(abs(fit.bern - c(1.105443, 144.338956, 44.8268028, 0.3123132, -71.5343406))) < 1e-4, is_true())
         ## Bernoulli with detection function on probability scale.
         fit.bern.pr <- fit.sscr(test.data$bin.capt, test.data$traps, test.data$mask, detfn.scale = "prob")
-        expect_that(max(abs(fit.bern.pr - c(0.7097872, 157.4884412, 45.3146356, 0.3089510))) < 1e-4, is_true())
+        expect_that(max(abs(fit.bern.pr - c(0.7097872, 157.4884412, 45.3146356, 0.3089510, -71.8004137))) < 1e-4, is_true())
         ## Binomial.
         fit.binom <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, "binom", 10)
-        expect_that(max(abs(fit.binom - c(0.5190142, 125.8786894, 56.4560761, 0.2479804))) < 1e-4, is_true())
+        expect_that(max(abs(fit.binom - c(0.5190142, 125.8786894, 56.4560761, 0.2479804, -134.4903162))) < 1e-4, is_true())
         ## Binomial with detection function on probability scale.
         fit.binom.pr <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, "binom", 10, detfn.scale = "prob")
-        expect_that(max(abs(fit.binom.pr - c(0.6049765, 137.6776331, 67.8939222, 0.2062040))) < 1e-4, is_true())
+        expect_that(max(abs(fit.binom.pr - c(0.6049765, 137.6776331, 67.8939222, 0.2062040, -133.3041233))) < 1e-4, is_true())
     })
 
 test_that(
@@ -51,17 +51,17 @@ test_that(
         fit.exact <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                               mask = test.data$mask, resp = "pois", detfn = "hn",
                               cov.structure = "exponential", test = "gr",
-                              test.conditional.n = FALSE, new = TRUE)
+                              test.conditional.n = FALSE)
         fit.rexact <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "pois", detfn = "hn",
-                               cov.structure = "exponential", test = "gr", new = TRUE,
+                               cov.structure = "exponential", test = "gr",
                                test.conditional.n = FALSE, Rhess = TRUE)
         expect_that(max(abs(fit.exact$gr - c(59.61226, 419.31909, 29.11101, -13.36349, 255.16827))) < 1e-4, is_true())
         expect_that(max(abs(fit.rexact$gr - c(59.61226, 419.31909, 29.11101, -13.36349, 255.16827))) < 1e-4, is_true())
         ## ... and for conditional-n models.
         fit.exact.n <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hn",
-                                cov.structure = "exponential", test = "gr", new = TRUE,
+                                cov.structure = "exponential", test = "gr", 
                                 test.conditional.n = TRUE)
         expect_that(max(abs(fit.exact.n$gr - c(4.058224, -2.900307, 5.428064, -1.282832))) < 1e-4, is_true())
         ## Independent random effects.
