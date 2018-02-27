@@ -162,7 +162,16 @@ make.obj <- function(survey.data, model.opts, any.cov){
         }
         pars.start <- c(pars.start, cov.start)
         link.ids <- c(link.ids, cov.link.ids)
-    #}
+                                        #}
+    ## Start value for TOA parameter.
+    toa.indices <- -1
+    if (toa.id == 1){
+        toa.indices <- length(pars.start) + 1
+        toa.start <- ifelse(any(start.names == "sigma.toa"), start["sigma.toa"], 3)
+        pars.start <- c(pars.start, toa.start)
+        link.ids <- c(link.ids, 0)
+        par.names <- c(par.names, "sigma.toa")
+    }
     ## Start value for density parameter.
     D.indices <- -1
     if (!conditional.n){
@@ -177,15 +186,6 @@ make.obj <- function(survey.data, model.opts, any.cov){
         }
     } else {
         map[["link_D"]] <- factor(NA)
-    }
-    ## Start value for TOA parameter.
-    toa.indices <- -1
-    if (toa.id == 1){
-        toa.indices <- length(pars.start) + 1
-        toa.start <- ifelse(any(start.names == "sigma.toa"), start["sigma.toa"], 3)
-        pars.start <- c(pars.start, toa.start)
-        link.ids <- c(link.ids, 0)
-        par.names <- c(par.names, "sigma.toa")
     }
     model.opts$link.ids <- link.ids
     model.opts$par.names <- par.names
