@@ -127,5 +127,7 @@ Type objective_function<Type>::operator() ()
   ADREPORT(D);
   // Extra bit that falls out of log-likelihood.
   f -= -n*log(sum_prob_det);
+  // Contribution from number of animals detected.
+  f -= dpois_sscr(n, D*esa, true);
   return f;
 }
