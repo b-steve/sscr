@@ -22,6 +22,16 @@ Type dpois_sscr (const Type &x, const Type &lambda, const int &give_log){
   }
   return out;
 }
+template<class Type>
+Type dpois_sscr (const int &x, const Type &lambda, const int &give_log){
+  double d_x = x;
+  Type out;
+  out = pow(lambda, d_x)*exp(-lambda)/exp(lgamma(d_x + 1));
+  if (give_log){
+    out = log(out + DBL_MIN);
+  }
+  return out;
+}
 
 // Converting hazards to probabilities.
 
