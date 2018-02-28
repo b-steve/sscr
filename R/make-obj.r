@@ -357,7 +357,9 @@ vcov.closure <- function(survey.data, model.opts, nll, dlink.fun, gr = NULL){
         n.pars <- length(pars)
         jacobian <- diag(n.pars)
         diag(jacobian) <- dlink.fun(pars)
-        jacobian %*% vcov.link %*% t(jacobian)
+        out <- jacobian %*% vcov.link %*% t(jacobian)
+        dimnames(out) <- list(model.opts$par.names, model.opts$par.names)
+        out
     }
 }
 

@@ -143,6 +143,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                                      conditional.n = FALSE, Rhess = TRUE)
             opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
             fit$vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
+            fit$se <- sqrt(diag(fit$vcov))
         }
         
     }
