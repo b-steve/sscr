@@ -56,26 +56,14 @@
 #'     then the partial derivatives of the negative log-likelihood
 #'     function with respect to the parameters is also calculated. If
 #'     \code{"hess"} then the Hessian if also calculated.
-#' @param test.conditional.n Logical. If \code{TRUE}, tests are
-#'     computed for models that condition on the number of detected
-#'     animals.
-#' @param hess Logical. If \code{TRUE}, a Hessian is computed. Or at
-#'     least it is attempted. But I don't think this works, yet.
-#' @param Rhess Logical. If \code{TRUE}, the Hessian is somehow
-#'     computed differently, but it is not clear to me how this
-#'     happens.
+#' @param hess Logical. If \code{TRUE}, a Hessian is computed and a
+#'     variance-covariance matrix is returned.
 #' 
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
                      detfn.scale = "er", cov.structure = "none", re.scale = "er",
                      start = NULL, toa = NULL, trace = FALSE, test = FALSE,
-                     test.conditional.n = !Rhess, hess = FALSE, Rhess = FALSE){
-    if (!is.null(toa) & !Rhess){
-        warning("Time-of-arrival models only seem to work with Rhess = TRUE. Don't trust gradients or the Hessian that involve parameter D.")
-    }
-    if (Rhess & test.conditional.n){
-        stop("If Rhess = TRUE then test.conditional.n must be FALSE.")
-    }
+                     hess = FALSE){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -121,7 +109,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
         model.opts.test <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                  detfn.scale = detfn.scale, cov.structure = cov.structure,
                                  re.scale = re.scale, start = start,
-                                 conditional.n = test.conditional.n, Rhess = Rhess)
+                                 conditional.n = FALSE, Rhess = TRUE)
         opt.obj.test <- make.obj(survey.data, model.opts.test, any.cov)
         ## Setting up output list.
         fit <- list()
@@ -152,7 +140,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
             model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                      detfn.scale = detfn.scale, cov.structure = cov.structure,
                                      re.scale = re.scale, start = fit,
-                                     conditional.n = FALSE, Rhess = Rhess)
+                                     conditional.n = FALSE, Rhess = TRUE)
             opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
             fit.vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
             fit <- list(pars = fit, vcov = fit.vcov)
