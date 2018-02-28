@@ -300,7 +300,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
                     if (toa.id == 1){
                         cat("; TOA parameter: ", format(round(par.unlink(link.pars, toa.indices), 2), nsmall = 2), sep = "")
                     }
-                    cat("; nll: ", format(round(out, 2), nsmall = 2), "\n", sep = "")
+                    cat("; NLL: ", format(round(out, 2), nsmall = 2), "\n", sep = "")
                 }
             } else if (fun == "gr"){
                 if (Rhess){
@@ -312,7 +312,9 @@ make.obj <- function(survey.data, model.opts, any.cov){
                 } else {
                     out <- nll.obj$gr(link.pars.tmb) + n*apply(neglog.det.probs.grads, 1, function(x) sum(-exp(-neglog.det.probs)*x))/sum(det.probs)    
                 }
-                cat("grads: ", paste(out, collapse = " "), "\n")
+                if (trace){
+                    cat("Partial derivatives: ", paste(out, collapse = " "), "\n")
+                }
             } else if (fun == "det.probs"){
                 out <- det.probs
             }
@@ -326,38 +328,6 @@ make.obj <- function(survey.data, model.opts, any.cov){
     obj.organise <- organise.closure(survey.data, model.opts, cov.organise, get.fn.gr(fun = "det.probs"))
     obj <- list(par = link.pars.start, fn = obj.fn, gr = obj.gr,
                 vcov = obj.vcov, organise = obj.organise)
-    ## } else {
-    ##     ## Packaging data for TMB template.
-    ##     data <- list(capt = capt,
-    ##                  n_dets = n.dets,
-    ##                  mask_dists = mask.dists,
-    ##                  n = n,
-    ##                  n_traps = n.traps,
-    ##                  n_mask = n.mask,
-    ##                  mask_area = mask.area,
-    ##                  resp_id = resp.id,
-    ##                  resp_pars = resp.pars,
-    ##                  detfn_id = detfn.id,
-    ##                  detfn_scale_id = detfn.scale.id,
-    ##                  link_ids = link.ids,
-    ##                  toa_id = toa.id,
-    ##                  toa_ssq = toa.ssq,
-    ##                  det_indices = det.indices - 1,
-    ##                  toa_indices = toa.indices - 1)
-    ##     ## Making optimisation object with TMB.
-    ##     obj <- MakeADFun(data = data, parameters = list(link_pars = link.pars.start),
-    ##                      DLL = "simple_nll", silent = TRUE)
-    ##     ## Making function for trace.
-    ##     if (trace){
-    ##         obj$fn.notrace <- obj$fn
-    ##         obj$fn <- function(x, ...){
-    ##             out <- obj$fn.notrace(x, ...)
-    ##             cat("Detection parameters: ", paste(format(round(par.unlink(x), 2), nsmall = 2), collapse = ", "),
-    ##                 "; nll: ", format(round(as.numeric(out), 2), nsmall = 2), "\n", sep = "")
-    ##             out
-    ##         }
-    ##     }
-    ## }
     obj
 }
 
@@ -397,6 +367,22 @@ organise.closure <- function(survey.data, model.opts, organise.fun, det.probs.fu
         organise.fun(fit, survey.data, model.opts, det.probs.fun)
     }
 }
+
+cov.organise <- function(fit, survey.data, model.opts, det.probs.fun){
+    pars <- fit$par
+    det.probs <- det.probs.fun(pars)
+    mask.area <- survey.data$mask.area
+    capt <- survey.data$capt
+    esa <- sum(det.probs)*mask.area
+    D <- nrow(capt)/esa
+    link.ids <- model.opts$link.ids
+    par.unlink <- unlink.closure(link.ids)
+    ll <- -fit$objective
+    pars <- c(par.unlink(pars), D, esa, ll)
+    names(pars) <- c(model.opts$par.names, "D", "esa", "LL")
+    pars    
+}
+
 
 ## Closure to provide linking function without passing link ids.
 link.closure <- function(link.ids){
