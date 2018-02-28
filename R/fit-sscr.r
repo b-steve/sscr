@@ -56,6 +56,8 @@
 #'     then the partial derivatives of the negative log-likelihood
 #'     function with respect to the parameters is also calculated. If
 #'     \code{"hess"} then the Hessian if also calculated.
+#' @param test.conditional.n Logical. If \code{TRUE}, tests are
+#'     carried out conditioning in the number of detections.
 #' @param hess Logical. If \code{TRUE}, a Hessian is computed and a
 #'     variance-covariance matrix is returned.
 #' 
@@ -63,7 +65,7 @@
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
                      detfn.scale = "er", cov.structure = "none", re.scale = "er",
                      start = NULL, toa = NULL, trace = FALSE, test = FALSE,
-                     hess = FALSE){
+                     test.conditional.n = TRUE, hess = FALSE){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -109,7 +111,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
         model.opts.test <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                  detfn.scale = detfn.scale, cov.structure = cov.structure,
                                  re.scale = re.scale, start = start,
-                                 conditional.n = FALSE, Rhess = TRUE)
+                                 conditional.n = test.conditional.n, Rhess = !test.conditional.n)
         opt.obj.test <- make.obj(survey.data, model.opts.test, any.cov)
         ## Setting up output list.
         fit <- list()
