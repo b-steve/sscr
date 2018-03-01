@@ -7,7 +7,7 @@
 fit.sscr(capt, traps, mask, resp = "binom", resp.pars = NULL,
   detfn = "hn", detfn.scale = "er", cov.structure = "none",
   re.scale = "er", start = NULL, toa = NULL, trace = FALSE,
-  test = FALSE, hess = FALSE)
+  test = FALSE, test.conditional.n = TRUE, hess = FALSE)
 }
 \arguments{
 \item{capt}{A capture history object. It should be a matrix, where
@@ -72,6 +72,9 @@ then the negative log-likelihood is calculated. If \code{"gr"},
 then the partial derivatives of the negative log-likelihood
 function with respect to the parameters is also calculated. If
 \code{"hess"} then the Hessian if also calculated.}
+
+\item{test.conditional.n}{Logical. If \code{TRUE}, tests are
+carried out conditioning in the number of detections.}
 
 \item{hess}{Logical. If \code{TRUE}, a Hessian is computed and a
 variance-covariance matrix is returned.}
