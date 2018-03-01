@@ -162,42 +162,43 @@ Type objective_function<Type>::operator() ()
       f -= dnorm(u(i, 0), Type(0), cov_pars(0), true);
     }
   } else if (cov_id != 6){
-    for (int i = 0; i < n; i++){
-      // Variance-covariance matrix for latent variables.
-      matrix<Type> sigma_u_mat(n_traps, n_traps);
-      for (int j = 0; j < n_traps; j++){
-	for (int k = j; k < n_traps; k++){ 
-	  if (j == k){
+    // Variance-covariance matrix for latent variables.
+    matrix<Type> sigma_u_mat(n_traps, n_traps);
+    for (int j = 0; j < n_traps; j++){
+      for (int k = j; k < n_traps; k++){ 
+	if (j == k){
+	  sigma_u_mat(j, k) = pow(cov_pars(0), 2);
+	} else {
+	  if (cov_id == 0){
+	    // Independent random effects
+	    sigma_u_mat(j, k) = 0;
+	    sigma_u_mat(k, j) = 0;
+	  } else if (cov_id == 1){
+	    // Exponential covariance function.
+	    sigma_u_mat(j, k) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
+	    sigma_u_mat(k, j) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
+	  } else if (cov_id == 2){
+	    // Matern covariance function.
+	  } else if (cov_id == 3){
+	    // Total dependence (individual-level random effects).
+	    // NOTE: This is actually handled above.
 	    sigma_u_mat(j, k) = pow(cov_pars(0), 2);
+	    sigma_u_mat(k, j) = pow(cov_pars(0), 2);
+	  } else if (cov_id == 4){
+	    // Linear combination of exponential covariance functions.
+	    sigma_u_mat(j, k) = pow(cov_pars(0), 2)*(cov_pars(1)*exp(-cov_pars(2)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(2)*trap_dists(j, k)), 2) + (1 - cov_pars(1))*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2));
+	    sigma_u_mat(k, j) = pow(cov_pars(0), 2)*(cov_pars(1)*exp(-cov_pars(2)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(2)*trap_dists(j, k)), 2) + (1 - cov_pars(1))*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2));
+	  } else if (cov_id == 5){
+	    // Squared exponential covariance function.
+	    sigma_u_mat(j, k) = pow(cov_pars(0), 2)*exp(-pow(trap_dists(j, k), 2)/pow(cov_pars(1), 2));
+	    sigma_u_mat(k, j) = pow(cov_pars(0), 2)*exp(-pow(trap_dists(j, k), 2)/pow(cov_pars(1), 2));
 	  } else {
-	    if (cov_id == 0){
-	      // Independent random effects
-	      sigma_u_mat(j, k) = 0;
-	      sigma_u_mat(k, j) = 0;
-	    } else if (cov_id == 1){
-	      // Exponential covariance function.
-	      sigma_u_mat(j, k) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
-	      sigma_u_mat(k, j) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
-	    } else if (cov_id == 2){
-	      // Matern covariance function.
-	    } else if (cov_id == 3){
-	      // Total dependence (individual-level random effects).
-	      sigma_u_mat(j, k) = pow(cov_pars(0), 2);
-	      sigma_u_mat(k, j) = pow(cov_pars(0), 2);
-	    } else if (cov_id == 4){
-	      // Linear combination of exponential covariance functions.
-	      sigma_u_mat(j, k) = pow(cov_pars(0), 2)*(cov_pars(1)*exp(-cov_pars(2)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(2)*trap_dists(j, k)), 2) + (1 - cov_pars(1))*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2));
-	      sigma_u_mat(k, j) = pow(cov_pars(0), 2)*(cov_pars(1)*exp(-cov_pars(2)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(2)*trap_dists(j, k)), 2) + (1 - cov_pars(1))*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2));
-	    } else if (cov_id == 5){
-	      // Squared exponential covariance function.
-	      sigma_u_mat(j, k) = pow(cov_pars(0), 2)*exp(-pow(trap_dists(j, k), 2)/pow(cov_pars(1), 2));
-	      sigma_u_mat(k, j) = pow(cov_pars(0), 2)*exp(-pow(trap_dists(j, k), 2)/pow(cov_pars(1), 2));
-	    } else {
-	      exit(1111);
-	    }
+	    exit(1111);
 	  }
 	}
       }
+    }
+    for (int i = 0; i < n; i++){
       // Contribution from latent variables (note MVNORM returns the
       // negative-log of the density).
       f += MVNORM(sigma_u_mat)(u.row(i));
