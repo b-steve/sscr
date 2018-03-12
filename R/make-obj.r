@@ -365,13 +365,12 @@ vcov.closure <- function(survey.data, model.opts, nll, dlink.fun, gr = NULL){
 
 ## Closure to provide organisation function stuff after model fitting.
 organise.closure <- function(survey.data, model.opts, organise.fun, det.probs.fun = NULL){
-    function(fit){
-        organise.fun(fit, survey.data, model.opts, det.probs.fun)
+    function(pars, objective){
+        organise.fun(pars, objective, survey.data, model.opts, det.probs.fun)
     }
 }
 
-cov.organise <- function(fit, survey.data, model.opts, det.probs.fun){
-    pars <- fit$par
+cov.organise <- function(pars, objective, survey.data, model.opts, det.probs.fun){
     det.probs <- det.probs.fun(pars)
     mask.area <- survey.data$mask.area
     capt <- survey.data$capt
@@ -379,7 +378,7 @@ cov.organise <- function(fit, survey.data, model.opts, det.probs.fun){
     D <- nrow(capt)/esa
     link.ids <- model.opts$link.ids
     par.unlink <- unlink.closure(link.ids)
-    ll <- -fit$objective
+    ll <- -objective
     pars <- c(par.unlink(pars), D, esa, ll)
     names(pars) <- c(model.opts$par.names, "D", "esa", "LL")
     pars    

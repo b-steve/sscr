@@ -60,12 +60,15 @@
 #'     carried out conditioning in the number of detections.
 #' @param hess Logical. If \code{TRUE}, a Hessian is computed and a
 #'     variance-covariance matrix is returned.
+#' @param optim.fun A character string representing the R function to
+#'     maximise the likelihood. This can either be \code{"nlminb"} or
+#'     \code{"nlm"}.
 #' 
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
                      detfn.scale = "er", cov.structure = "none", re.scale = "er",
                      start = NULL, toa = NULL, trace = FALSE, test = FALSE,
-                     test.conditional.n = TRUE, hess = FALSE){
+                     test.conditional.n = TRUE, hess = FALSE, optim.fun = "nlminb"){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -133,8 +136,20 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
             }
         }
     } else {
-        raw.fit <- nlminb(opt.obj$par, opt.obj$fn, opt.obj$gr)
-        fit <- list(ests = opt.obj$organise(raw.fit))
+        if (optim.fun == "nlminb"){
+            raw.fit <- nlminb(opt.obj$par, opt.obj$fn, opt.obj$gr)
+            fit <- list(ests = opt.obj$organise(raw.fit$par, raw.fit$objective),
+                        grads = opt.obj$gr(raw.fit$par))
+        } else if (optim.fun == "nlm"){
+            f <- function(par){
+                out <- opt.obj$fn(par)
+                attr(out, "gradient") <- opt.obj$gr(par)
+                out
+            }
+            raw.fit <- nlm(f, opt.obj$par)
+            fit <- list(ests = opt.obj$organise(raw.fit$estimate, raw.fit$minimum),
+                        grads = raw.fit$gradient)
+        }
         if (hess){
             if (trace){
                 cat("Computing Hessian...\n")
