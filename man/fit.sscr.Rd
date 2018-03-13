@@ -7,7 +7,8 @@
 fit.sscr(capt, traps, mask, resp = "binom", resp.pars = NULL,
   detfn = "hn", detfn.scale = "er", cov.structure = "none",
   re.scale = "er", start = NULL, toa = NULL, trace = FALSE,
-  test = FALSE, test.conditional.n = TRUE, hess = FALSE)
+  test = FALSE, test.conditional.n = TRUE, hess = FALSE,
+  optim.fun = "nlminb")
 }
 \arguments{
 \item{capt}{A capture history object. It should be a matrix, where
@@ -78,6 +79,10 @@ carried out conditioning in the number of detections.}
 
 \item{hess}{Logical. If \code{TRUE}, a Hessian is computed and a
 variance-covariance matrix is returned.}
+
+\item{optim.fun}{A character string representing the R function to
+maximise the likelihood. This can either be \code{"nlminb"} or
+\code{"nlm"}.}
 }
 \description{
 Fits an SSCR model. Estimation is by maximum likelihood. The
