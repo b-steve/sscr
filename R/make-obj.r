@@ -261,7 +261,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
             if (fun != "det.probs"){
                 if (manual.sep){
                     ind.objs <- list()
-                    for (i in 1:n.dets){
+                    for (i in 1:n){
                         if (cov.id == 6){
                             u.nll.ind <- 0
                         } else {

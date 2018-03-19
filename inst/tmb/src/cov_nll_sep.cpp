@@ -40,7 +40,7 @@ Type objective_function<Type>::operator() ()
   // Indicator for time-of-arrival data.
   DATA_INTEGER(toa_id);
   // Time-of-arrival data.
-  DATA_MATRIX(toa_ssq);
+  DATA_VECTOR(toa_ssq);
   // Indicators for detection parameter link functions.
   DATA_IVECTOR(link_det_ids);
   // Number of detection function parameters.
