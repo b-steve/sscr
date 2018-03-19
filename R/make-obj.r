@@ -43,6 +43,18 @@ make.obj <- function(survey.data, model.opts, any.cov){
     ## Start values for optimisation.
     start <- model.opts$start
     start.names <- names(start)
+    ## Indicator for manual separability.
+    manual.sep <- model.opts$manual.sep
+    ## Uhh I dunno this stuff only works under certain combinations of
+    ## manual.sep, conditional.n, and Rhess for confusing reasons that
+    ## I keep forgetting, but I momentarily understand right now. I
+    ## don't think this error should ever get triggered by standard
+    ## use of fit.sscr(). If it does, then uh oh something went wrong.
+    if (manual.sep){
+        if (!(conditional.n | Rhess)){
+            stop("For manual separability, either 'conditional.n' or 'Rhess' must be 'TRUE'.")
+        }
+    }
     ## Indices and start values for detection function parameters.
     ## Link 0 is log, 1 is qlogis.
     ## For detection functions on the hazard scale.
@@ -247,32 +259,84 @@ make.obj <- function(survey.data, model.opts, any.cov){
                 neglog.det.probs.grads[, i] <- detprob.objs[[i]]$gr(link.pars.tmb)
             }
             if (fun != "det.probs"){
-                nll.obj <- MakeADFun(data = list(capt = capt,
-                                                 n_dets = n.dets,
-                                                 mask_dists = mask.dists,
-                                                 trap_dists = trap.dists,
-                                                 n = n,
-                                                 n_traps = n.traps,
-                                                 n_mask = n.mask,
-                                                 mask_area = mask.area,
-                                                 resp_id = resp.id,
-                                                 resp_pars = resp.pars,
-                                                 detfn_id = detfn.id,
-                                                 detfn_scale_id = detfn.scale.id,
-                                                 cov_id = cov.id,
-                                                 re_scale_id = re.scale.id,
-                                                 det_probs = det.probs,
-                                                 toa_id = toa.id,
-                                                 toa_ssq = toa.ssq,
-                                                 conditional_n = as.numeric(conditional.n | Rhess),
-                                                 link_det_ids = link.ids[det.indices],
-                                                 link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices]),
-                                     parameters = list(link_det_pars = link.pars[det.indices],
-                                                       link_cov_pars = if (cov.id == 6) 1 else link.pars[cov.indices],
-                                                       link_sigma_toa = ifelse(toa.id, link.pars[toa.indices], 1),
-                                                       link_D = ifelse(conditional.n | Rhess, 1, link.pars[D.indices]),
-                                                       u = u.nll),
-                                     map = map, random = random.comp, DLL = "cov_nll", silent = TRUE)
+                if (manual.sep){
+                    ind.objs <- list()
+                    for (i in 1:n.dets){
+                        if (cov.id == 6){
+                            u.nll.ind <- 0
+                        } else {
+                            u.nll.ind <- u.nll[i, ]
+                        }
+                        ind.objs <- MakeADFun(data = list(capt = capt[i, ],
+                                                          n_dets = n.dets[i],
+                                                          mask_dists = mask.dists,
+                                                          trap_dists = trap.dists,
+                                                          n_traps = n.traps,
+                                                          n_mask = n.mask,
+                                                          mask_area = mask.area,
+                                                          resp_id = resp.id,
+                                                          resp_pars = resp.pars,
+                                                          detfn_id = detfn.id,
+                                                          detfn_scale_id = detfn.scale.id,
+                                                          cov_id = cov.id,
+                                                          re_scale_id = re.scale.id,
+                                                          det_probs = det.probs,
+                                                          toa_id = toa.id,
+                                                          toa_ssq = toa.ssq[i, ],
+                                                          link_det_ids = link.ids[det.indices],
+                                                          link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices]),
+                                              parameters = list(link_det_pars = link.pars[det.indices],
+                                                                link_cov_pars = if (cov.id == 6) 1 else link.pars[cov.indices],
+                                                                link_sigma_toa = ifelse(toa.id, link.pars[toa.indices], 1),
+                                                                link_D = ifelse(conditional.n | Rhess, 1, link.pars[D.indices]),
+                                                                u = u.nll.ind),
+                                              map = map, random = random.comp, DLL = "cov_nll_sep", silent = TRUE)
+                    }
+                    nll.obj <- list()
+                    nll.obj$fn <- function(pars){
+                        nll.contribs <- numeric(n)
+                        for (i in 1:n){
+                            nll.contribs[i] <- ind.objs[[i]]$fn(pars)
+                        }
+                        cat("Calculating NLL with manual separability...\n")
+                        sum(nll.contribs)
+                    }
+                    nll.obj$gr <- function(pars){
+                        gr.contribs <- matrix(0, nrow = n, ncol = length(pars))
+                        for (i in 1:n){
+                            gr.contribs[i, ] <- ind.objs[[i]]$gr(pars)
+                        }
+                        cat("Calculating gradients with manual separability...\n")
+                        apply(gr.contribs, 2, sum)
+                    }
+                } else {
+                    nll.obj <- MakeADFun(data = list(capt = capt,
+                                                     n_dets = n.dets,
+                                                     mask_dists = mask.dists,
+                                                     trap_dists = trap.dists,
+                                                     n = n,
+                                                     n_traps = n.traps,
+                                                     n_mask = n.mask,
+                                                     mask_area = mask.area,
+                                                     resp_id = resp.id,
+                                                     resp_pars = resp.pars,
+                                                     detfn_id = detfn.id,
+                                                     detfn_scale_id = detfn.scale.id,
+                                                     cov_id = cov.id,
+                                                     re_scale_id = re.scale.id,
+                                                     det_probs = det.probs,
+                                                     toa_id = toa.id,
+                                                     toa_ssq = toa.ssq,
+                                                     conditional_n = as.numeric(conditional.n | Rhess),
+                                                     link_det_ids = link.ids[det.indices],
+                                                     link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices]),
+                                         parameters = list(link_det_pars = link.pars[det.indices],
+                                                           link_cov_pars = if (cov.id == 6) 1 else link.pars[cov.indices],
+                                                           link_sigma_toa = ifelse(toa.id, link.pars[toa.indices], 1),
+                                                           link_D = ifelse(conditional.n | Rhess, 1, link.pars[D.indices]),
+                                                           u = u.nll),
+                                         map = map, random = random.comp, DLL = "cov_nll", silent = TRUE)
+                }
             }
             if (fun == "nll"){
                 out <- nll.obj$fn(link.pars.tmb)

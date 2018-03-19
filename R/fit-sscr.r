@@ -63,12 +63,16 @@
 #' @param optim.fun A character string representing the R function to
 #'     maximise the likelihood. This can either be \code{"nlminb"} or
 #'     \code{"nlm"}.
+#' @param manual.sep Logical. If \code{TRUE}, integration over
+#'     individuals' spatially structured random effects is enforced in
+#'     R, rather than automatically detected by TMB.
 #' 
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
                      detfn.scale = "er", cov.structure = "none", re.scale = "er",
                      start = NULL, toa = NULL, trace = FALSE, test = FALSE,
-                     test.conditional.n = TRUE, hess = FALSE, optim.fun = "nlminb"){
+                     test.conditional.n = TRUE, hess = FALSE, optim.fun = "nlminb",
+                     manual.sep = TRUE){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -96,7 +100,8 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                         trace = trace)
     model.opts <- list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                        detfn.scale = detfn.scale, cov.structure = cov.structure,
-                       re.scale = re.scale, start = start, conditional.n = TRUE, Rhess = FALSE)
+                       re.scale = re.scale, start = start, conditional.n = TRUE, Rhess = FALSE,
+                       manual.sep = manual.sep)
     ## Optimisation object constructor function.
     if (cov.structure == "none"){
         any.cov <- FALSE
@@ -114,7 +119,8 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
         model.opts.test <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                  detfn.scale = detfn.scale, cov.structure = cov.structure,
                                  re.scale = re.scale, start = start,
-                                 conditional.n = test.conditional.n, Rhess = !test.conditional.n)
+                                 conditional.n = test.conditional.n, Rhess = !test.conditional.n,
+                                 manual.sep = manual.sep)
         opt.obj.test <- make.obj(survey.data, model.opts.test, any.cov)
         ## Setting up output list.
         fit <- list()
@@ -157,7 +163,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
             model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                      detfn.scale = detfn.scale, cov.structure = cov.structure,
                                      re.scale = re.scale, start = fit$ests,
-                                     conditional.n = FALSE, Rhess = TRUE)
+                                     conditional.n = FALSE, Rhess = TRUE, manual.sep = manual.sep)
             opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
             fit$vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
             fit$se <- sqrt(diag(fit$vcov))
