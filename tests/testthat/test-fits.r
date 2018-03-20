@@ -43,7 +43,7 @@ test_that(
         ## Independent random effects.
         test.ind.hn <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hn",
-                                cov.structure = "independent", test = "nll", trace = TRUE)
+                                cov.structure = "independent", test = "nll")
         expect_equivalent(test.ind.hn$nll, 127.0738, tolerance = 1e-4, scale = 1)
         ## With detection function on probability scale.
         test.ind.hn.detpr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
