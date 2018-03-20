@@ -267,30 +267,35 @@ make.obj <- function(survey.data, model.opts, any.cov){
                         } else {
                             u.nll.ind <- u.nll[i, ]
                         }
-                        ind.objs <- MakeADFun(data = list(capt = capt[i, ],
-                                                          n_dets = n.dets[i],
-                                                          mask_dists = mask.dists,
-                                                          trap_dists = trap.dists,
-                                                          n_traps = n.traps,
-                                                          n_mask = n.mask,
-                                                          mask_area = mask.area,
-                                                          resp_id = resp.id,
-                                                          resp_pars = resp.pars,
-                                                          detfn_id = detfn.id,
-                                                          detfn_scale_id = detfn.scale.id,
-                                                          cov_id = cov.id,
-                                                          re_scale_id = re.scale.id,
-                                                          det_probs = det.probs,
-                                                          toa_id = toa.id,
-                                                          toa_ssq = toa.ssq[i, ],
-                                                          link_det_ids = link.ids[det.indices],
-                                                          link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices]),
-                                              parameters = list(link_det_pars = link.pars[det.indices],
-                                                                link_cov_pars = if (cov.id == 6) 1 else link.pars[cov.indices],
-                                                                link_sigma_toa = ifelse(toa.id, link.pars[toa.indices], 1),
-                                                                link_D = ifelse(conditional.n | Rhess, 1, link.pars[D.indices]),
-                                                                u = u.nll.ind),
-                                              map = map, random = random.comp, DLL = "cov_nll_sep", silent = TRUE)
+                        if (is.null(toa)){
+                            toa.ssq.ind <- 0
+                        } else {
+                            toa.ssq.ind <- toa.ssq[i, ]
+                        }
+                        ind.objs[[i]] <- MakeADFun(data = list(capt = capt[i, ],
+                                                               n_dets = n.dets[i],
+                                                               mask_dists = mask.dists,
+                                                               trap_dists = trap.dists,
+                                                               n_traps = n.traps,
+                                                               n_mask = n.mask,
+                                                               mask_area = mask.area,
+                                                               resp_id = resp.id,
+                                                               resp_pars = resp.pars,
+                                                               detfn_id = detfn.id,
+                                                               detfn_scale_id = detfn.scale.id,
+                                                               cov_id = cov.id,
+                                                               re_scale_id = re.scale.id,
+                                                               det_probs = det.probs,
+                                                               toa_id = toa.id,
+                                                               toa_ssq = toa.ssq.ind,
+                                                               link_det_ids = link.ids[det.indices],
+                                                               link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices]),
+                                                   parameters = list(link_det_pars = link.pars[det.indices],
+                                                                     link_cov_pars = if (cov.id == 6) 1 else link.pars[cov.indices],
+                                                                     link_sigma_toa = ifelse(toa.id, link.pars[toa.indices], 1),
+                                                                     link_D = ifelse(conditional.n | Rhess, 1, link.pars[D.indices]),
+                                                                     u = u.nll.ind),
+                                                   map = map, random = random.comp, DLL = "cov_nll_sep", silent = TRUE)
                     }
                     nll.obj <- list()
                     nll.obj$fn <- function(pars){
