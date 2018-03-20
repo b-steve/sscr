@@ -8,7 +8,7 @@ fit.sscr(capt, traps, mask, resp = "binom", resp.pars = NULL,
   detfn = "hn", detfn.scale = "er", cov.structure = "none",
   re.scale = "er", start = NULL, toa = NULL, trace = FALSE,
   test = FALSE, test.conditional.n = TRUE, hess = FALSE,
-  optim.fun = "nlminb")
+  optim.fun = "nlminb", manual.sep = TRUE)
 }
 \arguments{
 \item{capt}{A capture history object. It should be a matrix, where
@@ -83,6 +83,10 @@ variance-covariance matrix is returned.}
 \item{optim.fun}{A character string representing the R function to
 maximise the likelihood. This can either be \code{"nlminb"} or
 \code{"nlm"}.}
+
+\item{manual.sep}{Logical. If \code{TRUE}, integration over
+individuals' spatially structured random effects is enforced in
+R, rather than automatically detected by TMB.}
 }
 \description{
 Fits an SSCR model. Estimation is by maximum likelihood. The
