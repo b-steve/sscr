@@ -1,9 +1,10 @@
 ## Functions to make optimisation objects.
-make.obj <- function(survey.data, model.opts, any.cov){
+make.obj <- function(survey.data, model.opts){
     ## Extracting data.
     capt <- survey.data$capt
     n.dets <- apply(capt, 1, function(x) sum(x > 0))
     mask.dists <- survey.data$mask.dists
+    mask.to.mask.dists <- survey.data$mask.to.mask.dists
     mask.area <- survey.data$mask.area
     n.mask <- survey.data$n.mask
     n.traps <- survey.data$n.traps
@@ -94,10 +95,78 @@ make.obj <- function(survey.data, model.opts, any.cov){
     }
     pars.start <- det.start
     link.ids <- det.link.ids
-    #if (any.cov){
-        ## Stuff only for covariance structures.
-        cov.structure <- model.opts$cov.structure
-        cov.id <- switch(model.opts$cov.structure,
+    ## Stuff only for covariance structures.
+    cov.structure <- model.opts$cov.structure
+    cov.id <- switch(model.opts$cov.structure,
+                     independent = 0,
+                     exponential = 1,
+                     matern = 2,
+                     individual = 3,
+                     lc_exponential = 4,
+                     sq_exponential = 5,
+                     none = 6)
+    re.scale <- model.opts$re.scale
+    re.scale.id <- switch(re.scale, er = 0, prob = 1)     
+    ## Indices and start values for covariance parameters.
+    cov.index.start <- max(det.indices) + 1
+    if (cov.id == 0){
+        ## Independent.
+        cov.indices <- cov.index.start
+        cov.start <- numeric(1)
+        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
+                               start["sigma.u"], sd(capt))
+        cov.link.ids <- 0
+        par.names <- c(par.names, "sigma.u")
+    } else if (cov.id == 1){
+        ## Exponential.
+        cov.indices <- cov.index.start:(cov.index.start + 1)
+        cov.start <- numeric(2)
+        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
+                               start["sigma.u"], sd(capt))
+        cov.start[2] <- ifelse(any(start.names == "rho"),
+                               start["rho"], mean(trap.dists))
+        cov.link.ids <- c(0, 0)
+        par.names <- c(par.names, "sigma.u", "rho")
+    } else if (cov.id == 2){
+        ## Matern.
+        cov.indices <- cov.index.start:(cov.index.start + 2)
+        stop("Matern covariance function not yet implemented.")
+    } else if (cov.id == 3){
+        ## Individual.
+        cov.indices <- cov.index.start
+        cov.start <- numeric(1)
+        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
+                               start["sigma.u"], sd(capt))
+        cov.link.ids <- 0
+        par.names <- c(par.names, "sigma.u")
+    } else if (cov.id == 4){
+        ## Linear combination of exponentials.
+        cov.indices <- cov.index.start:(cov.index.start + 3)
+        stop("Linear combination of exponentials not yet implemented.")
+    } else if (cov.id == 5){
+        ## Squared exponential.
+        cov.indices <- cov.index.start:(cov.index.start + 1)
+        cov.start <- numeric(2)
+        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
+                               start["sigma.u"], sd(capt))
+        cov.start[2] <- ifelse(any(start.names == "rho"),
+                               start["rho"], mean(trap.dists))
+        cov.link.ids <- c(0, 0)
+        par.names <- c(par.names, "sigma.u", "rho")
+    } else if (cov.id == 6){
+        ## No covariance.
+        cov.indices <- -1
+        cov.start <- NULL
+        cov.link.ids <- NULL
+        map[["link_cov_pars"]] <- factor(NA)
+    }
+    ## Stuff only for inhomogeneous density covariance structures.
+    ihd <- model.opts$ihd
+    ihd.cov.structure <- model.opts$ihd.cov.structure
+    if (ihd.cov.structure == "none"){
+        ihd <- FALSE
+    }
+    ihd.cov.id <- switch(model.opts$ihd.cov.structure,
                          independent = 0,
                          exponential = 1,
                          matern = 2,
@@ -105,64 +174,50 @@ make.obj <- function(survey.data, model.opts, any.cov){
                          lc_exponential = 4,
                          sq_exponential = 5,
                          none = 6)
-        re.scale <- model.opts$re.scale
-        re.scale.id <- switch(re.scale, er = 0, prob = 1)     
-        ## Indices and start values for covariance parameters.
-        cov.index.start <- max(det.indices) + 1
-        if (cov.id == 0){
-            ## Independent.
-            cov.indices <- cov.index.start
-            cov.start <- numeric(1)
-            cov.start[1] <- ifelse(any(start.names == "sigma.u"),
-                                   start["sigma.u"], sd(capt))
-            cov.link.ids <- 0
-            par.names <- c(par.names, "sigma.u")
-        } else if (cov.id == 1){
-            ## Exponential.
-            cov.indices <- cov.index.start:(cov.index.start + 1)
-            cov.start <- numeric(2)
-            cov.start[1] <- ifelse(any(start.names == "sigma.u"),
-                                   start["sigma.u"], sd(capt))
-            cov.start[2] <- ifelse(any(start.names == "rho"),
-                                   start["rho"], mean(trap.dists))
-            cov.link.ids <- c(0, 0)
-            par.names <- c(par.names, "sigma.u", "rho")
-        } else if (cov.id == 2){
-            ## Matern.
-            cov.indices <- cov.index.start:(cov.index.start + 2)
-            stop("Matern covariance function not yet implemented.")
-        } else if (cov.id == 3){
-            ## Individual.
-            cov.indices <- cov.index.start
-            cov.start <- numeric(1)
-            cov.start[1] <- ifelse(any(start.names == "sigma.u"),
-                                   start["sigma.u"], sd(capt))
-            cov.link.ids <- 0
-            par.names <- c(par.names, "sigma.u")
-        } else if (cov.id == 4){
-            ## Linear combination of exponentials.
-            cov.indices <- cov.index.start:(cov.index.start + 3)
-            stop("Linear combination of exponentials not yet implemented.")
-        } else if (cov.id == 5){
-            ## Squared exponential.
-            cov.indices <- cov.index.start:(cov.index.start + 1)
-            cov.start <- numeric(2)
-            cov.start[1] <- ifelse(any(start.names == "sigma.u"),
-                                   start["sigma.u"], sd(capt))
-            cov.start[2] <- ifelse(any(start.names == "rho"),
-                                   start["rho"], mean(trap.dists))
-            cov.link.ids <- c(0, 0)
-            par.names <- c(par.names, "sigma.u", "rho")
-        } else if (cov.id == 6){
-            ## No covariance.
-            cov.indices <- -1
-            cov.start <- NULL
-            cov.link.ids <- NULL
-            map[["link_cov_pars"]] <- factor(NA)
-        }
-        pars.start <- c(pars.start, cov.start)
-        link.ids <- c(link.ids, cov.link.ids)
-                                        #}
+    ihd.cov.index.start <- max(det.indices) + 1
+    if (ihd.cov.id == 0){
+        ## Independent.
+        stop("The \"independent\" covariance structure is not available for the density process.")
+    } else if (ihd.cov.id == 1){
+        ## Exponential.
+        ihd.cov.indices <- ihd.cov.index.start:(ihd.cov.index.start + 1)
+        ihd.cov.start <- numeric(2)
+        ihd.cov.start[1] <- ifelse(any(start.names == "ihd.sigma.u"),
+                               start["ihd.sigma.u"], sd(capt))
+        ihd.cov.start[2] <- ifelse(any(start.names == "rho"),
+                               start["ihd.rho"], mean(trap.dists))
+        ihd.cov.link.ids <- c(0, 0)
+        par.names <- c(par.names, "ihd.sigma.u", "ihd.rho")
+    } else if (ihd.cov.id == 2){
+        ## Matern.
+        ihd.cov.indices <- ihd.cov.index.start:(ihd.cov.index.start + 2)
+        stop("Matern covariance function not yet implemented.")
+    } else if (ihd.cov.id == 3){
+        ## Individual.
+        stop("The \"individual\" covariance structure is not available for the density process.")
+    } else if (ihd.cov.id == 4){
+        ## Linear combination of exponentials.
+        ihd.cov.indices <- ihd.cov.index.start:(ihd.cov.index.start + 3)
+        stop("Linear combination of exponentials not yet implemented.")
+    } else if (ihd.cov.id == 5){
+        ## Squared exponential.
+        ihd.cov.indices <- ihd.cov.index.start:(ihd.cov.index.start + 1)
+        ihd.cov.start <- numeric(2)
+        ihd.cov.start[1] <- ifelse(any(start.names == "ihd.sigma.u"),
+                               start["ihd.sigma.u"], sd(capt))
+        ihd.cov.start[2] <- ifelse(any(start.names == "ihd.rho"),
+                               start["ihd.rho"], mean(trap.dists))
+        ihd.cov.link.ids <- c(0, 0)
+        par.names <- c(par.names, "ihd.sigma.u", "ihd.rho")
+    } else if (ihd.cov.id == 6){
+        ## No covariance.
+        ihd.cov.indices <- -1
+        ihd.cov.start <- NULL
+        ihd.cov.link.ids <- NULL
+        map[["link_ihd_cov_pars"]] <- factor(NA)
+    }
+    pars.start <- c(pars.start, ihd.cov.start)
+    link.ids <- c(link.ids, ihd.cov.link.ids)
     ## Start value for TOA parameter.
     toa.indices <- -1
     if (toa.id == 1){
@@ -181,7 +236,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
         pars.start <- c(pars.start, D.start)
         link.ids <- c(link.ids, 0)
         par.names <- c(par.names, "D")
-        if (Rhess){
+        if (Rhess & !ihd){
             map[["link_D"]] <- factor(NA)
         }
     } else {
@@ -195,7 +250,6 @@ make.obj <- function(survey.data, model.opts, any.cov){
     par.dlink <- dlink.closure(link.ids)
     ## Converting parameters to link scale.
     link.pars.start <- par.link(pars.start)
-    ##if (any.cov){
     detprob.objs <- list()
     ## Making detprob AD objects.
     if (cov.id == 6){
@@ -223,17 +277,28 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                    cov_id = cov.id,
                                                    re_scale_id = re.scale.id,
                                                    link_det_ids = link.ids[det.indices],
-                                                   link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices]),
+                                                   link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices],
+                                                   link_ihd_cov_ids = if (ihd.cov.id == 6) 0 else link.ids[ihd.cov.indices]),
                                        parameters = list(link_det_pars = link.pars.start[det.indices],
                                                          link_cov_pars = if (cov.id == 6) 1 else link.pars.start[cov.indices],
                                                          link_sigma_toa = ifelse(toa.id, link.pars.start[toa.indices], 1),
-                                                         link_D = ifelse(conditional.n | Rhess, 1, link.pars.start[D.indices]),
+                                                         link_ihd_cov_pars = if (ihd.cov.id == 6) 0 else link.pars.start[ihd.cov.indices],
+                                                         link_D = ifelse((conditional.n | Rhess) & !ihd, 1, link.pars.start[D.indices]),
                                                          u = u.detprob),
                                        map = map, random = random.comp, DLL = "cov_detprob", silent = TRUE)
     }
+    ## Adding IHD stuff to random components.
+    if (ihd.cov.id == 6){
+        ## Don't really need this line but let's keep it for consistency.
+        random.comp <- c(random.comp, NULL)
+        map[["v"]] <- rep(factor(NA), n.mask)
+    } else {
+        random.comp <- c(random.comp, "v")
+    }
+    v.nll <- rep(0, n.mask)
     get.fn.gr <- function(fun = "nll"){
         function(link.pars){
-            if (Rhess){
+            if (Rhess & !ihd){
                 link.pars.tmb <- link.pars[-D.indices]
             } else {
                 link.pars.tmb <- link.pars
@@ -250,6 +315,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
                 nll.obj <- MakeADFun(data = list(capt = capt,
                                                  n_dets = n.dets,
                                                  mask_dists = mask.dists,
+                                                 mask_to_mask_dists = mask.to.mask.dists,
                                                  trap_dists = trap.dists,
                                                  n = n,
                                                  n_traps = n.traps,
@@ -260,25 +326,28 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                  detfn_id = detfn.id,
                                                  detfn_scale_id = detfn.scale.id,
                                                  cov_id = cov.id,
+                                                 ihd_cov_id = ihd.cov.id,
                                                  re_scale_id = re.scale.id,
                                                  det_probs = det.probs,
                                                  toa_id = toa.id,
                                                  toa_ssq = toa.ssq,
-                                                 conditional_n = as.numeric(conditional.n | Rhess),
+                                                 conditional_n = as.numeric((conditional.n | Rhess) & !ihd),
                                                  link_det_ids = link.ids[det.indices],
-                                                 link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices]),
+                                                 link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices],
+                                                 link_ihd_cov_ids = if (ihd.cov.id == 6) 0 else link.ids[ihd.cov.indices]),
                                      parameters = list(link_det_pars = link.pars[det.indices],
                                                        link_cov_pars = if (cov.id == 6) 1 else link.pars[cov.indices],
                                                        link_sigma_toa = ifelse(toa.id, link.pars[toa.indices], 1),
-                                                       link_D = ifelse(conditional.n | Rhess, 1, link.pars[D.indices]),
-                                                       u = u.nll),
+                                                       link_ihd_cov_pars = if (ihd.cov.id == 6) 0 else link.pars[ihd.cov.indices],
+                                                       link_D = ifelse((conditional.n | Rhess) & !ihd, 1, link.pars[D.indices]),
+                                                       u = u.nll, v = v.nll),
                                      map = map, random = random.comp, DLL = "cov_nll", silent = TRUE)
             }
             if (fun == "nll"){
                 out <- nll.obj$fn(link.pars.tmb)
                 ## Log-likelihood component due to number of
                 ## detected individuals, if calculated in R.
-                if (Rhess){
+                if (Rhess & !ihd){
                     out <- out - dpois(n, exp(link.pars[D.indices])*mask.area*
                                           sum(det.probs), TRUE)
                 } else if (conditional.n){
@@ -297,13 +366,17 @@ make.obj <- function(survey.data, model.opts, any.cov){
                     if (!conditional.n){
                         cat("; D: ", format(round(par.unlink(link.pars, D.indices), 2), nsmall = 2), sep = "")
                     }
+                    if (ihd){
+                        cat("; IHD covariance parameters: "[ihd.cov.id != 6], paste(format(round(par.unlink(link.pars, ihd.cov.indices), 2), nsmall = 2),
+                                                                                    collapse = ", ")[ihd.cov.id != 6])
+                    }
                     if (toa.id == 1){
                         cat("; TOA parameter: ", format(round(par.unlink(link.pars, toa.indices), 2), nsmall = 2), sep = "")
                     }
                     cat("; NLL: ", format(round(out, 2), nsmall = 2), "\n", sep = "")
                 }
             } else if (fun == "gr"){
-                if (Rhess){
+                if (Rhess & !ihd){
                     out <- numeric(length(link.pars))
                     out[-D.indices] <- nll.obj$gr(link.pars.tmb) + exp(link.pars[D.indices])*mask.area*apply(neglog.det.probs.grads, 1, function(x) sum(-exp(-neglog.det.probs)*x))
                     out[D.indices] <- mask.area*sum(det.probs)*exp(link.pars[D.indices]) - n

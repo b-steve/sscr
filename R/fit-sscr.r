@@ -44,6 +44,13 @@
 #'     \code{"prob"}. This indicates whether the Gaussian random
 #'     effects effect the encounter rate (expected number of
 #'     detections) or the probability of detection.
+#' @param ihd Logical. If \code{TRUE}, an inhomogeneous density
+#'     surface is fitted using a Gaussian process.
+#' @param ihd.cov.structure Covariance structure for the Gaussian
+#'     process fitted to the density surface. Options are
+#'     \code{"none"}, \code{"exponential"}, \code{"sq_exponential"},
+#'     \code{"matern"}, and \code{"lc_exponential"}. See documentation
+#'     for \code{cov.structure} for further details.
 #' @param start A named list of parameter start values.
 #' @param toa A matrix with the same dimensions as \code{capt} that
 #'     provides time-of-arrival information for acoustic detections.
@@ -67,8 +74,9 @@
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
                      detfn.scale = "er", cov.structure = "none", re.scale = "er",
-                     start = NULL, toa = NULL, trace = FALSE, test = FALSE,
-                     test.conditional.n = TRUE, hess = FALSE, optim.fun = "nlminb"){
+                     ihd = FALSE, ihd.cov.structure = "none", start = NULL, toa = NULL,
+                     trace = FALSE, test = FALSE, test.conditional.n = TRUE,
+                     hess = FALSE, optim.fun = "nlminb"){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -77,6 +85,9 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
     ## Calculating mask distances.
     mask.dists <- crossdist(mask[, 1], mask[, 2],
                             traps[, 1], traps[, 2])
+    ## Calculating mask-to-mask distances.
+    mask.to.mask.dists <- crossdist(mask[, 1], mask[, 2],
+                                    mask[, 1], mask[, 2])
     ## Extracting mask area.
     mask.area <- attr(mask, "area")
     ## Number of mask points.
@@ -88,6 +99,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
     ## Packaging the data up into a list.
     survey.data <- list(capt = capt,
                         mask.dists = mask.dists,
+                        mask.to.mask.dists = mask.to.mask.dists,
                         mask.area = mask.area,
                         n.mask = n.mask,
                         trap.dists = trap.dists,
@@ -96,14 +108,10 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                         trace = trace)
     model.opts <- list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                        detfn.scale = detfn.scale, cov.structure = cov.structure,
-                       re.scale = re.scale, start = start, conditional.n = TRUE, Rhess = FALSE)
+                       re.scale = re.scale, ihd = ihd, ihd.cov.structure = ihd.cov.structure,
+                       start = start, conditional.n = !ihd, Rhess = FALSE)
     ## Optimisation object constructor function.
-    if (cov.structure == "none"){
-        any.cov <- FALSE
-    } else {
-        any.cov <- TRUE
-    }
-    opt.obj <- make.obj(survey.data, model.opts, any.cov)
+    opt.obj <- make.obj(survey.data, model.opts)
     ## Fitting model or testing likelihood.
     if (is.logical(test)){
         if (test){
@@ -113,9 +121,10 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
     if (test %in% c("nll", "gr", "hess")){
         model.opts.test <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                  detfn.scale = detfn.scale, cov.structure = cov.structure,
-                                 re.scale = re.scale, start = start,
-                                 conditional.n = test.conditional.n, Rhess = !test.conditional.n)
-        opt.obj.test <- make.obj(survey.data, model.opts.test, any.cov)
+                                 re.scale = re.scale, ihd = ihd, ihd.cov.structure = ihd.cov.structure,
+                                 start = start, conditional.n = test.conditional.n,
+                                 Rhess = !test.conditional.n)
+        opt.obj.test <- make.obj(survey.data, model.opts.test)
         ## Setting up output list.
         fit <- list()
         ## Computing negative log-likelihood.
@@ -156,9 +165,9 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
             } 
             model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                      detfn.scale = detfn.scale, cov.structure = cov.structure,
-                                     re.scale = re.scale, start = fit$ests,
-                                     conditional.n = FALSE, Rhess = TRUE)
-            opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
+                                     re.scale = re.scale, ihd = ihd, ihd.cov.structure = ihd.cov.structure,
+                                     start = fit$ests, conditional.n = FALSE, Rhess = TRUE)
+            opt.obj.hess <- make.obj(survey.data, model.opts.hess)
             fit$vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
             fit$se <- sqrt(diag(fit$vcov))
         }
