@@ -44,13 +44,13 @@
 #'     \code{"prob"}. This indicates whether the Gaussian random
 #'     effects effect the encounter rate (expected number of
 #'     detections) or the probability of detection.
-#' @param ihd Logical. If \code{TRUE}, an inhomogeneous density
-#'     surface is fitted using a Gaussian process.
-#' @param ihd.cov.structure Covariance structure for the Gaussian
-#'     process fitted to the density surface. Options are
-#'     \code{"none"}, \code{"exponential"}, \code{"sq_exponential"},
-#'     \code{"matern"}, and \code{"lc_exponential"}. See documentation
-#'     for \code{cov.structure} for further details.
+#' @param ihd.opts A list of inhomogeneous density options, including
+#'     the component \code{ihd.cov.structure}. This specifies the
+#'     covariance structure for the Gaussian process fitted to the
+#'     density surface. Options are \code{"none"},
+#'     \code{"exponential"}, \code{"sq_exponential"}, \code{"matern"},
+#'     and \code{"lc_exponential"}. See documentation for
+#'     \code{cov.structure} for further details.
 #' @param start A named list of parameter start values.
 #' @param toa A matrix with the same dimensions as \code{capt} that
 #'     provides time-of-arrival information for acoustic detections.
@@ -74,7 +74,7 @@
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
                      detfn.scale = "er", cov.structure = "none", re.scale = "er",
-                     ihd = FALSE, ihd.cov.structure = "none", start = NULL, toa = NULL,
+                     ihd.opts = NULL, start = NULL, toa = NULL,
                      trace = FALSE, test = FALSE, test.conditional.n = TRUE,
                      hess = FALSE, optim.fun = "nlminb"){
     ## Loading DLLs.
@@ -106,10 +106,18 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                         n.traps = n.traps,
                         toa = toa,
                         trace = trace)
+    ihd <- !is.null(ihd.opts)
+    ihd.cov.structure <- ihd.opts$cov.structure
+    if (is.null(ihd.cov.structure)){
+        ihd.cov.structure <- "none"
+    }
+    ihd.model <- ihd.opts$model
+    ihd.covariates <- ihd.opts$covariates
     model.opts <- list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                        detfn.scale = detfn.scale, cov.structure = cov.structure,
                        re.scale = re.scale, ihd = ihd, ihd.cov.structure = ihd.cov.structure,
-                       start = start, conditional.n = !ihd, Rhess = FALSE)
+                       ihd.model = ihd.model, ihd.covariates = ihd.covariates, start = start,
+                       conditional.n = !ihd, Rhess = FALSE)
     ## Optimisation object constructor function.
     opt.obj <- make.obj(survey.data, model.opts)
     ## Fitting model or testing likelihood.
@@ -122,6 +130,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
         model.opts.test <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                  detfn.scale = detfn.scale, cov.structure = cov.structure,
                                  re.scale = re.scale, ihd = ihd, ihd.cov.structure = ihd.cov.structure,
+                                 ihd.model = ihd.model, ihd.covariates = ihd.covariates,
                                  start = start, conditional.n = test.conditional.n,
                                  Rhess = !test.conditional.n)
         opt.obj.test <- make.obj(survey.data, model.opts.test)
@@ -166,6 +175,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
             model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                      detfn.scale = detfn.scale, cov.structure = cov.structure,
                                      re.scale = re.scale, ihd = ihd, ihd.cov.structure = ihd.cov.structure,
+                                     ihd.model = ihd.model, ihd.covariates = ihd.covariates,
                                      start = fit$ests, conditional.n = FALSE, Rhess = TRUE)
             opt.obj.hess <- make.obj(survey.data, model.opts.hess)
             fit$vcov <- opt.obj.hess$vcov(opt.obj.hess$par)

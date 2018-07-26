@@ -108,7 +108,7 @@ make.obj <- function(survey.data, model.opts){
     re.scale <- model.opts$re.scale
     re.scale.id <- switch(re.scale, er = 0, prob = 1)     
     ## Indices and start values for covariance parameters.
-    cov.index.start <- max(det.indices) + 1
+    cov.index.start <- length(pars.start) + 1
     if (cov.id == 0){
         ## Independent.
         cov.indices <- cov.index.start
@@ -160,12 +160,42 @@ make.obj <- function(survey.data, model.opts){
         cov.link.ids <- NULL
         map[["link_cov_pars"]] <- factor(NA)
     }
-    ## Stuff only for inhomogeneous density covariance structures.
-    ihd <- model.opts$ihd
+    pars.start <- c(pars.start, cov.start)
+    link.ids <- c(link.ids, cov.link.ids)
+    ## Stuff only for inhomogeneous density.
+    ## ... for fixed effects.
+    ihd.model <- model.opts$ihd.model
+    if (!is.null(ihd.model)){
+        ihd.fixed <- TRUE
+        ihd.covariates <- model.opts$ihd.covariates
+        ## Scaling covariates.
+        ihd.covariates <- as.data.frame(apply(ihd.covariates, 2, function(x) (x - mean(x))/sd(x)))
+        mm.ihd <- model.matrix(ihd.model, ihd.covariates)
+    } else {
+        ihd.fixed <- FALSE
+    }
+    ihd.fixed.index.start <- length(pars.start) + 1
+    if (ihd.fixed){
+        n.ihd.betas <- ncol(mm.ihd[, -1, drop = FALSE])
+        ihd.beta.indices <- ihd.fixed.index.start:(ihd.fixed.index.start + (n.ihd.betas - 1))
+        ihd.beta.start <- numeric(n.ihd.betas)
+        ihd.beta.link.ids <- rep(2, n.ihd.betas)
+    } else {
+        ## No fixed-effect parameters.
+        ihd.beta.indices <- -1
+        ihd.beta.start <- NULL
+        ihd.beta.link.ids <- NULL
+        map[["link_ihd_beta_pars"]] <- factor(NA)
+    }
+    pars.start <- c(pars.start, ihd.beta.start)
+    ## ... for random spatial effects.
     ihd.cov.structure <- model.opts$ihd.cov.structure
     if (ihd.cov.structure == "none"){
-        ihd <- FALSE
+        ihd.random <- FALSE
+    } else {
+        ihd.random <- TRUE
     }
+    ihd <- ihd.fixed | ihd.random
     ihd.cov.id <- switch(model.opts$ihd.cov.structure,
                          independent = 0,
                          exponential = 1,
@@ -278,10 +308,12 @@ make.obj <- function(survey.data, model.opts){
                                                    re_scale_id = re.scale.id,
                                                    link_det_ids = link.ids[det.indices],
                                                    link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices],
+                                                   link_ihd_beta_ids = if (!ihd.fixed) 0 else link.ids[ihd.beta.indices]
                                                    link_ihd_cov_ids = if (ihd.cov.id == 6) 0 else link.ids[ihd.cov.indices]),
                                        parameters = list(link_det_pars = link.pars.start[det.indices],
                                                          link_cov_pars = if (cov.id == 6) 1 else link.pars.start[cov.indices],
                                                          link_sigma_toa = ifelse(toa.id, link.pars.start[toa.indices], 1),
+                                                         link_ihd_beta_pars = if (!ihd.fixed) 0 else link.pars.start[ihd.beta.indices] 
                                                          link_ihd_cov_pars = if (ihd.cov.id == 6) 0 else link.pars.start[ihd.cov.indices],
                                                          link_D = ifelse((conditional.n | Rhess) & !ihd, 1, link.pars.start[D.indices]),
                                                          u = u.detprob),
@@ -501,6 +533,6 @@ dlink.closure <- function(link.ids){
     }
 }
 
-links <- list(log, qlogis)
-unlinks <- list(exp, plogis)
-dlinks <- list(exp, dlogis)
+links <- list(log, qlogis, identity)
+unlinks <- list(exp, plogis, identity)
+dlinks <- list(exp, dlogis, function(x) 0)
