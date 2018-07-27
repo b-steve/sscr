@@ -36,6 +36,10 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(link_cov_ids);
   // Number of covariance function parameters.
   int n_cov_pars = link_cov_ids.size();
+  // Indicators for IHD coefficient link functions.
+  DATA_IVECTOR(link_ihd_beta_ids);
+  // Number of IHD coefficient parameters.
+  int n_ihd_beta_pars = link_ihd_beta_ids.size();
   // Indicators for IHD covariance parameter link functions.
   DATA_IVECTOR(link_ihd_cov_ids);
   // Number of IHD covariance function parameters.
@@ -46,6 +50,8 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(link_cov_pars);
   // Time-of-arrival parameter.
   PARAMETER(link_sigma_toa);
+  // Coefficiints for inhomogeneous density covariates.
+  PARAMETER_VECTOR(link_ihd_beta_pars);
   // Covariance parameters for inhomogeneous density.
   PARAMETER_VECTOR(link_ihd_cov_pars);
   // Density parameter.
