@@ -173,12 +173,13 @@ make.obj <- function(survey.data, model.opts){
         mm.ihd <- model.matrix(ihd.model, ihd.covariates)
     } else {
         ihd.fixed <- FALSE
+        mm.ihd <- matrix(1, ncol = 1, nrow = n.mask)
     }
     ihd.fixed.index.start <- length(pars.start) + 1
     if (ihd.fixed){
         n.ihd.betas <- ncol(mm.ihd[, -1, drop = FALSE])
         ihd.beta.indices <- ihd.fixed.index.start:(ihd.fixed.index.start + (n.ihd.betas - 1))
-        ihd.beta.start <- numeric(n.ihd.betas)
+        ihd.beta.start <- numeric(n.ihd.betas) + 1
         ihd.beta.link.ids <- rep(2, n.ihd.betas)
     } else {
         ## No fixed-effect parameters.
@@ -188,6 +189,7 @@ make.obj <- function(survey.data, model.opts){
         map[["link_ihd_beta_pars"]] <- factor(NA)
     }
     pars.start <- c(pars.start, ihd.beta.start)
+    link.ids <- c(link.ids, ihd.beta.link.ids)
     ## ... for random spatial effects.
     ihd.cov.structure <- model.opts$ihd.cov.structure
     if (ihd.cov.structure == "none"){
@@ -361,6 +363,7 @@ make.obj <- function(survey.data, model.opts){
                                                  ihd_cov_id = ihd.cov.id,
                                                  re_scale_id = re.scale.id,
                                                  det_probs = det.probs,
+                                                 mm_ihd = mm.ihd,
                                                  toa_id = toa.id,
                                                  toa_ssq = toa.ssq,
                                                  conditional_n = as.numeric((conditional.n | Rhess) & !ihd),
@@ -371,7 +374,7 @@ make.obj <- function(survey.data, model.opts){
                                      parameters = list(link_det_pars = link.pars[det.indices],
                                                        link_cov_pars = if (cov.id == 6) 1 else link.pars[cov.indices],
                                                        link_sigma_toa = ifelse(toa.id, link.pars[toa.indices], 1),
-                                                       link_ihd_beta_pars = if (!ihd.fixed) 0 else link.pars.start[ihd.beta.indices], 
+                                                       link_ihd_beta_pars = if (!ihd.fixed) 0 else link.pars[ihd.beta.indices], 
                                                        link_ihd_cov_pars = if (ihd.cov.id == 6) 0 else link.pars[ihd.cov.indices],
                                                        link_D = ifelse((conditional.n | Rhess) & !ihd, 1, link.pars[D.indices]),
                                                        u = u.nll, v = v.nll),
@@ -400,7 +403,11 @@ make.obj <- function(survey.data, model.opts){
                     if (!conditional.n){
                         cat("; D: ", format(round(par.unlink(link.pars, D.indices), 2), nsmall = 2), sep = "")
                     }
-                    if (ihd){
+                    if (ihd.fixed){
+                        cat("; IHD fixed effect coefficients: "[ihd.fixed], paste(format(round(par.unlink(link.pars, ihd.beta.indices), 2), nsmall = 2),
+                                                                                  collapse = ", ")[ihd.fixed])
+                    }
+                    if (ihd.random){
                         cat("; IHD covariance parameters: "[ihd.cov.id != 6], paste(format(round(par.unlink(link.pars, ihd.cov.indices), 2), nsmall = 2),
                                                                                     collapse = ", ")[ihd.cov.id != 6])
                     }

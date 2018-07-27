@@ -43,6 +43,8 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(re_scale_id);
   // Detection probabilities (from cov_detprob.cpp).
   DATA_VECTOR(det_probs);
+  // Model matrix for inhomogeneous density fixed effects.
+  DATA_MATRIX(mm_ihd);
   // Indicator for time-of-arrival data.
   DATA_INTEGER(toa_id);
   // Time-of-arrival data.
@@ -73,6 +75,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER(link_sigma_toa);
   // Coefficiints for inhomogeneous density covariates.
   PARAMETER_VECTOR(link_ihd_beta_pars);
+  std::cout << link_ihd_beta_pars << std::endl;
   // Covariance parameters for inhomogeneous density.
   PARAMETER_VECTOR(link_ihd_cov_pars);
   // Density parameter.
@@ -80,8 +83,7 @@ Type objective_function<Type>::operator() ()
   // Latent variables for detection probabilities.
   PARAMETER_MATRIX(u);
   // Latent variables for inhomogeneous density process.
-  PARAMETER_VECTOR(v);
-  // Back-transforming detection function parameters.
+  PARAMETER_VECTOR(v);  // Back-transforming detection function parameters.
   vector<Type> det_pars(n_det_pars);
   for (int i = 0; i < n_det_pars; i++){
     if (link_det_ids(i) == 0){
@@ -116,8 +118,6 @@ Type objective_function<Type>::operator() ()
       ihd_cov_pars(i) = 1/(1 + exp(-link_ihd_cov_pars(i)));
     }  
   }
-  // Back-transforming density parameter.
-  Type D = exp(link_D);
   // Hazard rates for mask/trap combinations.
   matrix<Type> haz_mat(n_mask, n_traps);
   // Detection probabilities for mask/trap combinations.
@@ -138,10 +138,21 @@ Type objective_function<Type>::operator() ()
     haz_mat = prob_to_haz(prob_mat);
   }
   // Getting density at each mask point.
-  vector<Type> D_mask(n_mask);
-  for (int i = 0; i < n_mask; i++){
-    D_mask(i) = exp(link_D + v(i));
+  vector<Type> all_ihd_beta_pars(n_ihd_beta_pars + 1);
+  all_ihd_beta_pars(0) = link_D;
+  for (int i = 1; i < n_ihd_beta_pars + 1; i++){
+    all_ihd_beta_pars(i) = ihd_beta_pars(i - 1);
   }
+  vector<Type> D_mask_link(n_mask);
+  D_mask_link = mm_ihd*all_ihd_beta_pars;
+  if (ihd_cov_id != 6){
+    for (int i = 0; i < n_mask; i++){
+      // Adding in random spatial effects.
+      D_mask_link += v(i);
+    }
+  }
+  vector<Type> D_mask(n_mask);
+  D_mask = exp(D_mask_link);
   // The sum of mask probabilities.
   Type sum_det_probs = 0;
   Type sum_D_det_probs = 0;
@@ -198,7 +209,7 @@ Type objective_function<Type>::operator() ()
   f -= -n*log(sum_D_det_probs);
   // Likelihood component due to n.
   if (conditional_n == 0){
-    f -= dpois(Type(n), Type(D*mask_area*sum_D_det_probs), true);
+    f -= dpois(Type(n), Type(exp(link_D)*mask_area*sum_D_det_probs), true);
   }
   if (cov_id == 3){
     for (int i = 0; i < n; i++){
