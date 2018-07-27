@@ -6,9 +6,9 @@
 \usage{
 fit.sscr(capt, traps, mask, resp = "binom", resp.pars = NULL,
   detfn = "hn", detfn.scale = "er", cov.structure = "none",
-  re.scale = "er", ihd = FALSE, ihd.cov.structure = "none",
-  start = NULL, toa = NULL, trace = FALSE, test = FALSE,
-  test.conditional.n = TRUE, hess = FALSE, optim.fun = "nlminb")
+  re.scale = "er", ihd.opts = NULL, start = NULL, toa = NULL,
+  trace = FALSE, test = FALSE, test.conditional.n = TRUE, hess = FALSE,
+  optim.fun = "nlminb")
 }
 \arguments{
 \item{capt}{A capture history object. It should be a matrix, where
@@ -58,14 +58,13 @@ covariance functions.}
 effects effect the encounter rate (expected number of
 detections) or the probability of detection.}
 
-\item{ihd}{Logical. If \code{TRUE}, an inhomogeneous density
-surface is fitted using a Gaussian process.}
-
-\item{ihd.cov.structure}{Covariance structure for the Gaussian
-process fitted to the density surface. Options are
-\code{"none"}, \code{"exponential"}, \code{"sq_exponential"},
-\code{"matern"}, and \code{"lc_exponential"}. See documentation
-for \code{cov.structure} for further details.}
+\item{ihd.opts}{A list of inhomogeneous density options, including
+the component \code{ihd.cov.structure}. This specifies the
+covariance structure for the Gaussian process fitted to the
+density surface. Options are \code{"none"},
+\code{"exponential"}, \code{"sq_exponential"}, \code{"matern"},
+and \code{"lc_exponential"}. See documentation for
+\code{cov.structure} for further details.}
 
 \item{start}{A named list of parameter start values.}
 
