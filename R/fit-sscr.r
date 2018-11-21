@@ -42,7 +42,7 @@
 #'     combination of exponential covariance functions.
 #' @param re.scale A character string, either \code{"er"} or
 #'     \code{"prob"}. This indicates whether the Gaussian random
-#'     effects effect the encounter rate (expected number of
+#'     effects affect the encounter rate (expected number of
 #'     detections) or the probability of detection.
 #' @param start A named list of parameter start values.
 #' @param toa A matrix with the same dimensions as \code{capt} that
