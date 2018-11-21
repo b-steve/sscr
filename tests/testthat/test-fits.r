@@ -37,7 +37,15 @@ test_that(
         ## Testing exact gradients.
         fit.grad <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois", detfn = "hn",
-                             test.conditional.n = FALSE, cov.structure = "exponential", test = "gr")
+                             test.conditional.n = FALSE, cov.structure = "exponential",
+                             test = "gr")
+        expect_equivalent(fit.grad$gr, c(59.6122557885348, 419.319087122365, 29.1110101667589, -13.3634887263877, 
+                                         255.168266193995), tolerance = 1e-4, scale = 1)
+        ## ... without manual separability.
+        fit.grad <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                             mask = test.data$mask, resp = "pois", detfn = "hn",
+                             test.conditional.n = FALSE, cov.structure = "exponential",
+                             test = "gr", manual.sep = FALSE)
         expect_equivalent(fit.grad$gr, c(59.6122557885348, 419.319087122365, 29.1110101667589, -13.3634887263877, 
                                          255.168266193995), tolerance = 1e-4, scale = 1)
         ## Independent random effects.
@@ -78,6 +86,12 @@ test_that(
         test.exp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois",
                              cov.structure = "exponential", test = "nll")
+        expect_equivalent(test.exp$nll, 125.1977, tolerance = 1e-4, scale = 1)
+        ## ... without manual separability.
+        test.exp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                             mask = test.data$mask, resp = "pois",
+                             cov.structure = "exponential", test = "nll",
+                             manual.sep = FALSE)
         expect_equivalent(test.exp$nll, 125.1977, tolerance = 1e-4, scale = 1)
         ## With detection function on probability scale.
         test.exp.detpr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
