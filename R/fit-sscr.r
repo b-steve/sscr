@@ -32,14 +32,14 @@
 #'     independent random effects (equivalent to counts of detections
 #'     being overdispersed), (3) \code{"exponential"}, for random
 #'     effects with an exponential covariance structure, (4)
-#'     "sq_exponential" for random effects with a squared exponential
-#'     covariance structure, (5) \code{"matern"}, for random effects
-#'     with a Matern covariance structure, (5) \code{"individual"},
-#'     for random effects that are restricted to being the same at all
-#'     traps (equivalent to having an independent random effect on
-#'     \code{lambda0} for each individual), or (6)
-#'     \code{"lc_exponential"} for a linear combination of exponential
-#'     covariance functions.
+#'     \code{"sq_exponential"} for random effects with a squared
+#'     exponential covariance structure, (5) \code{"matern"}, for
+#'     random effects with a Matern covariance structure, (5)
+#'     \code{"individual"}, for random effects that are restricted to
+#'     being the same at all traps (equivalent to having an
+#'     independent random effect on \code{lambda0} for each
+#'     individual), or (6) \code{"lc_exponential"} for a linear
+#'     combination of exponential covariance functions.
 #' @param re.scale A character string, either \code{"er"} or
 #'     \code{"prob"}. This indicates whether the Gaussian random
 #'     effects effect the encounter rate (expected number of
