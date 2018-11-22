@@ -100,7 +100,7 @@ test_that(
                                 mask = test.data$mask, resp = "pois",
                                 cov.structure = "exponential", detfn.scale = "prob",
                                 test = "nll")
-        expect_equivalent(test.exp.detpr$nll, 122.6414, tolerance = 1e-4, scale = 1)
+        expect_equivalent(test.exp.detpr$nll, 122.8905, tolerance = 1e-4, scale = 1)
         ## With random effects on probability scale.
         test.exp.repr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                   mask = test.data$mask, resp = "pois",
@@ -126,7 +126,7 @@ test_that(
         test.bern.detpr <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
                                  mask = test.data$mask,  cov.structure = "exponential",
                                  detfn.scale = "prob", test = "nll")
-        expect_equivalent(test.bern.detpr$nll, 76.1111, tolerance = 1e-4, scale = 1)
+        expect_equivalent(test.bern.detpr$nll, 76.1733, tolerance = 1e-4, scale = 1)
         ## With random effects on probability scale.
         test.bern.repr <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
                                    mask = test.data$mask, cov.structure = "exponential",
