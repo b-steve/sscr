@@ -39,8 +39,9 @@ test_that(
                              mask = test.data$mask, resp = "pois", detfn = "hn",
                              test.conditional.n = FALSE, cov.structure = "exponential",
                              test = "gr")
-        expect_equivalent(fit.grad$gr, c(59.6122557885348, 419.319087122365, 29.1110101667589, -13.3634887263877, 
-                                         255.168266193995), tolerance = 1e-4, scale = 1)
+        expect_equivalent(fit.grad$gr, c(53.936454081332, 424.759615492023, 41.4534610100935, -9.18292928534691, 
+                                         260.095722145605),
+                          tolerance = 1e-4, scale = 1)
         ## ... without manual separability.
         fit.grad <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois", detfn = "hn",
