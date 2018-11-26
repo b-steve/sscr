@@ -81,8 +81,8 @@ carried out conditioning in the number of detections.}
 variance-covariance matrix is returned.}
 
 \item{optim.fun}{A character string representing the R function to
-maximise the likelihood. This can either be \code{"nlminb"} or
-\code{"nlm"}.}
+maximise the likelihood. This can be \code{"bobyqa"} (from
+package \code{minqa}), \code{"nlminb"}, or \code{"nlm"}.}
 
 \item{manual.sep}{Logical. If \code{TRUE}, integration over
 individuals' spatially structured random effects is enforced in
