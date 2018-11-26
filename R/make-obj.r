@@ -136,7 +136,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
             cov.start[1] <- ifelse(any(start.names == "sigma.u"),
                                    start["sigma.u"], sd(capt))
             cov.start[2] <- ifelse(any(start.names == "rho"),
-                                   start["rho"], mean(trap.dists))
+                                   start["rho"], min(trap.dists[trap.dists > 0]))
             cov.link.ids <- c(0, 0)
             par.names <- c(par.names, "sigma.u", "rho")
         } else if (cov.id == 2){
@@ -162,7 +162,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
             cov.start[1] <- ifelse(any(start.names == "sigma.u"),
                                    start["sigma.u"], sd(capt))
             cov.start[2] <- ifelse(any(start.names == "rho"),
-                                   start["rho"], mean(trap.dists))
+                                   start["rho"], min(trap.dists[trap.dists > 0]))
             cov.link.ids <- c(0, 0)
             par.names <- c(par.names, "sigma.u", "rho")
         } else if (cov.id == 6){

@@ -39,15 +39,17 @@ test_that(
                              mask = test.data$mask, resp = "pois", detfn = "hn",
                              test.conditional.n = FALSE, cov.structure = "exponential",
                              test = "gr")
-        expect_equivalent(fit.grad$gr, c(59.6122557885348, 419.319087122365, 29.1110101667589, -13.3634887263877, 
-                                         255.168266193995), tolerance = 1e-4, scale = 1)
+        expect_equivalent(fit.grad$gr, c(53.936454081332, 424.759615492023, 41.4534610100935, -9.18292928534691, 
+                                         260.095722145605),
+                          tolerance = 1e-4, scale = 1)
         ## ... without manual separability.
-        fit.grad <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
-                             mask = test.data$mask, resp = "pois", detfn = "hn",
-                             test.conditional.n = FALSE, cov.structure = "exponential",
-                             test = "gr", manual.sep = FALSE)
-        expect_equivalent(fit.grad$gr, c(59.6122557885348, 419.319087122365, 29.1110101667589, -13.3634887263877, 
-                                         255.168266193995), tolerance = 1e-4, scale = 1)
+        fit.grad.man <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                                 mask = test.data$mask, resp = "pois", detfn = "hn",
+                                 test.conditional.n = FALSE, cov.structure = "exponential",
+                                 test = "gr", manual.sep = FALSE)
+        expect_equivalent(fit.grad.man$gr, c(53.936454081332, 424.759615492023, 41.4534610100935,
+                                             -9.18292928534691, 260.095722145605),
+                          tolerance = 1e-4, scale = 1)
         ## Independent random effects.
         test.ind.hn <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hn",
@@ -86,30 +88,30 @@ test_that(
         test.exp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois",
                              cov.structure = "exponential", test = "nll")
-        expect_equivalent(test.exp$nll, 125.1977, tolerance = 1e-4, scale = 1)
+        expect_equivalent(test.exp$nll, 125.2871, tolerance = 1e-4, scale = 1)
         ## ... without manual separability.
-        test.exp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
-                             mask = test.data$mask, resp = "pois",
-                             cov.structure = "exponential", test = "nll",
-                             manual.sep = FALSE)
-        expect_equivalent(test.exp$nll, 125.1977, tolerance = 1e-4, scale = 1)
+        test.exp.man <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                                 mask = test.data$mask, resp = "pois",
+                                 cov.structure = "exponential", test = "nll",
+                                 manual.sep = FALSE)
+        expect_equivalent(test.exp.man$nll, 125.2871, tolerance = 1e-4, scale = 1)
         ## With detection function on probability scale.
         test.exp.detpr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois",
                                 cov.structure = "exponential", detfn.scale = "prob",
                                 test = "nll")
-        expect_equivalent(test.exp.detpr$nll, 122.6414, tolerance = 1e-4, scale = 1)
+        expect_equivalent(test.exp.detpr$nll, 122.8905, tolerance = 1e-4, scale = 1)
         ## With random effects on probability scale.
         test.exp.repr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                   mask = test.data$mask, resp = "pois",
                                   cov.structure = "exponential", re.scale = "prob",
                                   test = "nll")
-        expect_equivalent(test.exp.repr$nll, 125.5757, tolerance = 1e-4, scale = 1)
+        expect_equivalent(test.exp.repr$nll, 125.0680, tolerance = 1e-4, scale = 1)
         ## Squared exponential covariance function (not sure we can trust this one).
         test.sqexp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "pois",
                                cov.structure = "sq_exponential", test = "nll")
-        expect_equivalent(test.sqexp$nll, 124.6976, tolerance = 1e-4, scale = 1)
+        expect_equivalent(test.sqexp$nll, 124.6839, tolerance = 1e-4, scale = 1)
         ## Individual random effect.
         test.indiv <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "pois",
@@ -119,21 +121,21 @@ test_that(
         test.bern <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
                               mask = test.data$mask, cov.structure = "exponential",
                               test = "nll")
-        expect_equivalent(test.bern$nll, 77.3375, tolerance = 1e-4, scale = 1)
+        expect_equivalent(test.bern$nll, 77.4819, tolerance = 1e-4, scale = 1)
         ## With detection function on probability scale.
         test.bern.detpr <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
                                  mask = test.data$mask,  cov.structure = "exponential",
                                  detfn.scale = "prob", test = "nll")
-        expect_equivalent(test.bern.detpr$nll, 76.1111, tolerance = 1e-4, scale = 1)
+        expect_equivalent(test.bern.detpr$nll, 76.1733, tolerance = 1e-4, scale = 1)
         ## With random effects on probability scale.
         test.bern.repr <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
                                    mask = test.data$mask, cov.structure = "exponential",
                                    re.scale = "prob", test = "nll")
-        expect_equivalent(test.bern.repr$nll, 77.6469, tolerance = 1e-4, scale = 1)
+        expect_equivalent(test.bern.repr$nll, 77.7858, tolerance = 1e-4, scale = 1)
         ## Binomial response.
         test.binom <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "binom",
                                resp.pars = 10, cov.structure = "exponential",
                                test = "nll")
-        expect_equivalent(test.binom$nll, 123.6368, tolerance = 1e-4, scale = 1)
+        expect_equivalent(test.binom$nll, 123.5817, tolerance = 1e-4, scale = 1)
     })
