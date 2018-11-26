@@ -146,8 +146,11 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
             raw.fit <- nlminb(opt.obj$par, opt.obj$fn, opt.obj$gr)
             fit <- list(ests = opt.obj$organise(raw.fit$par, raw.fit$objective),
                         grads = opt.obj$gr(raw.fit$par))
-        } else if (optim.fun = "bobyqa"){
+        } else if (optim.fun == "bobyqa"){
             raw.fit <- bobyqa(par = opt.obj$par, fn = opt.obj$fn)
+            fit <- list(ests = opt.obj$organise(raw.fit$par, raw.fit$fval),
+                        grads = opt.obj$gr(raw.fit$par),
+                        bobyqa.code = raw.fit$ierr)
         } else if (optim.fun == "nlm"){
             f <- function(par){
                 out <- opt.obj$fn(par)
