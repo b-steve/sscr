@@ -61,8 +61,8 @@
 #' @param hess Logical. If \code{TRUE}, a Hessian is computed and a
 #'     variance-covariance matrix is returned.
 #' @param optim.fun A character string representing the R function to
-#'     maximise the likelihood. This can either be \code{"nlminb"} or
-#'     \code{"nlm"}.
+#'     maximise the likelihood. This can be \code{"bobyqa"} (from
+#'     package \code{minqa}), \code{"nlminb"}, or \code{"nlm"}.
 #' @param manual.sep Logical. If \code{TRUE}, integration over
 #'     individuals' spatially structured random effects is enforced in
 #'     R, rather than automatically detected by TMB.
@@ -146,6 +146,8 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
             raw.fit <- nlminb(opt.obj$par, opt.obj$fn, opt.obj$gr)
             fit <- list(ests = opt.obj$organise(raw.fit$par, raw.fit$objective),
                         grads = opt.obj$gr(raw.fit$par))
+        } else if (optim.fun = "bobyqa"){
+            raw.fit <- bobyqa(par = opt.obj$par, fn = opt.obj$fn)
         } else if (optim.fun == "nlm"){
             f <- function(par){
                 out <- opt.obj$fn(par)
