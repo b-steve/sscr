@@ -1,9 +1,66 @@
 context("Testing model fits")
 
 test_that(
-    "Fits with no random effects.",
+    "Simulation,",
     {
         compile.sscr()
+        ## Poisson response.
+        set.seed(4321)
+        sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
+                             resp = "pois", detfn = "hn", detfn.scale = "er",
+                             cov.structure = "none", det.pars = list(lambda0 = 3, sigma = 50))
+        expect_equivalent(sim.data[21, ], c(0, 0, 0, 0, 1, 4, 0, 4, 1))
+        ## ... With detection function on the probability scale.
+        set.seed(2468)
+        sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
+                             resp = "pois", detfn = "hn", detfn.scale = "prob",
+                             cov.structure = "none", det.pars = list(g0 = 0.9, sigma = 50))
+        expect_equivalent(sim.data[11, ], c(0, 0, 0, 0, 2, 1, 0, 0, 0))
+        ## Binomial response.
+        set.seed(1234)
+        sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
+                             resp = "binom", resp.pars = 5, detfn = "hn", detfn.scale = "er",
+                              cov.structure = "none", det.pars = list(lambda0 = 3, sigma = 50))
+        expect_equivalent(sim.data[8, ], c(1, 0, 0, 5, 1, 0, 1, 0, 0))
+        ## With squared-exponential covariance function.
+        set.seed(8642)
+        sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
+                             resp = "pois", detfn = "hn", detfn.scale = "er",
+                             cov.structure = "sq_exponential",, re.scale = "er",
+                             det.pars = list(lambda0 = 3, sigma = 50),
+                             cov.pars = list(sigma.u = 1.5, rho = 100))
+        expect_equivalent(sim.data[13, ], c(0, 0, 0, 2, 5, 0, 1, 16, 0))
+        ## With exponential covariance function on the probability scale.
+        set.seed(8642)
+        sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
+                             resp = "pois", detfn = "hn", detfn.scale = "er",
+                             cov.structure = "exponential", re.scale = "prob",
+                             det.pars = list(lambda0 = 3, sigma = 50),
+                             cov.pars = list(sigma.u = 1.5, rho = 100))
+        expect_equivalent(sim.data[11, ], c(0, 0, 0, 2, 4, 1, 2, 5, 1))
+        ## With counts from an OU process.
+        set.seed(7531)
+        sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 0.5,
+                             cov.structure = "OU",
+                             cov.pars = list(tau = 30, sigma = 50, n.steps = 100, epsilon = 10))
+        expect_equivalent(sim.data[1, ], c(0, 1, 0, 0, 4, 0, 0, 0, 0))
+        ## With time-of-arrival information.
+        set.seed(3579)
+        sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
+                             resp = "binom", detfn = "hn", detfn.scale = "prob",
+                             cov.structure = "sq_exponential", re.scale = "er",
+                             det.pars = list(g0 = 0.9, sigma = 50),
+                             cov.pars = list(sigma.u = 1.5, rho = 100),
+                             toa.pars = list(sigma.toa = 4, sound.speed = 330))
+        expect_equivalent(sim.data$toa[6, ], c(0, 0, 0, 0, 0.201980061428043,
+                                               0.20259893914751, 0, 0.2295964076072,
+                                               0.223745109102043))
+    })
+    
+
+test_that(
+    "Fits with no random effects.",
+    {
         ## Poisson.
         fit.pois <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, resp = "pois",
                              detfn = "hhn", hess = TRUE)
@@ -41,7 +98,7 @@ test_that(
         fit.grad <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois", detfn = "hhn",
                              test.conditional.n = FALSE, cov.structure = "exponential",
-                             test = "gr")
+                             test = "gr", trace = TRUE)
         expect_equivalent(fit.grad$gr, c(53.936454081332, 424.759615492023, 41.4534610100935, -9.18292928534691, 
                                          260.095722145605),
                           tolerance = 1e-4, scale = 1)

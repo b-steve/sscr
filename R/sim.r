@@ -6,10 +6,10 @@
 #' @param D Animal density (individuals per hectare).
 #' @param det.pars List of detection function parameters.
 #' @param cov.pars List of covariance parameters.
-#' @param toa.pars List of time-of-arrival parameters.000
+#' @param toa.pars List of time-of-arrival parameters.
 #'
 #' @export
-sim.sscr <- function(traps, mask, D, resp, resp.pars = NULL,
+sim.sscr <- function(traps, mask, D, resp = NULL, resp.pars = NULL,
                      detfn = "hn", detfn.scale = "er", cov.structure,
                      re.scale = "er", det.pars = NULL,
                      cov.pars = NULL, toa.pars = NULL){
@@ -17,9 +17,11 @@ sim.sscr <- function(traps, mask, D, resp, resp.pars = NULL,
         resp.pars <- 1
     }
     sim.toa <- !is.null(toa.pars)
-    if (sim.toa & (resp != "binom")){
-        if (resp.pars$size != 1){
-            stop("Time of arrival can only be simulated if the response distribution is Bernoulli.")
+    if (!is.null(resp)){
+        if (sim.toa & (resp != "binom")){
+            if (resp.pars$size != 1){
+                stop("Time of arrival can only be simulated if the response distribution is Bernoulli.")
+            }
         }
     }
     ## Finding extent of mask object.
@@ -49,6 +51,9 @@ sim.sscr <- function(traps, mask, D, resp, resp.pars = NULL,
             capt[i, ] <- count.dets(locs, traps, epsilon)
         }
     } else {
+        if (is.null(resp)){
+            stop("A response distribution must be specified.")
+        }
         ## Sorting out detection function.
         calc.detfn <- detfn.closure(detfn, det.pars, detfn.scale)
         ## Distances between traps.
@@ -138,13 +143,12 @@ sim.sscr <- function(traps, mask, D, resp, resp.pars = NULL,
 #' @param start Coordinates of starting location. Default is to
 #'     generate a location from the long-term stationary distribution.
 #' @param n.steps Total number of time steps.
-#' @param centre Logial, if \code{TRUE}
 #' 
 #' @author This is a modified version of a function provided by Theo
 #'     Michelot.
 #' 
 #' @export
-sim.ou <- function(mu, tau, sigma, n.steps, start = NULL, centre = FALSE){
+sim.ou <- function(mu, tau, sigma, n.steps, start = NULL){
     if (is.null(start)){
         start <- rmvnorm(1, mu, sigma^2*diag(2))
     }
