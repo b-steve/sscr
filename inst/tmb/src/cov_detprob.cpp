@@ -18,8 +18,6 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_traps);
   // Indicator for detection function.
   DATA_INTEGER(detfn_id);
-  // Indicator for detection function scale.
-  DATA_INTEGER(detfn_scale_id);
   // Indicator for response type.
   DATA_INTEGER(resp_id);
   // Additional response parameters.
@@ -83,13 +81,8 @@ Type objective_function<Type>::operator() ()
   // Probability of capture.
   for (int i = 0; i < n_traps; i++){
     // Calculating baseline hazard rate and probability.
-    if (detfn_scale_id == 0){
-      base_haz = detfn(mask_dists(i), det_pars, detfn_id);
-      base_prob = haz_to_prob(base_haz);
-    } else if (detfn_scale_id == 1){
-      base_prob = detfn(mask_dists(i), det_pars, detfn_id);
-      base_haz = prob_to_haz(base_prob);
-    }
+    base_prob = detfn(mask_dists(i), det_pars, detfn_id);
+    base_haz = prob_to_haz(base_prob);
     if (cov_id == 6){
       u_use = 0;
     } else if (cov_id == 3){

@@ -21,11 +21,8 @@
 #'     fixed number of trials; if this argument is not provided, then
 #'     the default is 1.
 #' @param detfn Detection function, given by a character string. Use
-#'     \code{"hn"} for halfnormal and \code{"hr"} for hazard rate.
-#' @param detfn.scale A character string, either \code{"er"} or
-#'     \code{"prob"}. This indicates whether the detection function
-#'     should provide the encounter rate (expected number of
-#'     detections) or the probability of detection.
+#'     \code{"hn"}, for halfnormal, \code{"hhn"} for hazard
+#'     halfnormal, and \code{"hr"} for hazard rate.
 #' @param cov.structure Covariance structure of the random
 #'     effects. The current options are (1) \code{"none"} for no
 #'     random effects (regular SCR), (2) \code{"independent"}, for
@@ -69,7 +66,7 @@
 #' 
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
-                     detfn.scale = "er", cov.structure = "none", re.scale = "er",
+                     cov.structure = "none", re.scale = "er",
                      start = NULL, toa = NULL, trace = FALSE, test = FALSE,
                      test.conditional.n = TRUE, hess = FALSE, optim.fun = "nlminb",
                      manual.sep = TRUE){
@@ -99,7 +96,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                         toa = toa,
                         trace = trace)
     model.opts <- list(resp = resp, resp.pars = resp.pars, detfn = detfn,
-                       detfn.scale = detfn.scale, cov.structure = cov.structure,
+                       cov.structure = cov.structure,
                        re.scale = re.scale, start = start, conditional.n = TRUE, Rhess = FALSE,
                        manual.sep = manual.sep)
     ## Optimisation object constructor function.
@@ -117,7 +114,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
     }
     if (test %in% c("nll", "gr", "hess")){
         model.opts.test <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
-                                 detfn.scale = detfn.scale, cov.structure = cov.structure,
+                                 cov.structure = cov.structure,
                                  re.scale = re.scale, start = start,
                                  conditional.n = test.conditional.n, Rhess = !test.conditional.n,
                                  manual.sep = manual.sep)
@@ -166,7 +163,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                 cat("Computing Hessian...\n")
             } 
             model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
-                                     detfn.scale = detfn.scale, cov.structure = cov.structure,
+                                     cov.structure = cov.structure,
                                      re.scale = re.scale, start = fit$ests,
                                      conditional.n = FALSE, Rhess = TRUE, manual.sep = manual.sep)
             opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)

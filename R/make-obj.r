@@ -18,9 +18,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
     }
     ## Extracting detection function and scale.
     detfn <- model.opts$detfn
-    detfn.id <- switch(detfn, hn = 0, hr = 1)
-    detfn.scale <- model.opts$detfn.scale
-    detfn.scale.id <- switch(detfn.scale, er = 0, prob = 1)
+    detfn.id <- switch(detfn, hn = 0, hr = 1, hhn = 2)
     ## Sorting out map for fixing parameters.
     map <- list()
     ## Extracting toa and sorting out indicator.
@@ -58,123 +56,117 @@ make.obj <- function(survey.data, model.opts, any.cov){
     ## Indices and start values for detection function parameters.
     ## Link 0 is log, 1 is qlogis.
     ## For detection functions on the hazard scale.
-    if (detfn.scale.id == 0){
-        if (detfn.id == 0){
-            ## .. With a halfnormal detection function.
-            det.indices <- 1:2
-            det.start <- numeric(2)
-            det.start[1] <- ifelse(any(start.names == "lambda0"), start["lambda0"],
-                                   max(capt)/(2*resp.pars))
-            det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
-                                   max(apply(mask.dists, 1, min))/5)
-            det.link.ids <- c(0, 0)
-            par.names <- c("lambda0", "sigma")
-        } else if (detfn.id == 1){
-            ## .. With a hazard rate detection function.
-            det.indices <- 1:3
-            det.start <- numeric(3)
-            det.start[1] <- ifelse(any(start.names == "lambda0") , start["lambda0"],
-                                   max(capt)/(2*resp.pars))
-            det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
-                                   max(apply(mask.dists, 1, min))/5)
-            det.start[3] <- ifelse(any(start.names == "z") , start["z"], 1)                   
-            det.link.ids <- c(0, 0, 0)
-            par.names <- c("lambda0", "sigma", "z")
-        }
-        ## For detection functions on the probability scale.
-    } else if (detfn.scale.id == 1){
-        if (detfn.id == 0){
-            ## .. With a halfnormal detection function.
-            det.indices <- 1:2
-            det.start <- numeric(2)
-            det.start[1] <- ifelse(any(start.names == "g0") , start["g0"], 0.5)
-            det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
-                                   max(apply(mask.dists, 1, min))/5)
-            det.link.ids <- c(1, 0)
-            par.names <- c("g0", "sigma")
-        } else if (detfn.id == 1){
-            ## .. With a hazard rate detection function.
-            det.indices <- 1:3
-            det.start <- numeric(3)
-            det.start[1] <- ifelse(any(start.names == "g0") , start["g0"], 0.5)
-            det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
-                                   max(apply(mask.dists, 1, min))/5)
-            det.start[3] <- ifelse(any(start.names == "z") , start["z"], 1)           
-            det.link.ids <- c(1, 0, 0)
-            par.names <- c("g0", "sigma", "z")
-        }
+    if (detfn.id == 0){
+        ## ... For a halfnormal detection function.
+        det.indices <- 1:2
+        det.start <- numeric(2)
+        det.start[1] <- ifelse(any(start.names == "g0") , start["g0"], 0.5)
+        det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
+                               max(apply(mask.dists, 1, min))/5)
+        det.link.ids <- c(1, 0)
+        par.names <- c("g0", "sigma")
+        det.indices <- 2
+    } else if (detfn.id == 1){
+        ## ... For a hazard rate detection function.
+        det.indices <- 1:3
+        det.start <- numeric(3)
+        det.start[1] <- ifelse(any(start.names == "g0") , start["g0"], 0.5)
+        det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
+                               max(apply(mask.dists, 1, min))/5)
+        det.start[3] <- ifelse(any(start.names == "z") , start["z"], 1)           
+        det.link.ids <- c(1, 0, 0)
+        par.names <- c("g0", "sigma", "z")
+    } else if (detfn.id == 2){
+        ## ... For a hazard halfnormal detection function.
+        det.indices <- 1:2
+        det.start <- numeric(2)
+        det.start[1] <- ifelse(any(start.names == "lambda0"), start["lambda0"],
+                               max(capt)/(2*resp.pars))
+        det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
+                               max(apply(mask.dists, 1, min))/5)
+        det.link.ids <- c(0, 0)
+        par.names <- c("lambda0", "sigma")
+    } else if (detfn.id == 3){
+        ## ... For a hazard hazard rate (lol) detection function.
+        det.indices <- 1:3
+        det.start <- numeric(3)
+        det.start[1] <- ifelse(any(start.names == "lambda0") , start["lambda0"],
+                               max(capt)/(2*resp.pars))
+        det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
+                               max(apply(mask.dists, 1, min))/5)
+        det.start[3] <- ifelse(any(start.names == "z") , start["z"], 1)                   
+        det.link.ids <- c(0, 0, 0)
+        par.names <- c("lambda0", "sigma", "z")
     }
     pars.start <- det.start
     link.ids <- det.link.ids
-    #if (any.cov){
-        ## Stuff only for covariance structures.
-        cov.structure <- model.opts$cov.structure
-        cov.id <- switch(model.opts$cov.structure,
-                         independent = 0,
-                         exponential = 1,
-                         matern = 2,
-                         individual = 3,
-                         lc_exponential = 4,
-                         sq_exponential = 5,
-                         none = 6)
-        re.scale <- model.opts$re.scale
-        re.scale.id <- switch(re.scale, er = 0, prob = 1)     
-        ## Indices and start values for covariance parameters.
-        cov.index.start <- max(det.indices) + 1
-        if (cov.id == 0){
-            ## Independent.
-            cov.indices <- cov.index.start
-            cov.start <- numeric(1)
-            cov.start[1] <- ifelse(any(start.names == "sigma.u"),
-                                   start["sigma.u"], sd(capt))
-            cov.link.ids <- 0
-            par.names <- c(par.names, "sigma.u")
-        } else if (cov.id == 1){
-            ## Exponential.
-            cov.indices <- cov.index.start:(cov.index.start + 1)
-            cov.start <- numeric(2)
-            cov.start[1] <- ifelse(any(start.names == "sigma.u"),
-                                   start["sigma.u"], sd(capt))
-            cov.start[2] <- ifelse(any(start.names == "rho"),
-                                   start["rho"], min(trap.dists[trap.dists > 0]))
-            cov.link.ids <- c(0, 0)
-            par.names <- c(par.names, "sigma.u", "rho")
-        } else if (cov.id == 2){
-            ## Matern.
-            cov.indices <- cov.index.start:(cov.index.start + 2)
-            stop("Matern covariance function not yet implemented.")
-        } else if (cov.id == 3){
-            ## Individual.
-            cov.indices <- cov.index.start
-            cov.start <- numeric(1)
-            cov.start[1] <- ifelse(any(start.names == "sigma.u"),
-                                   start["sigma.u"], sd(capt))
-            cov.link.ids <- 0
-            par.names <- c(par.names, "sigma.u")
-        } else if (cov.id == 4){
-            ## Linear combination of exponentials.
-            cov.indices <- cov.index.start:(cov.index.start + 3)
-            stop("Linear combination of exponentials not yet implemented.")
-        } else if (cov.id == 5){
-            ## Squared exponential.
-            cov.indices <- cov.index.start:(cov.index.start + 1)
-            cov.start <- numeric(2)
-            cov.start[1] <- ifelse(any(start.names == "sigma.u"),
-                                   start["sigma.u"], sd(capt))
-            cov.start[2] <- ifelse(any(start.names == "rho"),
-                                   start["rho"], min(trap.dists[trap.dists > 0]))
-            cov.link.ids <- c(0, 0)
-            par.names <- c(par.names, "sigma.u", "rho")
-        } else if (cov.id == 6){
-            ## No covariance.
-            cov.indices <- -1
-            cov.start <- NULL
-            cov.link.ids <- NULL
-            map[["link_cov_pars"]] <- factor(NA)
-        }
-        pars.start <- c(pars.start, cov.start)
-        link.ids <- c(link.ids, cov.link.ids)
-                                        #}
+    ## Stuff only for covariance structures.
+    cov.structure <- model.opts$cov.structure
+    cov.id <- switch(model.opts$cov.structure,
+                     independent = 0,
+                     exponential = 1,
+                     matern = 2,
+                     individual = 3,
+                     lc_exponential = 4,
+                     sq_exponential = 5,
+                     none = 6)
+    re.scale <- model.opts$re.scale
+    re.scale.id <- switch(re.scale, er = 0, prob = 1)     
+    ## Indices and start values for covariance parameters.
+    cov.index.start <- max(det.indices) + 1
+    if (cov.id == 0){
+        ## Independent.
+        cov.indices <- cov.index.start
+        cov.start <- numeric(1)
+        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
+                               start["sigma.u"], sd(capt))
+        cov.link.ids <- 0
+        par.names <- c(par.names, "sigma.u")
+    } else if (cov.id == 1){
+        ## Exponential.
+        cov.indices <- cov.index.start:(cov.index.start + 1)
+        cov.start <- numeric(2)
+        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
+                               start["sigma.u"], sd(capt))
+        cov.start[2] <- ifelse(any(start.names == "rho"),
+                               start["rho"], min(trap.dists[trap.dists > 0]))
+        cov.link.ids <- c(0, 0)
+        par.names <- c(par.names, "sigma.u", "rho")
+    } else if (cov.id == 2){
+        ## Matern.
+        cov.indices <- cov.index.start:(cov.index.start + 2)
+        stop("Matern covariance function not yet implemented.")
+    } else if (cov.id == 3){
+        ## Individual.
+        cov.indices <- cov.index.start
+        cov.start <- numeric(1)
+        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
+                               start["sigma.u"], sd(capt))
+        cov.link.ids <- 0
+        par.names <- c(par.names, "sigma.u")
+    } else if (cov.id == 4){
+        ## Linear combination of exponentials.
+        cov.indices <- cov.index.start:(cov.index.start + 3)
+        stop("Linear combination of exponentials not yet implemented.")
+    } else if (cov.id == 5){
+        ## Squared exponential.
+        cov.indices <- cov.index.start:(cov.index.start + 1)
+        cov.start <- numeric(2)
+        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
+                               start["sigma.u"], sd(capt))
+        cov.start[2] <- ifelse(any(start.names == "rho"),
+                               start["rho"], min(trap.dists[trap.dists > 0]))
+        cov.link.ids <- c(0, 0)
+        par.names <- c(par.names, "sigma.u", "rho")
+    } else if (cov.id == 6){
+        ## No covariance.
+        cov.indices <- -1
+        cov.start <- NULL
+        cov.link.ids <- NULL
+        map[["link_cov_pars"]] <- factor(NA)
+    }
+    pars.start <- c(pars.start, cov.start)
+    link.ids <- c(link.ids, cov.link.ids)
     ## Start value for TOA parameter.
     toa.indices <- -1
     if (toa.id == 1){
@@ -229,7 +221,6 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                    trap_dists = trap.dists,
                                                    n_traps = n.traps,
                                                    detfn_id = detfn.id,
-                                                   detfn_scale_id = detfn.scale.id,
                                                    resp_id = resp.id,
                                                    resp_pars = resp.pars,
                                                    cov_id = cov.id,
@@ -282,7 +273,6 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                                resp_id = resp.id,
                                                                resp_pars = resp.pars,
                                                                detfn_id = detfn.id,
-                                                               detfn_scale_id = detfn.scale.id,
                                                                cov_id = cov.id,
                                                                re_scale_id = re.scale.id,
                                                                det_probs = det.probs,
@@ -330,7 +320,6 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                      resp_id = resp.id,
                                                      resp_pars = resp.pars,
                                                      detfn_id = detfn.id,
-                                                     detfn_scale_id = detfn.scale.id,
                                                      cov_id = cov.id,
                                                      re_scale_id = re.scale.id,
                                                      det_probs = det.probs,

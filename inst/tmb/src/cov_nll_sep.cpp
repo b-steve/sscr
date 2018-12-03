@@ -29,8 +29,6 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(resp_pars);
   // Indicator for detection function.
   DATA_INTEGER(detfn_id);
-  // Indicator for detection function scale.
-  DATA_INTEGER(detfn_scale_id);
   // Indicator for dependence structure.
   DATA_INTEGER(cov_id);
   // Indicator for random effects scale.
@@ -83,21 +81,12 @@ Type objective_function<Type>::operator() ()
   matrix<Type> haz_mat(n_mask, n_traps);
   // Detection probabilities for mask/trap combinations.
   matrix<Type> prob_mat(n_mask, n_traps);
-  if (detfn_scale_id == 0){
-    for (int i = 0; i < n_mask; i++){
-      for (int j = 0; j < n_traps; j++){
-	haz_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
-      }
+  for (int i = 0; i < n_mask; i++){
+    for (int j = 0; j < n_traps; j++){
+      prob_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
     }
-    prob_mat = haz_to_prob(haz_mat);
-  } else if (detfn_scale_id == 1){
-    for (int i = 0; i < n_mask; i++){
-      for (int j = 0; j < n_traps; j++){
-	prob_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
-      }
-    }
-    haz_mat = prob_to_haz(prob_mat);
   }
+  haz_mat = prob_to_haz(prob_mat);
   // The sum of mask probabilities.
   Type sum_det_probs = 0;
   for (int i = 0; i < n_mask; i++){

@@ -22,8 +22,6 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(resp_pars);
   // Indicator for detection function.
   DATA_INTEGER(detfn_id);
-  // Indicator for scale of detection function.
-  DATA_INTEGER(detfn_scale_id);
   // Indicators for parameter link functions.
   DATA_IVECTOR(link_ids);
   // Indicator for time-of-arrival data.
@@ -65,21 +63,12 @@ Type objective_function<Type>::operator() ()
   // Detection probabilities for each mask point.
   vector<Type> prob_det(n_mask);
   // Generating hazard and probability matrices.
-  if (detfn_scale_id == 0){
-    for (int i = 0; i < n_mask; i++){
-      for (int j = 0; j < n_traps; j++){
-	haz_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
-      }
+  for (int i = 0; i < n_mask; i++){
+    for (int j = 0; j < n_traps; j++){
+      prob_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
     }
-    prob_mat = haz_to_prob(haz_mat);
-  } else if (detfn_scale_id == 1){
-    for (int i = 0; i < n_mask; i++){
-      for (int j = 0; j < n_traps; j++){
-	prob_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
-      }
-    }
-    haz_mat = prob_to_haz(prob_mat);
   }
+  haz_mat = prob_to_haz(prob_mat);
   // The sum of mask probabilities.
   Type sum_prob_det = 0;
   for (int i = 0; i < n_mask; i++){
