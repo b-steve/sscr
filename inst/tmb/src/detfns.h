@@ -14,7 +14,7 @@ Type detfn_hr (const Type &d, const vector<Type> &det_pars)
 }
 
 template<class Type>
-type detfn_hhn (cost Type &d, const vector<Type> &det_pars)
+Type detfn_hhn (const Type &d, const vector<Type> &det_pars)
 {
   return haz_to_prob(detfn_hn(d, det_pars));
 }

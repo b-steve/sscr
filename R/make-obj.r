@@ -65,7 +65,6 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                max(apply(mask.dists, 1, min))/5)
         det.link.ids <- c(1, 0)
         par.names <- c("g0", "sigma")
-        det.indices <- 2
     } else if (detfn.id == 1){
         ## ... For a hazard rate detection function.
         det.indices <- 1:3

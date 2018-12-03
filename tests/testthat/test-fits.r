@@ -5,12 +5,13 @@ test_that(
     {
         compile.sscr()
         ## Poisson.
-        fit.pois <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, "pois", hess = TRUE)
+        fit.pois <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, resp = "pois",
+                             detfn = "hhn", hess = TRUE)
         expect_equivalent(fit.pois$ests, c(2.87645050233774, 93.388169123886, 0.454913613852446, 
                                            30.7750737144151, -128.981698520115), tol = 1e-4)
         expect_equivalent(fit.pois$se, c(0.5405034, 20.6192798, 0.1894562), tol = 1e-4)
         ## Poisson with detection function on probability scale.
-        fit.pois.pr <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, "pois", detfn.scale = "prob")
+        fit.pois.pr <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, resp = "pois", detfn = "hn")
         expect_equivalent(fit.pois.pr$est, c(0.999999999795205, 117.513845050955, 0.431769352119301, 
                                              32.424719196215, -124.387177667554), tol = 1e-4)
         ## Bernoulli.

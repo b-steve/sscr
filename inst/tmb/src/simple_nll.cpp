@@ -2,8 +2,8 @@
 // no random effects.
 #include <TMB.hpp>
 #include <fenv.h>
-#include "detfns.h"
 #include "utilities.h"
+#include "detfns.h"
 
 template<class Type>
 Type objective_function<Type>::operator() ()

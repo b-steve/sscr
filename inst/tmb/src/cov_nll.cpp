@@ -2,8 +2,8 @@
 // independent random effects.
 #include <TMB.hpp>
 #include <fenv.h>
-#include "detfns.h"
 #include "utilities.h"
+#include "detfns.h"
 using namespace density;
 
 template<class Type>
