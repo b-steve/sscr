@@ -4,7 +4,7 @@
 \alias{sim.sscr}
 \title{Simulating SCR data with second-order spatial dependence}
 \usage{
-sim.sscr(traps, mask, D, resp, resp.pars = NULL, detfn = "hn",
+sim.sscr(traps, mask, D, resp = NULL, resp.pars = NULL, detfn = "hn",
   detfn.scale = "er", cov.structure, re.scale = "er",
   det.pars = NULL, cov.pars = NULL, toa.pars = NULL)
 }
@@ -27,7 +27,8 @@ fixed number of trials; if this argument is not provided, then
 the default is 1.}
 
 \item{detfn}{Detection function, given by a character string. Use
-\code{"hn"} for halfnormal and \code{"hr"} for hazard rate.}
+\code{"hn"}, for halfnormal, \code{"hhn"} for hazard
+halfnormal, and \code{"hr"} for hazard rate.}
 
 \item{detfn.scale}{A character string, either \code{"er"} or
 \code{"prob"}. This indicates whether the detection function
@@ -58,7 +59,7 @@ detections) or the probability of detection.}
 
 \item{cov.pars}{List of covariance parameters.}
 
-\item{toa.pars}{List of time-of-arrival parameters.000}
+\item{toa.pars}{List of time-of-arrival parameters.}
 }
 \description{
 Simulates SSCR data.

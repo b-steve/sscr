@@ -5,10 +5,10 @@
 \title{Fitting an SCR model with second-order spatial dependence}
 \usage{
 fit.sscr(capt, traps, mask, resp = "binom", resp.pars = NULL,
-  detfn = "hn", detfn.scale = "er", cov.structure = "none",
-  re.scale = "er", start = NULL, toa = NULL, trace = FALSE,
-  test = FALSE, test.conditional.n = TRUE, hess = FALSE,
-  optim.fun = "nlminb", manual.sep = TRUE)
+  detfn = "hn", cov.structure = "none", re.scale = "er",
+  start = NULL, toa = NULL, trace = FALSE, test = FALSE,
+  test.conditional.n = TRUE, hess = FALSE, optim.fun = "nlminb",
+  manual.sep = TRUE)
 }
 \arguments{
 \item{capt}{A capture history object. It should be a matrix, where
@@ -31,12 +31,8 @@ fixed number of trials; if this argument is not provided, then
 the default is 1.}
 
 \item{detfn}{Detection function, given by a character string. Use
-\code{"hn"} for halfnormal and \code{"hr"} for hazard rate.}
-
-\item{detfn.scale}{A character string, either \code{"er"} or
-\code{"prob"}. This indicates whether the detection function
-should provide the encounter rate (expected number of
-detections) or the probability of detection.}
+\code{"hn"}, for halfnormal, \code{"hhn"} for hazard
+halfnormal, and \code{"hr"} for hazard rate.}
 
 \item{cov.structure}{Covariance structure of the random
 effects. The current options are (1) \code{"none"} for no

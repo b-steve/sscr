@@ -4,7 +4,7 @@
 \alias{sim.ou}
 \title{Simulating an Ornstein-Uhlenbeck process}
 \usage{
-sim.ou(mu, tau, sigma, n.steps, start = NULL, centre = FALSE)
+sim.ou(mu, tau, sigma, n.steps, start = NULL)
 }
 \arguments{
 \item{mu}{Point of attraction (conceptually the home-range centre).}
@@ -17,8 +17,6 @@ sim.ou(mu, tau, sigma, n.steps, start = NULL, centre = FALSE)
 
 \item{start}{Coordinates of starting location. Default is to
 generate a location from the long-term stationary distribution.}
-
-\item{centre}{Logial, if \code{TRUE}}
 }
 \description{
 Simulates animal movement from an Ornstein-Uhlenbeck process.
