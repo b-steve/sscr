@@ -4,6 +4,10 @@
 #'
 #' @inheritParams fit.sscr
 #' @param D Animal density (individuals per hectare).
+#' @param re.scale A character string, either \code{"er"} or
+#'     \code{"prob"}. This indicates whether the Gaussian random
+#'     effects affect the encounter rate (expected number of
+#'     detections) or the probability of detection.
 #' @param det.pars List of detection function parameters.
 #' @param cov.pars List of covariance parameters.
 #' @param toa.pars List of time-of-arrival parameters.
