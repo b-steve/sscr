@@ -59,8 +59,8 @@ sim.sscr <- function(traps, mask, D, resp = NULL, resp.pars = NULL,
         ## Distances between traps.
         trap.dists <- as.matrix(dist(traps))
         ## Calculating "baseline" encounter rates and probabilities.
-        base.prob <- calc.detfn(ac.dists)
-        base.er <- -log(1 - base.prob)
+        base.prob <- calc.detfn(ac.dists, er = FALSE)
+        base.er <- calc.detfn(ac.dists, er = TRUE)
         ## Constructing covariance matrix.
         if (cov.structure == "none"){
             cov <- matrix(0, nrow = n.traps, ncol = n.traps)
@@ -171,28 +171,43 @@ detfn.closure <- function(detfn, pars){
     if (detfn == "hn"){
         g0 <- pars$g0
         sigma <- pars$sigma
-        out <- function(d){
-            g0*exp(-d^2/(2*sigma^2))
+        out <- function(d, er = FALSE){
+            out <- g0*exp(-d^2/(2*sigma^2))
+            if (er){
+                out <- -log(1 - out)
+            }
+            out
         }
     } else if (detfn == "hr"){
         g0 <- pars$g0
         sigma <- pars$sigma
         z <- pars$z
-        out <- function(d){
-            g0*(1 - exp(-((d/sigma)^-z)))
+        out <- function(d, er = FALSE){
+            out <- g0*(1 - exp(-((d/sigma)^-z)))
+            if (er){
+                out <- -log(1 - out)
+            }
         }
     } else if (detfn == "hhn"){
         lambda0 <- pars$lambda0
         sigma <- pars$sigma
-        out <- function(d){
-            1 - exp(-lambda0*exp(-d^2/(2*sigma^2)))
+        out <- function(d, er = TRUE){
+            out <- lambda0*exp(-d^2/(2*sigma^2))
+            if (!er){
+                out <- 1 - exp(-out)
+            }
+            out
         } 
     } else if (detfn == "hhr"){
         lambda0 <- pars$lambda0
         sigma <- pars$sigma
         z <- pars$z
-        out <- function(d){
-            1 - exp(-lambda0*(1 - exp(-((d/sigma)^-z))))
+        out <- function(d, er = TRUE){
+            out <- -lambda0*(1 - exp(-((d/sigma)^-z)))
+            if (!er){
+                out <- 1 - exp(-out)
+            }
+            out
         }
     }
     out
