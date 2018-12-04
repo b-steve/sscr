@@ -188,7 +188,7 @@ test_that(
         expect_equivalent(test.bern.detpr$nll, 76.1733, tolerance = 1e-4, scale = 1)
         ## With random effects on probability scale.
         test.bern.repr <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
-                                   mask = test.data$mask, detfn = "hn",
+                                   mask = test.data$mask, detfn = "hhn",
                                    cov.structure = "exponential", re.scale = "prob",
                                    test = "nll")
         expect_equivalent(test.bern.repr$nll, 77.7858, tolerance = 1e-4, scale = 1)
