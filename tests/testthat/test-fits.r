@@ -98,7 +98,7 @@ test_that(
         fit.grad <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois", detfn = "hhn",
                              test.conditional.n = FALSE, cov.structure = "exponential",
-                             test = "gr", trace = TRUE)
+                             test = "gr")
         expect_equivalent(fit.grad$gr, c(53.936454081332, 424.759615492023, 41.4534610100935, -9.18292928534691, 
                                          260.095722145605),
                           tolerance = 1e-4, scale = 1)
