@@ -4,17 +4,13 @@
 #'
 #' @inheritParams fit.sscr
 #' @param D Animal density (individuals per hectare).
-#' @param detfn.scale A character string, either \code{"er"} or
-#'     \code{"prob"}. This indicates whether the detection function
-#'     should provide the encounter rate (expected number of
-#'     detections) or the probability of detection.
 #' @param det.pars List of detection function parameters.
 #' @param cov.pars List of covariance parameters.
 #' @param toa.pars List of time-of-arrival parameters.
 #'
 #' @export
 sim.sscr <- function(traps, mask, D, resp = NULL, resp.pars = NULL,
-                     detfn = "hn", detfn.scale = "er", cov.structure,
+                     detfn = "hn", cov.structure = "none",
                      re.scale = "er", det.pars = NULL,
                      cov.pars = NULL, toa.pars = NULL){
     if (is.null(resp.pars)){
@@ -59,11 +55,12 @@ sim.sscr <- function(traps, mask, D, resp = NULL, resp.pars = NULL,
             stop("A response distribution must be specified.")
         }
         ## Sorting out detection function.
-        calc.detfn <- detfn.closure(detfn, det.pars, detfn.scale)
+        calc.detfn <- detfn.closure(detfn, det.pars)
         ## Distances between traps.
         trap.dists <- as.matrix(dist(traps))
-        ## Calculating "baseline" encounter rates or probabilities.
-        base <- calc.detfn(ac.dists)
+        ## Calculating "baseline" encounter rates and probabilities.
+        base.prob <- calc.detfn(ac.dists)
+        base.er <- -log(1 - base.prob)
         ## Constructing covariance matrix.
         if (cov.structure == "none"){
             cov <- matrix(0, nrow = n.traps, ncol = n.traps)
@@ -97,13 +94,6 @@ sim.sscr <- function(traps, mask, D, resp = NULL, resp.pars = NULL,
         ## Simulating random effects.
         u.mat <- rmvnorm(n, rep(0, n.traps), cov)
         ## Getting full encounter rates and probabilities.
-        if (detfn.scale == "er"){
-            base.er <- base
-            base.prob <- 1 - exp(-base.er)
-        } else  if (detfn.scale == "prob"){
-            base.prob <- base
-            base.er <- -log(1 - base.prob)
-        }
         if (re.scale == "er"){
             full.er <- exp(log(base.er) + u.mat)
             full.prob <- 1 - exp(-full.er)
@@ -177,33 +167,32 @@ count.dets <- function(locs, traps, epsilon){
 }
 
 ## Closure for detection function.
-detfn.closure <- function(detfn, pars, detfn.scale){
+detfn.closure <- function(detfn, pars){
     if (detfn == "hn"){
+        g0 <- pars$g0
         sigma <- pars$sigma
-        if (detfn.scale == "er"){
-            lambda0 <- pars$lambda0
-            out <- function(d){
-                lambda0*exp(-d^2/(2*sigma^2))
-            }
-        } else if (detfn.scale == "prob"){
-            g0 <- pars$g0
-            out <- function(d){
-                g0*exp(-d^2/(2*sigma^2))
-            }
+        out <- function(d){
+            g0*exp(-d^2/(2*sigma^2))
         }
     } else if (detfn == "hr"){
+        g0 <- pars$g0
         sigma <- pars$sigma
         z <- pars$z
-        if (detfn.scale == "er"){
-            lambda0 <- pars$lambda0
-            out <- function(d){
-                lambda0*(1 - exp(-((d/sigma)^-z)))
-            }
-        } else if (detfn.scale == "prob"){
-            g0 <- pars$g0
-            out <- function(d){
-                g0*(1 - exp(-((d/sigma)^-z)))
-            }
+        out <- function(d){
+            g0*(1 - exp(-((d/sigma)^-z)))
+        }
+    } else if (detfn == "hhn"){
+        lambda0 <- pars$lambda0
+        sigma <- pars$sigma
+        out <- function(d){
+            1 - exp(-lambda0*exp(-d^2/(2*sigma^2)))
+        } 
+    } else if (detfn == "hhr"){
+        lambda0 <- pars$lambda0
+        sigma <- pars$sigma
+        z <- pars$z
+        out <- function(d){
+            1 - exp(-lambda0*(1 - exp(-((d/sigma)^-z))))
         }
     }
     out
