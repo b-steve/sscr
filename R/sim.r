@@ -96,8 +96,6 @@ sim.sscr <- function(traps, mask, D, resp = NULL, resp.pars = NULL,
         ## Getting full encounter rates and probabilities.
         full.er <- exp(log(base.er) + u.mat)
         full.prob <- 1 - exp(-full.er)
-        full.prob <- plogis(qlogis(base.prob) + u.mat)
-        full.er <- -log(1 - full.prob)
         ## Generating capture histories.
         if (resp == "pois"){
             capt <- matrix(rpois(n*n.traps, full.er), nrow = n)
