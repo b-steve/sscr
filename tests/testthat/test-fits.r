@@ -7,25 +7,25 @@ test_that(
         ## Poisson response.
         set.seed(4321)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
-                             resp = "pois", detfn = "hn", detfn.scale = "er",
+                             resp = "pois", detfn = "hhn",
                              cov.structure = "none", det.pars = list(lambda0 = 3, sigma = 50))
         expect_equivalent(sim.data[21, ], c(0, 0, 0, 0, 1, 4, 0, 4, 1))
         ## ... With detection function on the probability scale.
         set.seed(2468)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
-                             resp = "pois", detfn = "hn", detfn.scale = "prob",
+                             resp = "pois", detfn = "hn",
                              cov.structure = "none", det.pars = list(g0 = 0.9, sigma = 50))
         expect_equivalent(sim.data[11, ], c(0, 0, 0, 0, 2, 1, 0, 0, 0))
         ## Binomial response.
         set.seed(1234)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
-                             resp = "binom", resp.pars = 5, detfn = "hn", detfn.scale = "er",
+                             resp = "binom", resp.pars = 5, detfn = "hhn",
                               cov.structure = "none", det.pars = list(lambda0 = 3, sigma = 50))
         expect_equivalent(sim.data[8, ], c(1, 0, 0, 5, 1, 0, 1, 0, 0))
         ## With squared-exponential covariance function.
         set.seed(8642)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
-                             resp = "pois", detfn = "hn", detfn.scale = "er",
+                             resp = "pois", detfn = "hhn",
                              cov.structure = "sq_exponential",, re.scale = "er",
                              det.pars = list(lambda0 = 3, sigma = 50),
                              cov.pars = list(sigma.u = 1.5, rho = 100))
@@ -33,7 +33,7 @@ test_that(
         ## With exponential covariance function on the probability scale.
         set.seed(8642)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
-                             resp = "pois", detfn = "hn", detfn.scale = "er",
+                             resp = "pois", detfn = "hhn",
                              cov.structure = "exponential", re.scale = "prob",
                              det.pars = list(lambda0 = 3, sigma = 50),
                              cov.pars = list(sigma.u = 1.5, rho = 100))
@@ -47,7 +47,7 @@ test_that(
         ## With time-of-arrival information.
         set.seed(3579)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
-                             resp = "binom", detfn = "hn", detfn.scale = "prob",
+                             resp = "binom", detfn = "hn",
                              cov.structure = "sq_exponential", re.scale = "er",
                              det.pars = list(g0 = 0.9, sigma = 50),
                              cov.pars = list(sigma.u = 1.5, rho = 100),
