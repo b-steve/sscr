@@ -11,8 +11,8 @@
 #' @export
 sim.sscr <- function(traps, mask, D, resp = NULL, resp.pars = NULL,
                      detfn = "hn", cov.structure = "none",
-                     re.scale = "er", det.pars = NULL,
-                     cov.pars = NULL, toa.pars = NULL){
+                     det.pars = NULL, cov.pars = NULL,
+                     toa.pars = NULL){
     if (is.null(resp.pars)){
         resp.pars <- 1
     }
@@ -94,13 +94,10 @@ sim.sscr <- function(traps, mask, D, resp = NULL, resp.pars = NULL,
         ## Simulating random effects.
         u.mat <- rmvnorm(n, rep(0, n.traps), cov)
         ## Getting full encounter rates and probabilities.
-        if (re.scale == "er"){
-            full.er <- exp(log(base.er) + u.mat)
-            full.prob <- 1 - exp(-full.er)
-        } else if (re.scale == "prob"){
-            full.prob <- plogis(qlogis(base.prob) + u.mat)
-            full.er <- -log(1 - full.prob)
-        }
+        full.er <- exp(log(base.er) + u.mat)
+        full.prob <- 1 - exp(-full.er)
+        full.prob <- plogis(qlogis(base.prob) + u.mat)
+        full.er <- -log(1 - full.prob)
         ## Generating capture histories.
         if (resp == "pois"){
             capt <- matrix(rpois(n*n.traps, full.er), nrow = n)

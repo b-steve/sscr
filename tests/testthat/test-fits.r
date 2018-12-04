@@ -26,18 +26,10 @@ test_that(
         set.seed(8642)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
                              resp = "pois", detfn = "hhn",
-                             cov.structure = "sq_exponential",, re.scale = "er",
+                             cov.structure = "sq_exponential",
                              det.pars = list(lambda0 = 3, sigma = 50),
                              cov.pars = list(sigma.u = 1.5, rho = 100))
         expect_equivalent(sim.data[13, ], c(0, 0, 0, 2, 5, 0, 1, 16, 0))
-        ## With exponential covariance function on the probability scale.
-        set.seed(8642)
-        sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
-                             resp = "pois", detfn = "hhn",
-                             cov.structure = "exponential", re.scale = "prob",
-                             det.pars = list(lambda0 = 3, sigma = 50),
-                             cov.pars = list(sigma.u = 1.5, rho = 100))
-        expect_equivalent(sim.data[11, ], c(0, 0, 0, 2, 4, 1, 2, 5, 1))
         ## With counts from an OU process.
         set.seed(7531)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 0.5,
@@ -48,7 +40,7 @@ test_that(
         set.seed(3579)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
                              resp = "binom", detfn = "hn",
-                             cov.structure = "sq_exponential", re.scale = "er",
+                             cov.structure = "sq_exponential",
                              det.pars = list(g0 = 0.9, sigma = 50),
                              cov.pars = list(sigma.u = 1.5, rho = 100),
                              toa.pars = list(sigma.toa = 4, sound.speed = 330))
@@ -75,7 +67,7 @@ test_that(
         fit.bern <- fit.sscr(test.data$bin.capt, test.data$traps, test.data$mask, detfn = "hhn")
         expect_equivalent(fit.bern$ests, c(1.10544298833934, 144.339009111062, 0.312312925517947, 
                                            44.8268350622443, -73.7787592050756), tol = 1e-4)
-        ## Bernoulli with detection function on probability scale.
+        ## Bernoulli with halfnormal detection function.
         fit.bern.pr <- fit.sscr(test.data$bin.capt, test.data$traps, test.data$mask, detfn = "hn")
         expect_equivalent(fit.bern.pr$ests, c(0.709787201866111, 157.488436993617, 0.308950967387457, 
                                               45.3146339640442, -74.0448322726064), tol = 1e-4)
@@ -84,7 +76,7 @@ test_that(
                               resp.pars = 10, detfn = "hhn")
         expect_equivalent(fit.binom$ests, c(0.519014374421606, 125.87869591362, 0.247980358116291, 
                                             56.4560842896866, -136.734734751027), tol = 1e-4)
-        ## Binomial with detection function on probability scale.
+        ## Binomial with halfnormal detection function.
         fit.binom.pr <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, resp = "binom",
                                  resp.pars = 10, detfn = "hn")
         expect_equivalent(fit.binom.pr$ests, c(0.604976358068237, 137.677620551755, 0.20620406615787, 
@@ -115,23 +107,11 @@ test_that(
                                 mask = test.data$mask, resp = "pois", detfn = "hhn",
                                 cov.structure = "independent", test = "nll")
         expect_equivalent(test.ind.hn$nll, 127.0738, tolerance = 1e-4, scale = 1)
-        ## With detection function on probability scale.
+        ## With halfnormal detection function.
         test.ind.hn.detpr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                    mask = test.data$mask, resp = "pois", detfn = "hn",
                                    cov.structure = "independent", test = "nll")
         expect_equivalent(test.ind.hn.detpr$nll, 123.8944, tolerance = 1e-4, scale = 1)
-        ## With random effects on the probability scale.
-        test.ind.hn.repr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
-                                     mask = test.data$mask, resp = "pois", detfn = "hhn",
-                                     cov.structure = "independent", re.scale = "prob",
-                                     test = "nll")
-        expect_equivalent(test.ind.hn.repr, 124.5118, tolerance = 1e-4, scale = 1)
-        ## With detection function and random effects also on probability scale.
-        test.ind.hn.detpr.repr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
-                                           mask = test.data$mask, resp = "pois", detfn = "hn",
-                                           cov.structure = "independent",
-                                           re.scale = "prob", test = "nll")
-        expect_equivalent(test.ind.hn.detpr.repr$nll, 129.4880, tolerance = 1e-4, scale = 1)
         ## Testing manual start values.
         test.sv.hn <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "pois", detfn = "hhn",
@@ -154,18 +134,12 @@ test_that(
                                  cov.structure = "exponential", test = "nll",
                                  manual.sep = FALSE)
         expect_equivalent(test.exp.man$nll, 125.2871, tolerance = 1e-4, scale = 1)
-        ## With detection function on probability scale.
+        ## With halfnormal detection function.
         test.exp.detpr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hn",
                                 cov.structure = "exponential",
                                 test = "nll")
         expect_equivalent(test.exp.detpr$nll, 122.8905, tolerance = 1e-4, scale = 1)
-        ## With random effects on probability scale.
-        test.exp.repr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
-                                  mask = test.data$mask, resp = "pois", detfn = "hhn",
-                                  cov.structure = "exponential", re.scale = "prob",
-                                  test = "nll")
-        expect_equivalent(test.exp.repr$nll, 125.0680, tolerance = 1e-4, scale = 1)
         ## Squared exponential covariance function (not sure we can trust this one).
         test.sqexp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "pois", detfn = "hhn",
@@ -181,17 +155,11 @@ test_that(
                               mask = test.data$mask, detfn = "hhn",
                               cov.structure = "exponential", test = "nll")
         expect_equivalent(test.bern$nll, 77.4819, tolerance = 1e-4, scale = 1)
-        ## With detection function on probability scale.
+        ## With halfnormal detection function.
         test.bern.detpr <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
                                     mask = test.data$mask, detfn = "hn",
                                     cov.structure = "exponential", test = "nll")
         expect_equivalent(test.bern.detpr$nll, 76.1733, tolerance = 1e-4, scale = 1)
-        ## With random effects on probability scale.
-        test.bern.repr <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
-                                   mask = test.data$mask, detfn = "hhn",
-                                   cov.structure = "exponential", re.scale = "prob",
-                                   test = "nll")
-        expect_equivalent(test.bern.repr$nll, 77.7858, tolerance = 1e-4, scale = 1)
         ## Binomial response.
         test.binom <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "binom",

@@ -108,9 +108,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
                      individual = 3,
                      lc_exponential = 4,
                      sq_exponential = 5,
-                     none = 6)
-    re.scale <- model.opts$re.scale
-    re.scale.id <- switch(re.scale, er = 0, prob = 1)     
+                     none = 6)   
     ## Indices and start values for covariance parameters.
     cov.index.start <- max(det.indices) + 1
     if (cov.id == 0){
@@ -223,7 +221,6 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                    resp_id = resp.id,
                                                    resp_pars = resp.pars,
                                                    cov_id = cov.id,
-                                                   re_scale_id = re.scale.id,
                                                    link_det_ids = link.ids[det.indices],
                                                    link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices]),
                                        parameters = list(link_det_pars = link.pars.start[det.indices],
@@ -273,7 +270,6 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                                resp_pars = resp.pars,
                                                                detfn_id = detfn.id,
                                                                cov_id = cov.id,
-                                                               re_scale_id = re.scale.id,
                                                                det_probs = det.probs,
                                                                toa_id = toa.id,
                                                                toa_ssq = toa.ssq.ind,
@@ -320,7 +316,6 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                      resp_pars = resp.pars,
                                                      detfn_id = detfn.id,
                                                      cov_id = cov.id,
-                                                     re_scale_id = re.scale.id,
                                                      det_probs = det.probs,
                                                      toa_id = toa.id,
                                                      toa_ssq = toa.ssq,

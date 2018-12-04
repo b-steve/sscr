@@ -31,8 +31,6 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(detfn_id);
   // Indicator for dependence structure.
   DATA_INTEGER(cov_id);
-  // Indicator for random effects scale.
-  DATA_INTEGER(re_scale_id);
   // Detection probabilities (from cov_detprob.cpp).
   DATA_VECTOR(det_probs);
   // Indicator for time-of-arrival data.
@@ -109,13 +107,8 @@ Type objective_function<Type>::operator() ()
       // Expected counts and probabilities.
       Type e_count = exp(log(haz_mat(j, k) + 1e-12) + u_use) + DBL_MIN;
       Type e_prob = 1 - exp(-e_count);
-      if (re_scale_id == 0){
-	e_count = exp(log(haz_mat(j, k) + 1e-12) + u_use) + DBL_MIN;
-	e_prob = haz_to_prob(e_count);
-      } else if (re_scale_id == 1){
-	e_prob = invlogit(logit(prob_mat(j, k) + 1e-12) + u_use) + DBL_MIN;
-	e_count = prob_to_haz(e_prob);
-      }
+      e_count = exp(log(haz_mat(j, k) + 1e-12) + u_use) + DBL_MIN;
+      e_prob = haz_to_prob(e_count);
       if (resp_id == 0){
 	integrand_mask += dbinom_sscr(capt(k), resp_pars(0), e_prob, true);
       } else if (resp_id == 1){

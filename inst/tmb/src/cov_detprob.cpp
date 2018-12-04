@@ -24,8 +24,6 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(resp_pars)
   // Indicator for dependence structure.
   DATA_INTEGER(cov_id);
-  // Indicator for random effects scale.
-  DATA_INTEGER(re_scale_id);
   // Indicators for detection parameter link functions.
   DATA_IVECTOR(link_det_ids);
   // Number of detection function parameters.
@@ -91,13 +89,8 @@ Type objective_function<Type>::operator() ()
       u_use = u(i);
     }
     // Calculating actual hazard rate and probability.
-    if (re_scale_id == 0){
-      haz = exp(log(base_haz + 1e-12) + u_use) + DBL_MIN;
-      prob = haz_to_prob(haz);
-    } else if (re_scale_id == 1){
-      prob = invlogit(logit(base_prob + 1e-12) + u_use) + DBL_MIN;
-      haz = prob_to_haz(prob);
-    }
+    haz = exp(log(base_haz + 1e-12) + u_use) + DBL_MIN;
+    prob = haz_to_prob(haz);
     // Running calculation of overall probability of nondetection.
     p_total_evade *= 1 - prob;
   }

@@ -37,10 +37,6 @@
 #'     independent random effect on \code{lambda0} for each
 #'     individual), or (6) \code{"lc_exponential"} for a linear
 #'     combination of exponential covariance functions.
-#' @param re.scale A character string, either \code{"er"} or
-#'     \code{"prob"}. This indicates whether the Gaussian random
-#'     effects affect the encounter rate (expected number of
-#'     detections) or the probability of detection.
 #' @param start A named list of parameter start values.
 #' @param toa A matrix with the same dimensions as \code{capt} that
 #'     provides time-of-arrival information for acoustic detections.
@@ -65,11 +61,12 @@
 #'     R, rather than automatically detected by TMB.
 #' 
 #' @export
-fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn = "hn",
-                     cov.structure = "none", re.scale = "er",
-                     start = NULL, toa = NULL, trace = FALSE, test = FALSE,
-                     test.conditional.n = TRUE, hess = FALSE, optim.fun = "nlminb",
-                     manual.sep = TRUE){
+fit.sscr <- function(capt, traps, mask, resp = "binom",
+                     resp.pars = NULL, detfn = "hn",
+                     cov.structure = "none", start = NULL, toa = NULL,
+                     trace = FALSE, test = FALSE,
+                     test.conditional.n = TRUE, hess = FALSE,
+                     optim.fun = "nlminb", manual.sep = TRUE){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -96,8 +93,8 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
                         toa = toa,
                         trace = trace)
     model.opts <- list(resp = resp, resp.pars = resp.pars, detfn = detfn,
-                       cov.structure = cov.structure,
-                       re.scale = re.scale, start = start, conditional.n = TRUE, Rhess = FALSE,
+                       cov.structure = cov.structure, start = start,
+                       conditional.n = TRUE, Rhess = FALSE,
                        manual.sep = manual.sep)
     ## Optimisation object constructor function.
     if (cov.structure == "none"){
@@ -115,8 +112,8 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
     if (test %in% c("nll", "gr", "hess")){
         model.opts.test <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                  cov.structure = cov.structure,
-                                 re.scale = re.scale, start = start,
-                                 conditional.n = test.conditional.n, Rhess = !test.conditional.n,
+                                 start = start, conditional.n = test.conditional.n,
+                                 Rhess = !test.conditional.n,
                                  manual.sep = manual.sep)
         opt.obj.test <- make.obj(survey.data, model.opts.test, any.cov)
         ## Setting up output list.
@@ -164,8 +161,8 @@ fit.sscr <- function(capt, traps, mask, resp = "binom", resp.pars = NULL, detfn 
             } 
             model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                      cov.structure = cov.structure,
-                                     re.scale = re.scale, start = fit$ests,
-                                     conditional.n = FALSE, Rhess = TRUE, manual.sep = manual.sep)
+                                     start = fit$ests, conditional.n = FALSE, Rhess = TRUE,
+                                     manual.sep = manual.sep)
             opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
             fit$vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
             fit$se <- sqrt(diag(fit$vcov))
