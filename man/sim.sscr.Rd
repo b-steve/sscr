@@ -5,8 +5,8 @@
 \title{Simulating SCR data with second-order spatial dependence}
 \usage{
 sim.sscr(traps, mask, D, resp = NULL, resp.pars = NULL, detfn = "hn",
-  detfn.scale = "er", cov.structure, re.scale = "er",
-  det.pars = NULL, cov.pars = NULL, toa.pars = NULL)
+  cov.structure = "none", re.scale = "er", det.pars = NULL,
+  cov.pars = NULL, toa.pars = NULL)
 }
 \arguments{
 \item{traps}{A matrix with two columns, providing the Cartesian
@@ -29,11 +29,6 @@ the default is 1.}
 \item{detfn}{Detection function, given by a character string. Use
 \code{"hn"}, for halfnormal, \code{"hhn"} for hazard
 halfnormal, and \code{"hr"} for hazard rate.}
-
-\item{detfn.scale}{A character string, either \code{"er"} or
-\code{"prob"}. This indicates whether the detection function
-should provide the encounter rate (expected number of
-detections) or the probability of detection.}
 
 \item{cov.structure}{Covariance structure of the random
 effects. The current options are (1) \code{"none"} for no
