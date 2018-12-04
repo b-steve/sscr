@@ -18,7 +18,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
     }
     ## Extracting detection function and scale.
     detfn <- model.opts$detfn
-    detfn.id <- switch(detfn, hn = 0, hr = 1, hhn = 2)
+    detfn.id <- switch(detfn, hn = 0, hr = 1, hhn = 2, hhr = 3)
     ## Sorting out map for fixing parameters.
     map <- list()
     ## Extracting toa and sorting out indicator.
