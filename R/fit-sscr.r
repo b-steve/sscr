@@ -37,6 +37,11 @@
 #'     independent random effect on \code{lambda0} for each
 #'     individual), or (6) \code{"lc_exponential"} for a linear
 #'     combination of exponential covariance functions.
+#' @param re.multiplier A character string specifying how the expected
+#'     encounter rate is calculated from the random effect. This is
+#'     either (1) \code{"er"} for multiplication by the baseline
+#'     encounter rate, or (2) \code{"prob"} for multiplication by the
+#'     baseline encounter probability.
 #' @param start A named list of parameter start values.
 #' @param toa A matrix with the same dimensions as \code{capt} that
 #'     provides time-of-arrival information for acoustic detections.
@@ -63,7 +68,8 @@
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom",
                      resp.pars = NULL, detfn = "hn",
-                     cov.structure = "none", start = NULL, toa = NULL,
+                     cov.structure = "none", re.multiplier = "er",
+                     start = NULL, toa = NULL,
                      trace = FALSE, test = FALSE,
                      test.conditional.n = TRUE, hess = FALSE,
                      optim.fun = "nlminb", manual.sep = TRUE){
@@ -93,8 +99,8 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
                         toa = toa,
                         trace = trace)
     model.opts <- list(resp = resp, resp.pars = resp.pars, detfn = detfn,
-                       cov.structure = cov.structure, start = start,
-                       conditional.n = TRUE, Rhess = FALSE,
+                       cov.structure = cov.structure, re.multiplier = re.multiplier,
+                       start = start, conditional.n = TRUE, Rhess = FALSE,
                        manual.sep = manual.sep)
     ## Optimisation object constructor function.
     if (cov.structure == "none"){
@@ -112,6 +118,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
     if (test %in% c("nll", "gr", "hess")){
         model.opts.test <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                  cov.structure = cov.structure,
+                                 re.multiplier = re.multiplier,
                                  start = start, conditional.n = test.conditional.n,
                                  Rhess = !test.conditional.n,
                                  manual.sep = manual.sep)
@@ -161,6 +168,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
             } 
             model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                      cov.structure = cov.structure,
+                                     re.multiplier = re.multiplier,
                                      start = fit$ests, conditional.n = FALSE, Rhess = TRUE,
                                      manual.sep = manual.sep)
             opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)

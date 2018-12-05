@@ -31,6 +31,8 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(detfn_id);
   // Indicator for dependence structure.
   DATA_INTEGER(cov_id);
+  // Indicator for random effect multiplier.
+  DATA_INTEGER(mult_id);
   // Detection probabilities (from cov_detprob.cpp).
   DATA_VECTOR(det_probs);
   // Indicator for time-of-arrival data.
@@ -62,6 +64,8 @@ Type objective_function<Type>::operator() ()
       det_pars(i) = exp(link_det_pars(i));
     } else if (link_det_ids(i) == 1){
       det_pars(i) = 1/(1 + exp(-link_det_pars(i)));
+    } else if (link_det_ids(i) == 2){
+      det_pars(i) = link_det_pars(i);
     }
   }
   // Back-transforming covariance function parameters.
@@ -71,6 +75,8 @@ Type objective_function<Type>::operator() ()
       cov_pars(i) = exp(link_cov_pars(i));
     } else if (link_cov_ids(i) == 1){
       cov_pars(i) = 1/(1 + exp(-link_cov_pars(i)));
+    } else if (link_cov_ids(i) == 2){
+      cov_pars(i) = link_cov_pars(i);
     }
   }
   // Back-transforming sigma_toa, including readjustment to ms.
@@ -126,14 +132,14 @@ Type objective_function<Type>::operator() ()
   f -= -log(sum_det_probs);
   // Sorting out spatial random effects.
   if (cov_id == 3){
-      f -= dnorm(u(0), Type(0), cov_pars(0), true);
+      f -= dnorm(u(0), Type(0), cov_pars(1), true);
   } else if (cov_id != 6){
     // Variance-covariance matrix for latent variables.
     matrix<Type> sigma_u_mat(n_traps, n_traps);
     for (int j = 0; j < n_traps; j++){
       for (int k = j; k < n_traps; k++){ 
 	if (j == k){
-	  sigma_u_mat(j, k) = pow(cov_pars(0), 2);
+	  sigma_u_mat(j, k) = pow(cov_pars(1), 2);
 	} else {
 	  if (cov_id == 0){
 	    // Independent random effects
@@ -141,23 +147,23 @@ Type objective_function<Type>::operator() ()
 	    sigma_u_mat(k, j) = 0;
 	  } else if (cov_id == 1){
 	    // Exponential covariance function.
-	    sigma_u_mat(j, k) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
-	    sigma_u_mat(k, j) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
+	    sigma_u_mat(j, k) = pow(cov_pars(1), 2)*exp(-trap_dists(j, k)/cov_pars(2));
+	    sigma_u_mat(k, j) = pow(cov_pars(1), 2)*exp(-trap_dists(j, k)/cov_pars(2));
 	  } else if (cov_id == 2){
 	    // Matern covariance function.
 	  } else if (cov_id == 3){
 	    // Total dependence (individual-level random effects).
 	    // NOTE: This is actually handled above.
-	    sigma_u_mat(j, k) = pow(cov_pars(0), 2);
-	    sigma_u_mat(k, j) = pow(cov_pars(0), 2);
+	    sigma_u_mat(j, k) = pow(cov_pars(1), 2);
+	    sigma_u_mat(k, j) = pow(cov_pars(1), 2);
 	  } else if (cov_id == 4){
 	    // Linear combination of exponential covariance functions.
-	    sigma_u_mat(j, k) = pow(cov_pars(0), 2)*(cov_pars(1)*exp(-cov_pars(2)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(2)*trap_dists(j, k)), 2) + (1 - cov_pars(1))*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2));
-	    sigma_u_mat(k, j) = pow(cov_pars(0), 2)*(cov_pars(1)*exp(-cov_pars(2)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(2)*trap_dists(j, k)), 2) + (1 - cov_pars(1))*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2));
+	    sigma_u_mat(j, k) = pow(cov_pars(1), 2)*(cov_pars(2)*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2) + (1 - cov_pars(2))*exp(-cov_pars(4)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(4)*trap_dists(j, k)), 2));
+	    sigma_u_mat(k, j) = pow(cov_pars(1), 2)*(cov_pars(2)*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2) + (1 - cov_pars(2))*exp(-cov_pars(4)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(4)*trap_dists(j, k)), 2));
 	  } else if (cov_id == 5){
 	    // Squared exponential covariance function.
-	    sigma_u_mat(j, k) = pow(cov_pars(0), 2)*exp(-pow(trap_dists(j, k), 2)/pow(cov_pars(1), 2));
-	    sigma_u_mat(k, j) = pow(cov_pars(0), 2)*exp(-pow(trap_dists(j, k), 2)/pow(cov_pars(1), 2));
+	    sigma_u_mat(j, k) = pow(cov_pars(1), 2)*exp(-pow(trap_dists(j, k), 2)/pow(cov_pars(2), 2));
+	    sigma_u_mat(k, j) = pow(cov_pars(1), 2)*exp(-pow(trap_dists(j, k), 2)/pow(cov_pars(2), 2));
 	  } else {
 	    exit(1111);
 	  }
@@ -166,7 +172,7 @@ Type objective_function<Type>::operator() ()
     }
     // Contribution from latent variables (note MVNORM returns the
     // negative-log of the density).
-    f += MVNORM(sigma_u_mat)(u);
+    f += MVNORM(sigma_u_mat)(u - cov_pars(0));
   }
   return f;
 }

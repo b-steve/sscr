@@ -54,7 +54,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
         }
     }
     ## Indices and start values for detection function parameters.
-    ## Link 0 is log, 1 is qlogis.
+    ## Link 0 is log, 1 is qlogis, 2 is identity.
     ## For detection functions on the hazard scale.
     if (detfn.id == 0){
         ## ... For a halfnormal detection function.
@@ -100,7 +100,6 @@ make.obj <- function(survey.data, model.opts, any.cov){
     pars.start <- det.start
     link.ids <- det.link.ids
     ## Stuff only for covariance structures.
-    cov.structure <- model.opts$cov.structure
     cov.id <- switch(model.opts$cov.structure,
                      independent = 0,
                      exponential = 1,
@@ -108,27 +107,34 @@ make.obj <- function(survey.data, model.opts, any.cov){
                      individual = 3,
                      lc_exponential = 4,
                      sq_exponential = 5,
-                     none = 6)   
+                     none = 6)
+    re.multiplier <- model.opts$re.multiplier
+    mult.id <- switch(model.opts$re.multiplier,
+                      er = 0, prob = 1)
     ## Indices and start values for covariance parameters.
     cov.index.start <- max(det.indices) + 1
     if (cov.id == 0){
         ## Independent.
         cov.indices <- cov.index.start
         cov.start <- numeric(1)
-        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
+        cov.start[1] <- ifelse(any(start.names == "mu.u"), start["mu.u"],
+                               log(max(capt)/(2*resp.pars)))
+        cov.start[2] <- ifelse(any(start.names == "sigma.u"),
                                start["sigma.u"], sd(capt))
-        cov.link.ids <- 0
-        par.names <- c(par.names, "sigma.u")
+        cov.link.ids <- c(2, 0)
+        par.names <- c(par.names, "mu.u", "sigma.u")
     } else if (cov.id == 1){
         ## Exponential.
         cov.indices <- cov.index.start:(cov.index.start + 1)
         cov.start <- numeric(2)
-        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
+        cov.start[1] <- ifelse(any(start.names == "mu.u"), start["mu.u"],
+                               log(max(capt)/(2*resp.pars)))
+        cov.start[2] <- ifelse(any(start.names == "sigma.u"),
                                start["sigma.u"], sd(capt))
-        cov.start[2] <- ifelse(any(start.names == "rho"),
+        cov.start[3] <- ifelse(any(start.names == "rho"),
                                start["rho"], min(trap.dists[trap.dists > 0]))
-        cov.link.ids <- c(0, 0)
-        par.names <- c(par.names, "sigma.u", "rho")
+        cov.link.ids <- c(2, 0, 0)
+        par.names <- c(par.names, "mu.u", "sigma.u", "rho")
     } else if (cov.id == 2){
         ## Matern.
         cov.indices <- cov.index.start:(cov.index.start + 2)
@@ -137,10 +143,12 @@ make.obj <- function(survey.data, model.opts, any.cov){
         ## Individual.
         cov.indices <- cov.index.start
         cov.start <- numeric(1)
-        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
+        cov.start[1] <- ifelse(any(start.names == "mu.u"), start["mu.u"],
+                               log(max(capt)/(2*resp.pars)))
+        cov.start[2] <- ifelse(any(start.names == "sigma.u"),
                                start["sigma.u"], sd(capt))
-        cov.link.ids <- 0
-        par.names <- c(par.names, "sigma.u")
+        cov.link.ids <- c(2, 0)
+        par.names <- c(par.names, "mu.u", "sigma.u")
     } else if (cov.id == 4){
         ## Linear combination of exponentials.
         cov.indices <- cov.index.start:(cov.index.start + 3)
@@ -149,12 +157,14 @@ make.obj <- function(survey.data, model.opts, any.cov){
         ## Squared exponential.
         cov.indices <- cov.index.start:(cov.index.start + 1)
         cov.start <- numeric(2)
-        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
+        cov.start[1] <- ifelse(any(start.names == "mu.u"), start["mu.u"],
+                               log(max(capt)/(2*resp.pars)))
+        cov.start[2] <- ifelse(any(start.names == "sigma.u"),
                                start["sigma.u"], sd(capt))
-        cov.start[2] <- ifelse(any(start.names == "rho"),
+        cov.start[3] <- ifelse(any(start.names == "rho"),
                                start["rho"], min(trap.dists[trap.dists > 0]))
-        cov.link.ids <- c(0, 0)
-        par.names <- c(par.names, "sigma.u", "rho")
+        cov.link.ids <- c(2, 0, 0)
+        par.names <- c(par.names, "mu.u", "sigma.u", "rho")
     } else if (cov.id == 6){
         ## No covariance.
         cov.indices <- -1
@@ -162,6 +172,11 @@ make.obj <- function(survey.data, model.opts, any.cov){
         cov.link.ids <- NULL
         map[["link_cov_pars"]] <- factor(NA)
     }
+    ## Fixing mean of field to zero.
+    ## JUST TESTING!
+    cov.start[1] <- 0
+    map[[link_cov_pars]] <- c(NA, rep(1, length(cov.start - 1)))
+    ## JUST TESTING!
     pars.start <- c(pars.start, cov.start)
     link.ids <- c(link.ids, cov.link.ids)
     ## Start value for TOA parameter.
@@ -221,6 +236,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                    resp_id = resp.id,
                                                    resp_pars = resp.pars,
                                                    cov_id = cov.id,
+                                                   mult_id = mult.id,
                                                    link_det_ids = link.ids[det.indices],
                                                    link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices]),
                                        parameters = list(link_det_pars = link.pars.start[det.indices],
@@ -270,6 +286,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                                resp_pars = resp.pars,
                                                                detfn_id = detfn.id,
                                                                cov_id = cov.id,
+                                                               mult_id = mult.id,
                                                                det_probs = det.probs,
                                                                toa_id = toa.id,
                                                                toa_ssq = toa.ssq.ind,
@@ -316,6 +333,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                      resp_pars = resp.pars,
                                                      detfn_id = detfn.id,
                                                      cov_id = cov.id,
+                                                     mult_id = mult.id,
                                                      det_probs = det.probs,
                                                      toa_id = toa.id,
                                                      toa_ssq = toa.ssq,
@@ -484,6 +502,6 @@ dlink.closure <- function(link.ids){
     }
 }
 
-links <- list(log, qlogis)
-unlinks <- list(exp, plogis)
-dlinks <- list(exp, dlogis)
+links <- list(log, qlogis, identity)
+unlinks <- list(exp, plogis, identity)
+dlinks <- list(exp, dlogis, function(x) rep(1, length(x)))
