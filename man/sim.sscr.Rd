@@ -5,8 +5,8 @@
 \title{Simulating SCR data with second-order spatial dependence}
 \usage{
 sim.sscr(traps, mask, D, resp = NULL, resp.pars = NULL, detfn = "hn",
-  cov.structure = "none", re.scale = "er", det.pars = NULL,
-  cov.pars = NULL, toa.pars = NULL)
+  cov.structure = "none", det.pars = NULL, cov.pars = NULL,
+  toa.pars = NULL)
 }
 \arguments{
 \item{traps}{A matrix with two columns, providing the Cartesian
@@ -44,11 +44,6 @@ being the same at all traps (equivalent to having an
 independent random effect on \code{lambda0} for each
 individual), or (6) \code{"lc_exponential"} for a linear
 combination of exponential covariance functions.}
-
-\item{re.scale}{A character string, either \code{"er"} or
-\code{"prob"}. This indicates whether the Gaussian random
-effects affect the encounter rate (expected number of
-detections) or the probability of detection.}
 
 \item{det.pars}{List of detection function parameters.}
 
