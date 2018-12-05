@@ -186,7 +186,7 @@ detfn.closure <- function(detfn, pars){
     } else if (detfn == "hhn"){
         lambda0 <- pars$lambda0
         sigma <- pars$sigma
-        out <- function(d, er = TRUE){
+        out <- function(d, er = FALSE){
             out <- lambda0*exp(-d^2/(2*sigma^2))
             if (!er){
                 out <- 1 - exp(-out)
@@ -197,7 +197,7 @@ detfn.closure <- function(detfn, pars){
         lambda0 <- pars$lambda0
         sigma <- pars$sigma
         z <- pars$z
-        out <- function(d, er = TRUE){
+        out <- function(d, er = FALSE){
             out <- -lambda0*(1 - exp(-((d/sigma)^-z)))
             if (!er){
                 out <- 1 - exp(-out)
