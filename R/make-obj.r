@@ -117,24 +117,20 @@ make.obj <- function(survey.data, model.opts, any.cov){
         ## Independent.
         cov.indices <- cov.index.start
         cov.start <- numeric(1)
-        cov.start[1] <- ifelse(any(start.names == "mu.u"), start["mu.u"],
-                               log(max(capt)/(2*resp.pars)))
-        cov.start[2] <- ifelse(any(start.names == "sigma.u"),
+        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
                                start["sigma.u"], sd(capt))
-        cov.link.ids <- c(2, 0)
-        par.names <- c(par.names, "mu.u", "sigma.u")
+        cov.link.ids <- 0
+        par.names <- c(par.names, "sigma.u")
     } else if (cov.id == 1){
         ## Exponential.
         cov.indices <- cov.index.start:(cov.index.start + 1)
         cov.start <- numeric(2)
-        cov.start[1] <- ifelse(any(start.names == "mu.u"), start["mu.u"],
-                               log(max(capt)/(2*resp.pars)))
-        cov.start[2] <- ifelse(any(start.names == "sigma.u"),
+        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
                                start["sigma.u"], sd(capt))
-        cov.start[3] <- ifelse(any(start.names == "rho"),
+        cov.start[2] <- ifelse(any(start.names == "rho"),
                                start["rho"], min(trap.dists[trap.dists > 0]))
-        cov.link.ids <- c(2, 0, 0)
-        par.names <- c(par.names, "mu.u", "sigma.u", "rho")
+        cov.link.ids <- c(0, 0)
+        par.names <- c(par.names, "sigma.u", "rho")
     } else if (cov.id == 2){
         ## Matern.
         cov.indices <- cov.index.start:(cov.index.start + 2)
@@ -143,12 +139,10 @@ make.obj <- function(survey.data, model.opts, any.cov){
         ## Individual.
         cov.indices <- cov.index.start
         cov.start <- numeric(1)
-        cov.start[1] <- ifelse(any(start.names == "mu.u"), start["mu.u"],
-                               log(max(capt)/(2*resp.pars)))
-        cov.start[2] <- ifelse(any(start.names == "sigma.u"),
+        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
                                start["sigma.u"], sd(capt))
-        cov.link.ids <- c(2, 0)
-        par.names <- c(par.names, "mu.u", "sigma.u")
+        cov.link.ids <- c(0)
+        par.names <- c(par.names, "sigma.u")
     } else if (cov.id == 4){
         ## Linear combination of exponentials.
         cov.indices <- cov.index.start:(cov.index.start + 3)
@@ -157,14 +151,12 @@ make.obj <- function(survey.data, model.opts, any.cov){
         ## Squared exponential.
         cov.indices <- cov.index.start:(cov.index.start + 1)
         cov.start <- numeric(2)
-        cov.start[1] <- ifelse(any(start.names == "mu.u"), start["mu.u"],
-                               log(max(capt)/(2*resp.pars)))
-        cov.start[2] <- ifelse(any(start.names == "sigma.u"),
+        cov.start[1] <- ifelse(any(start.names == "sigma.u"),
                                start["sigma.u"], sd(capt))
-        cov.start[3] <- ifelse(any(start.names == "rho"),
+        cov.start[2] <- ifelse(any(start.names == "rho"),
                                start["rho"], min(trap.dists[trap.dists > 0]))
-        cov.link.ids <- c(2, 0, 0)
-        par.names <- c(par.names, "mu.u", "sigma.u", "rho")
+        cov.link.ids <- c(0, 0)
+        par.names <- c(par.names, "sigma.u", "rho")
     } else if (cov.id == 6){
         ## No covariance.
         cov.indices <- -1
@@ -172,11 +164,6 @@ make.obj <- function(survey.data, model.opts, any.cov){
         cov.link.ids <- NULL
         map[["link_cov_pars"]] <- factor(NA)
     }
-    ## Fixing mean of field to zero.
-    ## JUST TESTING!
-    cov.start[1] <- 0
-    map[[link_cov_pars]] <- c(NA, rep(1, length(cov.start - 1)))
-    ## JUST TESTING!
     pars.start <- c(pars.start, cov.start)
     link.ids <- c(link.ids, cov.link.ids)
     ## Start value for TOA parameter.
