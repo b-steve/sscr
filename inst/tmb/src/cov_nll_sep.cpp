@@ -177,6 +177,5 @@ Type objective_function<Type>::operator() ()
     // negative-log of the density).
     f += MVNORM(sigma_u_mat)(u - mu_u);
   }
-  std::cout << "test" << std::endl;
   return f;
 }
