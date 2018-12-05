@@ -5,9 +5,10 @@
 \title{Fitting an SCR model with second-order spatial dependence}
 \usage{
 fit.sscr(capt, traps, mask, resp = "binom", resp.pars = NULL,
-  detfn = "hn", cov.structure = "none", start = NULL, toa = NULL,
-  trace = FALSE, test = FALSE, test.conditional.n = TRUE,
-  hess = FALSE, optim.fun = "nlminb", manual.sep = TRUE)
+  detfn = "hn", cov.structure = "none", re.multiplier = "er",
+  start = NULL, toa = NULL, trace = FALSE, test = FALSE,
+  test.conditional.n = TRUE, hess = FALSE, optim.fun = "nlminb",
+  manual.sep = TRUE)
 }
 \arguments{
 \item{capt}{A capture history object. It should be a matrix, where
@@ -47,6 +48,12 @@ being the same at all traps (equivalent to having an
 independent random effect on \code{lambda0} for each
 individual), or (6) \code{"lc_exponential"} for a linear
 combination of exponential covariance functions.}
+
+\item{re.multiplier}{A character string specifying how the expected
+encounter rate is calculated from the random effect. This is
+either (1) \code{"er"} for multiplication by the baseline
+encounter rate, or (2) \code{"prob"} for multiplication by the
+baseline encounter probability.}
 
 \item{start}{A named list of parameter start values.}
 
