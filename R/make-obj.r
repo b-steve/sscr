@@ -64,7 +64,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
         det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
                                max(apply(mask.dists, 1, min))/5)
         det.link.ids <- c(1, 0)
-        par.names <- c("g0", "sigma")
+        det.names <- c("g0", "sigma")
     } else if (detfn.id == 1){
         ## ... For a hazard rate detection function.
         det.indices <- 1:3
@@ -74,7 +74,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                max(apply(mask.dists, 1, min))/5)
         det.start[3] <- ifelse(any(start.names == "z") , start["z"], 1)           
         det.link.ids <- c(1, 0, 0)
-        par.names <- c("g0", "sigma", "z")
+        det.names <- c("g0", "sigma", "z")
     } else if (detfn.id == 2){
         ## ... For a hazard halfnormal detection function.
         det.indices <- 1:2
@@ -84,7 +84,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
         det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
                                max(apply(mask.dists, 1, min))/5)
         det.link.ids <- c(0, 0)
-        par.names <- c("lambda0", "sigma")
+        det.names <- c("lambda0", "sigma")
     } else if (detfn.id == 3){
         ## ... For a hazard hazard rate (lol) detection function.
         det.indices <- 1:3
@@ -95,10 +95,13 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                max(apply(mask.dists, 1, min))/5)
         det.start[3] <- ifelse(any(start.names == "z") , start["z"], 1)                   
         det.link.ids <- c(0, 0, 0)
-        par.names <- c("lambda0", "sigma", "z")
+        det.names <- c("lambda0", "sigma", "z")
     }
+    par.names <- det.names
     pars.start <- det.start
     link.ids <- det.link.ids
+    ## Setting map for detection function parameters.
+    map[["link_det_pars"]] <- factor(1:length(det.start))  
     ## Stuff only for covariance structures.
     cov.id <- switch(model.opts$cov.structure,
                      independent = 0,
@@ -120,7 +123,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
         cov.start[1] <- ifelse(any(start.names == "sigma.u"),
                                start["sigma.u"], sd(capt))
         cov.link.ids <- 0
-        par.names <- c(par.names, "sigma.u")
+        cov.names <- "sigma.u"
     } else if (cov.id == 1){
         ## Exponential.
         cov.indices <- cov.index.start:(cov.index.start + 1)
@@ -130,7 +133,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
         cov.start[2] <- ifelse(any(start.names == "rho"),
                                start["rho"], min(trap.dists[trap.dists > 0]))
         cov.link.ids <- c(0, 0)
-        par.names <- c(par.names, "sigma.u", "rho")
+        cov.names <- c("sigma.u", "rho")
     } else if (cov.id == 2){
         ## Matern.
         cov.indices <- cov.index.start:(cov.index.start + 2)
@@ -142,7 +145,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
         cov.start[1] <- ifelse(any(start.names == "sigma.u"),
                                start["sigma.u"], sd(capt))
         cov.link.ids <- c(0)
-        par.names <- c(par.names, "sigma.u")
+        cov.names <- c("sigma.u")
     } else if (cov.id == 4){
         ## Linear combination of exponentials.
         cov.indices <- cov.index.start:(cov.index.start + 3)
@@ -156,14 +159,20 @@ make.obj <- function(survey.data, model.opts, any.cov){
         cov.start[2] <- ifelse(any(start.names == "rho"),
                                start["rho"], min(trap.dists[trap.dists > 0]))
         cov.link.ids <- c(0, 0)
-        par.names <- c(par.names, "sigma.u", "rho")
-    } else if (cov.id == 6){
+        cov.names <- c("sigma.u", "rho")
+    }
+    ## Setting map for covariance parameters. Overwritten below for no
+    ## covariance.
+    map[["link_cov_pars"]] <- factor(1:length(cov.start))
+    if (cov.id == 6){
         ## No covariance.
         cov.indices <- -1
         cov.start <- NULL
         cov.link.ids <- NULL
+        cov.names <- NULL
         map[["link_cov_pars"]] <- factor(NA)
     }
+    par.names <- c(par.names, cov.names)
     pars.start <- c(pars.start, cov.start)
     link.ids <- c(link.ids, cov.link.ids)
     ## Start value for TOA parameter.
@@ -198,7 +207,6 @@ make.obj <- function(survey.data, model.opts, any.cov){
     par.dlink <- dlink.closure(link.ids)
     ## Converting parameters to link scale.
     link.pars.start <- par.link(pars.start)
-    ##if (any.cov){
     detprob.objs <- list()
     ## Making detprob AD objects.
     if (cov.id == 6){
