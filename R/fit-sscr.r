@@ -42,7 +42,9 @@
 #'     either (1) \code{"er"} for multiplication by the baseline
 #'     encounter rate, or (2) \code{"prob"} for multiplication by the
 #'     baseline encounter probability.
-#' @param start A named list of parameter start values.
+#' @param start A named vector of parameter start values.
+#' @param fix A named vector of parameter values that are fixed in the
+#'     model. Supercedes values provided in \code{start}.
 #' @param toa A matrix with the same dimensions as \code{capt} that
 #'     provides time-of-arrival information for acoustic detections.
 #' @param trace Logical. If \code{TRUE}, parameter values for each
@@ -69,7 +71,7 @@
 fit.sscr <- function(capt, traps, mask, resp = "binom",
                      resp.pars = NULL, detfn = "hn",
                      cov.structure = "none", re.multiplier = "er",
-                     start = NULL, toa = NULL,
+                     start = NULL, fix = NULL, toa = NULL,
                      trace = FALSE, test = FALSE,
                      test.conditional.n = TRUE, hess = FALSE,
                      optim.fun = "nlminb", manual.sep = TRUE){
@@ -89,6 +91,17 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
     trap.dists <- as.matrix(dist(traps))
     ## Number of traps.
     n.traps <- nrow(traps)
+    ## Sorting out fixed parameter values.
+    if (is.null(start)){
+        start <- list()
+    }
+    fix.names <- names(fix)
+    ## Moving everything in fix to start.
+    if (!is.null(fix)){
+        for (i in 1:length(fix)){
+            start[fix.names[i]] <- fix[i]
+        }
+    }
     ## Packaging the data up into a list.
     survey.data <- list(capt = capt,
                         mask.dists = mask.dists,
@@ -100,8 +113,8 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
                         trace = trace)
     model.opts <- list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                        cov.structure = cov.structure, re.multiplier = re.multiplier,
-                       start = start, conditional.n = TRUE, Rhess = FALSE,
-                       manual.sep = manual.sep)
+                       start = start, fix.names = fix.names, conditional.n = TRUE,
+                       Rhess = FALSE, manual.sep = manual.sep)
     ## Optimisation object constructor function.
     if (cov.structure == "none"){
         any.cov <- FALSE
@@ -119,7 +132,8 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
         model.opts.test <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                  cov.structure = cov.structure,
                                  re.multiplier = re.multiplier,
-                                 start = start, conditional.n = test.conditional.n,
+                                 start = start, fix.names = fix.names,
+                                 conditional.n = test.conditional.n,
                                  Rhess = !test.conditional.n,
                                  manual.sep = manual.sep)
         opt.obj.test <- make.obj(survey.data, model.opts.test, any.cov)
@@ -169,7 +183,8 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
             model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                      cov.structure = cov.structure,
                                      re.multiplier = re.multiplier,
-                                     start = fit$ests, conditional.n = FALSE, Rhess = TRUE,
+                                     start = fit$ests, fix.names = fix.names,
+                                     conditional.n = FALSE, Rhess = TRUE,
                                      manual.sep = manual.sep)
             opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
             fit$vcov <- opt.obj.hess$vcov(opt.obj.hess$par)

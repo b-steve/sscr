@@ -41,6 +41,8 @@ make.obj <- function(survey.data, model.opts, any.cov){
     ## Start values for optimisation.
     start <- model.opts$start
     start.names <- names(start)
+    ## Fixed parameters.
+    fix.names <- model.opts$fix.names
     ## Indicator for manual separability.
     manual.sep <- model.opts$manual.sep
     ## Uhh I dunno this stuff only works under certain combinations of
@@ -101,7 +103,9 @@ make.obj <- function(survey.data, model.opts, any.cov){
     pars.start <- det.start
     link.ids <- det.link.ids
     ## Setting map for detection function parameters.
-    map[["link_det_pars"]] <- factor(seq_along(det.start))
+    det.map <- factor(seq_along(det.start))
+    det.map[det.names %in% fix.names] <- NA
+    map[["link_det_pars"]] <- det.map
     ## Stuff only for covariance structures.
     cov.id <- switch(model.opts$cov.structure,
                      independent = 0,
