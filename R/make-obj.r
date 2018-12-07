@@ -101,7 +101,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
     pars.start <- det.start
     link.ids <- det.link.ids
     ## Setting map for detection function parameters.
-    map[["link_det_pars"]] <- factor(1:length(det.start))  
+    map[["link_det_pars"]] <- factor(seq_along(det.start))
     ## Stuff only for covariance structures.
     cov.id <- switch(model.opts$cov.structure,
                      independent = 0,
@@ -160,17 +160,17 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                start["rho"], min(trap.dists[trap.dists > 0]))
         cov.link.ids <- c(0, 0)
         cov.names <- c("sigma.u", "rho")
-    }
-    ## Setting map for covariance parameters. Overwritten below for no
-    ## covariance.
-    map[["link_cov_pars"]] <- factor(1:length(cov.start))
-    if (cov.id == 6){
+    } else if (cov.id == 6){
         ## No covariance.
         cov.indices <- -1
         cov.start <- NULL
         cov.link.ids <- NULL
         cov.names <- NULL
         map[["link_cov_pars"]] <- factor(NA)
+    }
+    ## Setting map for covariance parameters.
+    if (cov.id != 6){
+        map[["link_cov_pars"]] <- factor(seq_along(cov.start)) 
     }
     par.names <- c(par.names, cov.names)
     pars.start <- c(pars.start, cov.start)
