@@ -206,11 +206,19 @@ make.obj <- function(survey.data, model.opts, any.cov){
     model.opts$link.ids <- link.ids
     model.opts$par.names <- par.names
     ## Getting par.link and par.unlink.
-    par.link <- link.closure(link.ids)
-    par.unlink <- unlink.closure(link.ids)
-    par.dlink <- dlink.closure(link.ids)
+    fixed <- par.names %in% fix.names
+    par.link <- link.closure(link.ids, fixed)
+    par.unlink <- unlink.closure(link.ids, fixed)
+    par.dlink <- dlink.closure(link.ids, fixed)
     ## Converting parameters to link scale.
     link.pars.start <- par.link(pars.start)
+    ## Total number of parameters.
+    n.pars <- length(pars.start)
+    ## Making vectors of fixed and unfixed parameters.
+    pars.start.fixed <- pars.start[fixed]
+    pars.start.unfixed <- pars.start[!(fixed)]
+    link.pars.start.fixed <- link.pars.start[fixed]
+    link.pars.start.unfixed <- link.pars.start[!(fixed)]
     detprob.objs <- list()
     ## Making detprob AD objects.
     if (cov.id == 6){
@@ -246,7 +254,11 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                        map = map, random = random.comp, DLL = "cov_detprob", silent = TRUE)
     }
     get.fn.gr <- function(fun = "nll"){
-        function(link.pars){
+        function(link.pars.unfixed){
+            #browser(expr = Rhess)
+            link.pars <- numeric(n.pars)
+            link.pars[fixed] <- link.pars.start.fixed
+            link.pars[!fixed] <- link.pars.unfixed
             if (Rhess){
                 link.pars.tmb <- link.pars[-D.indices]
             } else {
@@ -385,6 +397,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
                 } else {
                     out <- nll.obj$gr(link.pars.tmb) + n*apply(neglog.det.probs.grads, 1, function(x) sum(-exp(-neglog.det.probs)*x))/sum(det.probs)    
                 }
+                out <- out[!fixed]
                 if (trace){
                     cat("Partial derivatives: ", paste(out, collapse = " "), "\n")
                 }
@@ -396,10 +409,32 @@ make.obj <- function(survey.data, model.opts, any.cov){
     }
     obj.fn <- get.fn.gr(fun = "nll")
     obj.gr <- get.fn.gr(fun = "gr")
+    ## Closure to provide organisation function stuff after model fitting.
+    organise.closure <- function(survey.data, model.opts, organise.fun, det.probs.fun = NULL){
+        function(pars, objective){
+            all.pars <- numeric(n.pars)
+            all.pars[fixed] <- link.pars.start.fixed
+            all.pars[!fixed] <- pars
+            organise.fun(pars, all.pars, fixed, objective, survey.data, model.opts, det.probs.fun)
+        }
+    }
+    ## Closure to provide variance-covariance calculation, given parameter estimates.
+    vcov.closure <- function(survey.data, model.opts, nll, dlink.fun, gr = NULL){
+        function(pars){
+            hess.link <- optimHess(pars, nll, gr = gr)
+            vcov.link <- solve(hess.link)
+            n.pars <- length(pars)
+            jacobian <- diag(n.pars)
+            diag(jacobian) <- dlink.fun(pars, unfixed = TRUE)
+            out <- jacobian %*% vcov.link %*% t(jacobian)
+            dimnames(out) <- list(model.opts$par.names[!fixed], model.opts$par.names[!fixed])
+            out
+        }
+    }
     obj.det.probs <- 
         obj.vcov <- vcov.closure(survey.data, model.opts, obj.fn, par.dlink, gr = obj.gr)
     obj.organise <- organise.closure(survey.data, model.opts, cov.organise, get.fn.gr(fun = "det.probs"))
-    obj <- list(par = link.pars.start, fn = obj.fn, gr = obj.gr,
+    obj <- list(par = link.pars.start.unfixed, fn = obj.fn, gr = obj.gr,
                 vcov = obj.vcov, organise = obj.organise)
     obj
 }
@@ -422,45 +457,27 @@ grad.closure <- function(survey.data, model.opts, grad.fun){
     }
 }
 
-## Closure to provide variance-covariance calculation, given parameter estimates.
-vcov.closure <- function(survey.data, model.opts, nll, dlink.fun, gr = NULL){
-    function(pars){
-        hess.link <- optimHess(pars, nll, gr = gr)
-        vcov.link <- solve(hess.link)
-        n.pars <- length(pars)
-        jacobian <- diag(n.pars)
-        diag(jacobian) <- dlink.fun(pars)
-        out <- jacobian %*% vcov.link %*% t(jacobian)
-        dimnames(out) <- list(model.opts$par.names, model.opts$par.names)
-        out
-    }
-}
-
-## Closure to provide organisation function stuff after model fitting.
-organise.closure <- function(survey.data, model.opts, organise.fun, det.probs.fun = NULL){
-    function(pars, objective){
-        organise.fun(pars, objective, survey.data, model.opts, det.probs.fun)
-    }
-}
-
-cov.organise <- function(pars, objective, survey.data, model.opts, det.probs.fun){
+cov.organise <- function(pars, all.pars, fixed, objective, survey.data, model.opts, det.probs.fun){
     det.probs <- det.probs.fun(pars)
     mask.area <- survey.data$mask.area
     capt <- survey.data$capt
     esa <- sum(det.probs)*mask.area
     D <- nrow(capt)/esa
     link.ids <- model.opts$link.ids
-    par.unlink <- unlink.closure(link.ids)
+    par.unlink <- unlink.closure(link.ids, fixed)
     ll <- -objective
-    pars <- c(par.unlink(pars), D, esa, ll)
-    names(pars) <- c(model.opts$par.names, "D", "esa", "LL")
-    pars    
+    all.pars <- c(par.unlink(all.pars), D, esa, ll)
+    names(all.pars) <- c(model.opts$par.names, "D", "esa", "LL")
+    all.pars    
 }
 
 
 ## Closure to provide linking function without passing link ids.
-link.closure <- function(link.ids){
-    function(pars, which = NULL){
+link.closure <- function(link.ids, fixed){
+    function(pars, which = NULL, unfixed = FALSE){
+        if (unfixed){
+            link.ids <- link.ids[!fixed]
+        }
         n.pars <- length(pars)
         if (is.null(which)){
             which <- 1:n.pars
@@ -473,8 +490,11 @@ link.closure <- function(link.ids){
     }
 }
 
-unlink.closure <- function(link.ids){
-    function(link.pars, which = NULL){
+unlink.closure <- function(link.ids, fixed){
+    function(link.pars, which = NULL, unfixed = FALSE){
+        if (unfixed){
+            link.ids <- link.ids[!fixed]
+        }
         n.pars <- length(link.pars)
         if (is.null(which)){
             which <- 1:n.pars
@@ -487,8 +507,11 @@ unlink.closure <- function(link.ids){
     }
 }
 
-dlink.closure <- function(link.ids){
-    function(link.pars, which = NULL){
+dlink.closure <- function(link.ids, fixed){
+    function(link.pars, which = NULL, unfixed = FALSE){
+        if (unfixed){
+            link.ids <- link.ids[!fixed]
+        }
         n.pars <- length(link.pars)
         if (is.null(which)){
             which <- 1:n.pars

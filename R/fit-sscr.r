@@ -102,6 +102,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
             start[fix.names[i]] <- fix[i]
         }
     }
+    start <- c(start, recursive = TRUE)
     ## Packaging the data up into a list.
     survey.data <- list(capt = capt,
                         mask.dists = mask.dists,
@@ -179,7 +180,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
         if (hess){
             if (trace){
                 cat("Computing Hessian...\n")
-            } 
+            }
             model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
                                      cov.structure = cov.structure,
                                      re.multiplier = re.multiplier,
@@ -187,6 +188,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
                                      conditional.n = FALSE, Rhess = TRUE,
                                      manual.sep = manual.sep)
             opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
+            #browser()
             fit$vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
             fit$se <- sqrt(diag(fit$vcov))
         }
