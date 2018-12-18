@@ -6,9 +6,9 @@
 \usage{
 fit.sscr(capt, traps, mask, resp = "binom", resp.pars = NULL,
   detfn = "hn", cov.structure = "none", re.multiplier = "er",
-  start = NULL, toa = NULL, trace = FALSE, test = FALSE,
-  test.conditional.n = TRUE, hess = FALSE, optim.fun = "nlminb",
-  manual.sep = TRUE)
+  start = NULL, fix = NULL, toa = NULL, trace = FALSE,
+  test = FALSE, test.conditional.n = TRUE, hess = FALSE,
+  optim.fun = "nlminb", manual.sep = TRUE)
 }
 \arguments{
 \item{capt}{A capture history object. It should be a matrix, where
@@ -55,7 +55,10 @@ either (1) \code{"er"} for multiplication by the baseline
 encounter rate, or (2) \code{"prob"} for multiplication by the
 baseline encounter probability.}
 
-\item{start}{A named list of parameter start values.}
+\item{start}{A named vector of parameter start values.}
+
+\item{fix}{A named vector of parameter values that are fixed in the
+model. Supercedes values provided in \code{start}.}
 
 \item{toa}{A matrix with the same dimensions as \code{capt} that
 provides time-of-arrival information for acoustic detections.}
