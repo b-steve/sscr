@@ -55,7 +55,7 @@ test_that(
     {
         ## Poisson.
         fit.pois <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, resp = "pois",
-                             detfn = "hhn", hess = TRUE)
+                             detfn = "hhn", hess = TRUE, trace = TRUE)
         expect_equivalent(fit.pois$ests, c(2.87645050233774, 93.388169123886, 0.454913613852446, 
                                            30.7750737144151, -128.981698520115), tol = 1e-4)
         expect_equivalent(fit.pois$se, c(0.5405034, 20.6192798, 0.1894562), tol = 1e-4)
@@ -140,10 +140,15 @@ test_that(
                                 cov.structure = "exponential",
                                 test = "nll")
         expect_equivalent(test.exp.detpr$nll, 122.8905, tolerance = 1e-4, scale = 1)
-        ## Squared exponential covariance function (not sure we can trust this one).
+        ## Squared exponential covariance function.
         test.sqexp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "pois", detfn = "hhn",
-                               cov.structure = "sq_exponential", test = "nll")
+                               cov.structure = "sq_exponential", test = "nll", fix = c(mu.u = 0), trace = TRUE
+        ## Squared exponential covariance function with probability multiplier.
+        test.sqexp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                               mask = test.data$mask, resp = "pois", detfn = "hn",
+                               cov.structure = "sq_exponential", re.multiplier = "prob",
+                               test = "nll", start = c(mu.u = log(4.5)), fix = c(g0 = 1))
         expect_equivalent(test.sqexp$nll, 124.6839, tolerance = 1e-4, scale = 1)
         ## Individual random effect.
         test.indiv <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
