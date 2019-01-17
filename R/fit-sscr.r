@@ -92,13 +92,13 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
     ## Number of traps.
     n.traps <- nrow(traps)
     ## Checking for identifiability problems.
-    if (re.multiplier == "er" & detfn == "hhn"){
+    if (cov.structure != "none" & re.multiplier == "er" & detfn == "hhn"){
         if (is.null(fix)){
             fix <- numeric(0)
         }
         fix["mu.u"] <- 0
     }
-    if (re.multiplier == "prob" & detfn == "hn"){
+    if (cov.structure != "none" & re.multiplier == "prob" & detfn == "hn"){
         if (is.null(fix)){
             fix <- numeric(0)
         }
