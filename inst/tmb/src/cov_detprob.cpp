@@ -95,7 +95,11 @@ Type objective_function<Type>::operator() ()
       u_use = u(i);
     }
     // Calculating actual hazard rate and probability.
-    haz = base_haz*exp(u_use) + DBL_MIN;
+    if (mult_id == 0){
+      haz = base_haz*exp(u_use) + DBL_MIN;
+    } else if (mult_id == 1){
+      haz = base_prob*exp(u_use) + DBL_MIN;
+    }
     prob = haz_to_prob(haz);
     // Running calculation of overall probability of nondetection.
     p_total_evade *= 1 - prob;

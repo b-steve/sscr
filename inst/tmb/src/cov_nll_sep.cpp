@@ -114,7 +114,11 @@ Type objective_function<Type>::operator() ()
 	u_use = u(k);
       }
       // Expected counts and probabilities.
-      e_count = haz_mat(j, k)*exp(u_use) + DBL_MIN;
+      if (mult_id == 0){
+	e_count = haz_mat(j, k)*exp(u_use) + DBL_MIN;	
+      } else if (mult_id == 1){
+	e_count = prob_mat(j, k)*exp(u_use) + DBL_MIN;
+      }
       e_prob = haz_to_prob(e_count);
       if (resp_id == 0){
 	integrand_mask += dbinom_sscr(capt(k), resp_pars(0), e_prob, true);
