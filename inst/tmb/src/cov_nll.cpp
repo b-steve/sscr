@@ -1,7 +1,7 @@
 // Template to calculate the negative log-likelihood for a model with
 // independent random effects.
 #include <TMB.hpp>
-#include <fenv.hc>
+#include <fenv.h>
 #include "utilities.h"
 #include "detfns.h"
 using namespace density;
