@@ -1,7 +1,7 @@
 // Template to calculate the negative log-likelihood for a model with
 // independent random effects.
 #include <TMB.hpp>
-#include <fenv.h>
+#include <fenv.hc>
 #include "utilities.h"
 #include "detfns.h"
 using namespace density;
@@ -55,8 +55,6 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(link_det_pars);
   // Covariance parameters.
   PARAMETER_VECTOR(link_cov_pars);
-  // Latent variable mean.
-  Type mu_u = 0;
   // Time-of-arrival parameter.
   PARAMETER(link_sigma_toa);
   // Density parameter.
@@ -151,7 +149,7 @@ Type objective_function<Type>::operator() ()
   }
   if (cov_id == 3){
     for (int i = 0; i < n; i++){
-      f -= dnorm(u(i, 0), mu_u, cov_pars(0), true);
+      f -= dnorm(u(i, 0), cov_pars(0), cov_pars(1), true);
     }
   } else if (cov_id != 6){
     // Variance-covariance matrix for latent variables.
@@ -159,7 +157,7 @@ Type objective_function<Type>::operator() ()
     for (int j = 0; j < n_traps; j++){
       for (int k = j; k < n_traps; k++){ 
 	if (j == k){
-	  sigma_u_mat(j, k) = pow(cov_pars(0), 2);
+	  sigma_u_mat(j, k) = pow(cov_pars(1), 2);
 	} else {
 	  if (cov_id == 0){
 	    // Independent random effects
@@ -167,23 +165,23 @@ Type objective_function<Type>::operator() ()
 	    sigma_u_mat(k, j) = 0;
 	  } else if (cov_id == 1){
 	    // Exponential covariance function.
-	    sigma_u_mat(j, k) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
-	    sigma_u_mat(k, j) = pow(cov_pars(0), 2)*exp(-trap_dists(j, k)/cov_pars(1));
+	    sigma_u_mat(j, k) = pow(cov_pars(1), 2)*exp(-trap_dists(j, k)/cov_pars(2));
+	    sigma_u_mat(k, j) = pow(cov_pars(1), 2)*exp(-trap_dists(j, k)/cov_pars(2));
 	  } else if (cov_id == 2){
 	    // Matern covariance function.
 	  } else if (cov_id == 3){
 	    // Total dependence (individual-level random effects).
 	    // NOTE: This is actually handled above.
-	    sigma_u_mat(j, k) = pow(cov_pars(0), 2);
-	    sigma_u_mat(k, j) = pow(cov_pars(0), 2);
+	    sigma_u_mat(j, k) = pow(cov_pars(1), 2);
+	    sigma_u_mat(k, j) = pow(cov_pars(1), 2);
 	  } else if (cov_id == 4){
 	    // Linear combination of exponential covariance functions.
-	    sigma_u_mat(j, k) = pow(cov_pars(0), 2)*(cov_pars(1)*exp(-cov_pars(2)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(2)*trap_dists(j, k)), 2) + (1 - cov_pars(1))*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2));
-	    sigma_u_mat(k, j) = pow(cov_pars(0), 2)*(cov_pars(1)*exp(-cov_pars(2)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(2)*trap_dists(j, k)), 2) + (1 - cov_pars(1))*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2));
+	    sigma_u_mat(j, k) = pow(cov_pars(1), 2)*(cov_pars(2)*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2) + (1 - cov_pars(2))*exp(-cov_pars(4)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(4)*trap_dists(j, k)), 2));
+	    sigma_u_mat(k, j) = pow(cov_pars(1), 2)*(cov_pars(2)*exp(-cov_pars(3)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(3)*trap_dists(j, k)), 2) + (1 - cov_pars(2))*exp(-cov_pars(4)*trap_dists(j, k))*1/pow(1 + exp(-cov_pars(4)*trap_dists(j, k)), 2));
 	  } else if (cov_id == 5){
 	    // Squared exponential covariance function.
-	    sigma_u_mat(j, k) = pow(cov_pars(0), 2)*exp(-pow(trap_dists(j, k), 2)/pow(cov_pars(1), 2));
-	    sigma_u_mat(k, j) = pow(cov_pars(0), 2)*exp(-pow(trap_dists(j, k), 2)/pow(cov_pars(1), 2));
+	    sigma_u_mat(j, k) = pow(cov_pars(1), 2)*exp(-pow(trap_dists(j, k), 2)/pow(cov_pars(2), 2));
+	    sigma_u_mat(k, j) = pow(cov_pars(1), 2)*exp(-pow(trap_dists(j, k), 2)/pow(cov_pars(2), 2));
 	  } else {
 	    exit(1111);
 	  }
@@ -195,7 +193,7 @@ Type objective_function<Type>::operator() ()
       // negative-log of the density).
       vector<Type> v(u.cols());
       for (int ii = 0; ii < u.cols(); ii++){
-	v(ii) = u.row(i)(ii) - mu_u;
+	v(ii) = u.row(i)(ii) - cov_pars(0);
       }
       f += MVNORM(sigma_u_mat)(v);
     }
