@@ -143,13 +143,21 @@ test_that(
         ## Squared exponential covariance function.
         test.sqexp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "pois", detfn = "hhn",
-                               cov.structure = "sq_exponential", test = "nll", fix = c(mu.u = 0), trace = TRUE
+                               cov.structure = "sq_exponential", test = "nll")
+        expect_equivalent(test.sqexp$nll, 124.6839, tolerance = 1e-4, scale = 1)
         ## Squared exponential covariance function with probability multiplier.
         test.sqexp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "pois", detfn = "hn",
                                cov.structure = "sq_exponential", re.multiplier = "prob",
-                               test = "nll", start = c(mu.u = log(4.5)), fix = c(g0 = 1))
+                               test = "nll", start = c(mu.u = log(4.5)))
         expect_equivalent(test.sqexp$nll, 124.6839, tolerance = 1e-4, scale = 1)
+        ## Squared exponential covariance function with halfnormal
+        ## detection function and encounter-rate multiplier.
+        test.sqexp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
+                               mask = test.data$mask, resp = "pois", detfn = "hn",
+                               cov.structure = "sq_exponential", re.multiplier = "er",
+                               test = "nll", start = c(g0 = 1, mu.u = log(4.5)))
+        expect_equivalent(test.sqexp$nll, 126.437, tolerance = 1e-4, scale = 1)
         ## Individual random effect.
         test.indiv <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "pois", detfn = "hhn",
