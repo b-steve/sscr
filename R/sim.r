@@ -11,8 +11,8 @@
 #' @export
 sim.sscr <- function(traps, mask, D, resp = NULL, resp.pars = NULL,
                      detfn = "hn", cov.structure = "none",
-                     det.pars = NULL, cov.pars = NULL,
-                     toa.pars = NULL){
+                     re.multiplier = "er", det.pars = NULL,
+                     cov.pars = NULL, toa.pars = NULL){
     if (is.null(resp.pars)){
         resp.pars <- 1
     }
@@ -21,6 +21,25 @@ sim.sscr <- function(traps, mask, D, resp = NULL, resp.pars = NULL,
         if (sim.toa & (resp != "binom")){
             if (resp.pars$size != 1){
                 stop("Time of arrival can only be simulated if the response distribution is Bernoulli.")
+            }
+        }
+    }
+    ## Sorting out identifiability.
+    if (!(cov.structure %in% c("none", "OU")) & re.multiplier == "er" & detfn == "hhn"){
+        if (is.null(cov.pars$mu.u)){
+            cov.pars$mu.u <- 0
+        } else {
+            if (cov.pars$mu.u != 0){
+                warning("The mu.u and lambda0 parameters are not identifiable for models with a hazard halfnormal detection function and an encounter-rate random effect multiplier. Setting nonzero mu.u is not recommended.")
+            }
+        }
+    }
+    if (!(cov.structure %in% c("none", "OU")) & re.multiplier == "prob" & detfn == "hn"){
+        if (is.null(cov.pars$mu.u)){
+            cov.pars$g0 <- 1
+        } else {
+            if (cov.pars$g0 != 1){
+                warning("The mu.u and g0 parameters are not identifiable for models with a halfnormal detection function and a probability random effect multiplier. Setting g0 to anything but 1 is not recommended.")
             }
         }
     }
@@ -63,15 +82,18 @@ sim.sscr <- function(traps, mask, D, resp = NULL, resp.pars = NULL,
         base.er <- calc.detfn(ac.dists, er = TRUE)
         ## Constructing covariance matrix.
         if (cov.structure == "none"){
+            mu.u <- 0
             cov <- matrix(0, nrow = n.traps, ncol = n.traps)
         } else if (cov.structure == "independent"){
             ## Extracting parameters.
+            mu.u <- cov.pars$mu.u
             sigma.u <- cov.pars$sigma.u
             ## Specifying covariance.
             cov <- matrix(0, nrow = n.traps, ncol = n.traps)
             diag(cov) <- sigma.u
         } else if (cov.structure == "exponential"){
             ## Extracting parameters.
+            mu.u <- cov.pars$mu.u
             sigma.u <- cov.pars$sigma.u
             rho <- cov.pars$rho
             ## Specifying covariance.
@@ -79,6 +101,7 @@ sim.sscr <- function(traps, mask, D, resp = NULL, resp.pars = NULL,
         } else if (cov.structure == "matern"){
             stop("Matern covariance not yet implemented.")
         } else if (cov.structure == "individual"){
+            mu.u <- cov.pars$mu.u
             sigma.u <- cov.pars$sigma.u
             cov <- matrix(sigma.u, nrow = n.traps, ncol = n.traps)
             stop("Full covariance not yet implemented.")
@@ -86,15 +109,20 @@ sim.sscr <- function(traps, mask, D, resp = NULL, resp.pars = NULL,
             stop("Linear combination of exponentials not yet implemented.")
         } else if (cov.structure == "sq_exponential"){
             ## Extracting parameters.
+            mu.u <- cov.pars$mu.u
             sigma.u <- cov.pars$sigma.u
             rho <- cov.pars$rho
             ## Specifying covariance.
             cov <- sigma.u^2*exp(-(trap.dists^2)/(rho^2))
         }
         ## Simulating random effects.
-        u.mat <- rmvnorm(n, rep(0, n.traps), cov)
+        u.mat <- rmvnorm(n, rep(mu.u, n.traps), cov)
         ## Getting full encounter rates and probabilities.
-        full.er <- exp(log(base.er) + u.mat)
+        if (re.multiplier == "er"){
+            full.er <- base.er*exp(u.mat)
+        } else if (re.multiplier == "prob"){
+            full.er <- base.prob*exp(u.mat)
+        }
         full.prob <- 1 - exp(-full.er)
         ## Generating capture histories.
         if (resp == "pois"){
