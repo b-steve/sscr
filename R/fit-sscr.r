@@ -91,6 +91,13 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
     trap.dists <- as.matrix(dist(traps))
     ## Number of traps.
     n.traps <- nrow(traps)
+    ## Checking for identifiability problems.
+    if (re.multiplier == "er" & detfn == "hhn"){
+        if (is.null(fix)){
+            fix <- numeric(0)
+        }
+        fix["mu.u"] <- 0
+    }
     ## Sorting out fixed parameter values.
     if (is.null(start)){
         start <- list()
