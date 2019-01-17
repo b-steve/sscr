@@ -98,6 +98,12 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
         }
         fix["mu.u"] <- 0
     }
+    if (re.multiplier == "prob" & detfn == "hn"){
+        if (is.null(fix)){
+            fix <- numeric(0)
+        }
+        fix["g0"] <- 1
+    }
     ## Sorting out fixed parameter values.
     if (is.null(start)){
         start <- list()
