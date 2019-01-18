@@ -69,7 +69,7 @@
 #' 
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom",
-                     resp.pars = NULL, detfn = "hn",
+                     resp.pars = NULL, detfn = "hhn",
                      cov.structure = "none", re.multiplier = "er",
                      start = NULL, fix = NULL, toa = NULL,
                      trace = FALSE, test = FALSE,

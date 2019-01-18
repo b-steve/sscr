@@ -10,7 +10,7 @@
 #'
 #' @export
 sim.sscr <- function(traps, mask, D, resp = NULL, resp.pars = NULL,
-                     detfn = "hn", cov.structure = "none",
+                     detfn = "hhn", cov.structure = "none",
                      re.multiplier = "er", det.pars = NULL,
                      cov.pars = NULL, toa.pars = NULL){
     if (is.null(resp.pars)){
@@ -33,14 +33,20 @@ sim.sscr <- function(traps, mask, D, resp = NULL, resp.pars = NULL,
                 warning("The mu.u and lambda0 parameters are not identifiable for models with a hazard halfnormal detection function and an encounter-rate random effect multiplier. Setting nonzero mu.u is not recommended.")
             }
         }
+        if (is.null(det.pars$lambda0)){
+            stop("A value for lambda0 must be supplied.")
+        }
     }
     if (!(cov.structure %in% c("none", "OU")) & re.multiplier == "prob" & detfn == "hn"){
-        if (is.null(cov.pars$mu.u)){
+        if (is.null(det.pars$g0)){
             cov.pars$g0 <- 1
         } else {
-            if (cov.pars$g0 != 1){
+            if (det.pars$g0 != 1){
                 warning("The mu.u and g0 parameters are not identifiable for models with a halfnormal detection function and a probability random effect multiplier. Setting g0 to anything but 1 is not recommended.")
             }
+        }
+        if (is.null(cov.pars$mu.u)){
+            stop("A value of mu.u must be supplied.")
         }
     }
     ## Finding extent of mask object.
