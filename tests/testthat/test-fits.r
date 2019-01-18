@@ -25,7 +25,7 @@ test_that(
         ## With squared-exponential covariance function.
         set.seed(8642)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
-                             resp = "pois", detfn = "hhn",
+                             resp = "pois", detfn = "hhn", re.multiplier = "er",
                              cov.structure = "sq_exponential",
                              det.pars = list(lambda0 = 3, sigma = 50),
                              cov.pars = list(sigma.u = 1.5, rho = 100))
@@ -39,14 +39,14 @@ test_that(
         ## With time-of-arrival information.
         set.seed(3579)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
-                             resp = "binom", detfn = "hn",
+                             resp = "binom", detfn = "hhn", re.multiplier = "prob",
                              cov.structure = "sq_exponential",
-                             det.pars = list(g0 = 0.9, sigma = 50),
-                             cov.pars = list(sigma.u = 1.5, rho = 100),
+                             det.pars = list(lambda0 = 3, sigma = 50),
+                             cov.pars = list(mu.u = 1, sigma.u = 1.5, rho = 100),
                              toa.pars = list(sigma.toa = 4, sound.speed = 330))
-        expect_equivalent(sim.data$toa[6, ], c(0, 0, 0, 0, 0.201980061428043,
-                                               0.20259893914751, 0, 0.2295964076072,
-                                               0.223745109102043))
+        expect_equivalent(sim.data$toa[14, ], c(0.386203919047886, 0, 0, 0.124416634017569,
+                                                0.219837824942237, 0, 0.251232089686846,
+                                                0.301623281164531, 0))
     })
     
 
@@ -90,7 +90,7 @@ test_that(
         fit.grad <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois", detfn = "hhn",
                              test.conditional.n = FALSE, cov.structure = "exponential",
-                             test = "gr")
+                             re.multiplier = "er", test = "gr")
         expect_equivalent(fit.grad$gr, c(53.936454081332, 424.759615492023, 41.4534610100935, -9.18292928534691, 
                                          260.095722145605),
                           tolerance = 1e-4, scale = 1)
@@ -98,46 +98,51 @@ test_that(
         fit.grad.man <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                  mask = test.data$mask, resp = "pois", detfn = "hhn",
                                  test.conditional.n = FALSE, cov.structure = "exponential",
-                                 test = "gr", manual.sep = FALSE)
+                                 re.multiplier = "er", test = "gr", manual.sep = FALSE)
         expect_equivalent(fit.grad.man$gr, c(53.936454081332, 424.759615492023, 41.4534610100935,
                                              -9.18292928534691, 260.095722145605),
                           tolerance = 1e-4, scale = 1)
         ## Independent random effects.
         test.ind.hn <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hhn",
-                                cov.structure = "independent", test = "nll")
+                                cov.structure = "independent", re.multiplier = "er",
+                                test = "nll")
         expect_equivalent(test.ind.hn$nll, 127.0738, tolerance = 1e-4, scale = 1)
-        ## With halfnormal detection function.
+        ## With halfnormal detection function. ## PROBLEM?
         test.ind.hn.detpr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                    mask = test.data$mask, resp = "pois", detfn = "hn",
-                                   cov.structure = "independent", test = "nll")
+                                   cov.structure = "independent", re.multiplier = "er",
+                                   test = "nll")
         expect_equivalent(test.ind.hn.detpr$nll, 123.8944, tolerance = 1e-4, scale = 1)
         ## Testing manual start values.
         test.sv.hn <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "pois", detfn = "hhn",
-                               cov.structure = "independent",
+                               cov.structure = "independent", re.multiplier = "er",
                                start = c(lambda0 = 2, sigma.u = 4), test = "nll")
         expect_equivalent(test.sv.hn, 149.6288, tolerance = 1e-4, scale = 1)
-        ## ... with hazard rate detection function.
+        ## ... with hazard rate detection function. ## PROBLEM?
         test.ind.hr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hhr",
-                                cov.structure = "independent", test = "nll")
+                                cov.structure = "independent", re.multiplier = "er",
+                                test = "nll")
         expect_equivalent(test.ind.hr, 152.7691, tolerance = 1e-4, scale = 1)
         ## Exponential covariance function.
         test.exp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois", detfn = "hhn",
-                             cov.structure = "exponential", test = "nll")
+                             cov.structure = "exponential", re.multiplier = "er",
+                             test = "nll")
         expect_equivalent(test.exp$nll, 125.2871, tolerance = 1e-4, scale = 1)
         ## ... without manual separability.
         test.exp.man <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                  mask = test.data$mask, resp = "pois", detfn = "hhn",
-                                 cov.structure = "exponential", test = "nll",
+                                 cov.structure = "exponential", re.multiplier = "er",
+                                 test = "nll",
                                  manual.sep = FALSE)
         expect_equivalent(test.exp.man$nll, 125.2871, tolerance = 1e-4, scale = 1)
-        ## With halfnormal detection function.
+        ## With halfnormal detection function. ## PROBLEM?
         test.exp.detpr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hn",
-                                cov.structure = "exponential",
+                                cov.structure = "exponential", re.multiplier = "er",
                                 test = "nll")
         expect_equivalent(test.exp.detpr$nll, 122.8905, tolerance = 1e-4, scale = 1)
         ## Squared exponential covariance function.
@@ -145,7 +150,7 @@ test_that(
                                mask = test.data$mask, resp = "pois", detfn = "hhn",
                                cov.structure = "sq_exponential", test = "nll")
         expect_equivalent(test.sqexp$nll, 124.6839, tolerance = 1e-4, scale = 1)
-        ## Squared exponential covariance function with probability multiplier.
+        ## Squared exponential covariance function with probability multiplier. Same as above.
         test.sqexp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "pois", detfn = "hn",
                                cov.structure = "sq_exponential", re.multiplier = "prob",
@@ -161,22 +166,26 @@ test_that(
         ## Individual random effect.
         test.indiv <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "pois", detfn = "hhn",
-                               cov.structure = "individual", test = "nll")
+                               cov.structure = "individual", re.multiplier = "er",
+                               test = "nll")
         expect_equivalent(test.indiv$nll, 125.1148, tolerance = 1e-4, scale = 1)
         ## Bernoulli response.
         test.bern <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
                               mask = test.data$mask, detfn = "hhn",
-                              cov.structure = "exponential", test = "nll")
+                              cov.structure = "exponential", re.multiplier = "er",
+                              test = "nll")
         expect_equivalent(test.bern$nll, 77.4819, tolerance = 1e-4, scale = 1)
-        ## With halfnormal detection function.
+        ## With halfnormal detection function. ## PROBLEM?
         test.bern.detpr <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
                                     mask = test.data$mask, detfn = "hn",
-                                    cov.structure = "exponential", test = "nll")
+                                    cov.structure = "exponential", re.multiplier = "er",
+                                    test = "nll")
         expect_equivalent(test.bern.detpr$nll, 76.1733, tolerance = 1e-4, scale = 1)
         ## Binomial response.
         test.binom <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                mask = test.data$mask, resp = "binom",
                                resp.pars = 10, detfn = "hhn",
-                               cov.structure = "exponential", test = "nll")
+                               cov.structure = "exponential", re.multiplier = "er",
+                               test = "nll")
         expect_equivalent(test.binom$nll, 123.5817, tolerance = 1e-4, scale = 1)
     })
