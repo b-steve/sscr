@@ -4,9 +4,9 @@
 \alias{sim.sscr}
 \title{Simulating SCR data with second-order spatial dependence}
 \usage{
-sim.sscr(traps, mask, D, resp = NULL, resp.pars = NULL, detfn = "hn",
-  cov.structure = "none", re.multiplier = "er", det.pars = NULL,
-  cov.pars = NULL, toa.pars = NULL)
+sim.sscr(traps, mask, D, resp = NULL, resp.pars = NULL,
+  detfn = "hhn", cov.structure = "none", re.multiplier = "er",
+  det.pars = NULL, cov.pars = NULL, toa.pars = NULL)
 }
 \arguments{
 \item{traps}{A matrix with two columns, providing the Cartesian

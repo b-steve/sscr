@@ -5,7 +5,7 @@
 \title{Fitting an SCR model with second-order spatial dependence}
 \usage{
 fit.sscr(capt, traps, mask, resp = "binom", resp.pars = NULL,
-  detfn = "hn", cov.structure = "none", re.multiplier = "er",
+  detfn = "hhn", cov.structure = "none", re.multiplier = "er",
   start = NULL, fix = NULL, toa = NULL, trace = FALSE,
   test = FALSE, test.conditional.n = TRUE, hess = FALSE,
   optim.fun = "nlminb", manual.sep = TRUE)
