@@ -173,12 +173,16 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
     } else {
         if (optim.fun == "nlminb"){
             raw.fit <- nlminb(opt.obj$par, opt.obj$fn, opt.obj$gr)
-            fit <- list(ests = opt.obj$organise(raw.fit$par, raw.fit$objective),
+            ests.save <- opt.obj$organise(raw.fit$par, raw.fit$objective)
+            fit <- list(ests = ests.save[[1]],
+                        ests.link = ests.save[[2]],
                         grads = opt.obj$gr(raw.fit$par),
                         ll = -raw.fit$objective)
         } else if (optim.fun == "bobyqa"){
             raw.fit <- bobyqa(par = opt.obj$par, fn = opt.obj$fn)
-            fit <- list(ests = opt.obj$organise(raw.fit$par, raw.fit$fval),
+            ests.save <- opt.obj$organise(raw.fit$par, raw.fit$fval)
+            fit <- list(ests = ests.save[[1]],
+                        ests.link = ests.save[[2]],
                         grads = opt.obj$gr(raw.fit$par),
                         bobyqa.code = raw.fit$ierr,
                         ll = -raw.fit$fval)
@@ -189,7 +193,8 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
                 out
             }
             raw.fit <- nlm(f, opt.obj$par)
-            fit <- list(ests = opt.obj$organise(raw.fit$estimate, raw.fit$minimum),
+            ests.save <- opt.obj$organise(raw.fit$estimate, raw.fit$minimum)
+            fit <- list(ests = ests.save[[1]], ests.link = ests.save[[2]],
                         grads = raw.fit$gradient, ll = -raw.fit$minimum)
         }
         if (hess){
@@ -203,11 +208,12 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
                                      conditional.n = FALSE, Rhess = TRUE,
                                      manual.sep = manual.sep)
             opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
-            #browser()
-            fit$vcov <- opt.obj.hess$vcov(opt.obj.hess$par)
+            vcov.save <- opt.obj.hess$vcov(opt.obj.hess$par)
+            fit$vcov <- vcov.save[[1]]
+            fit$vcov.link <- vcov.save[[2]]
             fit$se <- sqrt(diag(fit$vcov))
+            fit$se.link <- sqrt(diag(fit$vcov.link))
         }
-        
     }
     fit
 }

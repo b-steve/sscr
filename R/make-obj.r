@@ -436,8 +436,11 @@ make.obj <- function(survey.data, model.opts, any.cov){
             n.pars <- length(pars)
             jacobian <- diag(n.pars)
             diag(jacobian) <- dlink.fun(pars, unfixed = TRUE)
-            out <- jacobian %*% vcov.link %*% t(jacobian)
-            dimnames(out) <- list(model.opts$par.names[!fixed], model.opts$par.names[!fixed])
+            vcov <- jacobian %*% vcov.link %*% t(jacobian)
+            dimnames(vcov) <- list(model.opts$par.names[!fixed], model.opts$par.names[!fixed])
+            dimnames(vcov.link) <- list(paste(model.opts$par.names[!fixed], "link", sep = "."),
+                                        paste(model.opts$par.names[!fixed], "link", sep = "."))
+            out <- list(vcov = vcov, vcov.link = vcov.link)
             out
         }
     }
@@ -475,10 +478,11 @@ cov.organise <- function(pars, all.pars, fixed, objective, survey.data, model.op
     D <- nrow(capt)/esa
     link.ids <- model.opts$link.ids
     par.unlink <- unlink.closure(link.ids, fixed)
-    ll <- -objective
-    all.pars <- c(par.unlink(all.pars), D, esa, ll)
-    names(all.pars) <- c(model.opts$par.names, "D", "esa", "LL")
-    all.pars    
+    ests.link <- c(all.pars, log(D))
+    names(ests.link) <- paste(c(model.opts$par.names, "D"), "link", sep = ".")
+    est <- c(par.unlink(all.pars), D, esa)
+    names(est) <- c(model.opts$par.names, "D", "esa")
+    list(ests = est, ests.link = ests.link)    
 }
 
 
