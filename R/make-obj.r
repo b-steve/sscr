@@ -470,6 +470,7 @@ grad.closure <- function(survey.data, model.opts, grad.fun){
     }
 }
 
+## Function to organise stuff.
 cov.organise <- function(pars, all.pars, fixed, objective, survey.data, model.opts, det.probs.fun){
     det.probs <- det.probs.fun(pars)
     mask.area <- survey.data$mask.area
@@ -486,7 +487,7 @@ cov.organise <- function(pars, all.pars, fixed, objective, survey.data, model.op
 }
 
 
-## Closure to provide linking function without passing link ids.
+## Closure to provide linking function without passing link IDs.
 link.closure <- function(link.ids, fixed){
     function(pars, which = NULL, unfixed = FALSE){
         if (unfixed){
@@ -504,6 +505,7 @@ link.closure <- function(link.ids, fixed){
     }
 }
 
+## Closure to provide unlinking function without passing link IDs.
 unlink.closure <- function(link.ids, fixed){
     function(link.pars, which = NULL, unfixed = FALSE){
         if (unfixed){
@@ -521,6 +523,7 @@ unlink.closure <- function(link.ids, fixed){
     }
 }
 
+## Closure to provide the first derivative of the linking function without passing link IDs.
 dlink.closure <- function(link.ids, fixed){
     function(link.pars, which = NULL, unfixed = FALSE){
         if (unfixed){

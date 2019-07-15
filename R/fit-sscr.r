@@ -171,6 +171,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
             }
         }
     } else {
+        ## Fitting the model with the appropriate optimiser.
         if (optim.fun == "nlminb"){
             raw.fit <- nlminb(opt.obj$par, opt.obj$fn, opt.obj$gr)
             ests.save <- opt.obj$organise(raw.fit$par, raw.fit$objective)
