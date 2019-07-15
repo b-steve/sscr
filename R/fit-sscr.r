@@ -63,9 +63,10 @@
 #' @param optim.fun A character string representing the R function to
 #'     maximise the likelihood. This can be \code{"bobyqa"} (from
 #'     package \code{minqa}), \code{"nlminb"}, or \code{"nlm"}.
-#' @param manual.sep Logical. If \code{TRUE}, integration over
-#'     individuals' spatially structured random effects is enforced in
-#'     R, rather than automatically detected by TMB.
+#' @param manual.sep Logical. If \code{TRUE}, separability in
+#'     integration over individuals' spatially structured random
+#'     effects is enforced in R, rather than automatically detected by
+#'     TMB.
 #' 
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom",
