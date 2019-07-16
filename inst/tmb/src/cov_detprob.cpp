@@ -34,6 +34,8 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(link_cov_ids);
   // Number of covariance function parameters.
   int n_cov_pars = link_cov_ids.size();
+  // Numerical offset for the final log().
+  DATA_SCALAR(log_offset);
   // Detection function parmaters.
   PARAMETER_VECTOR(link_det_pars);
   // Covariance parameters.
@@ -152,6 +154,6 @@ Type objective_function<Type>::operator() ()
     f += MVNORM(sigma_u_mat)(u - cov_pars(0));
   }
   // Contribution from probability of detection.
-  f -= log(1 - p_total_evade);
+  f -= log(1 - p_total_evade + log_offset);
   return f;
 }
