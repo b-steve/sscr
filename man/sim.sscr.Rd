@@ -4,11 +4,15 @@
 \alias{sim.sscr}
 \title{Simulating SCR data with second-order spatial dependence}
 \usage{
-sim.sscr(traps, mask, D, resp = NULL, resp.pars = NULL,
+sim.sscr(fit = NULL, traps, mask, D, resp = NULL, resp.pars = NULL,
   detfn = "hhn", cov.structure = "none", re.multiplier = "er",
   det.pars = NULL, cov.pars = NULL, toa.pars = NULL)
 }
 \arguments{
+\item{fit}{A fitted model object returned by \link{fit.sccr}(). If
+provided, simulation is based on this fitted model, and all
+other arguments are ignored.}
+
 \item{traps}{A matrix with two columns, providing the Cartesian
 coordinates of the detector locations.}
 

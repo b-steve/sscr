@@ -84,9 +84,10 @@ variance-covariance matrix is returned.}
 maximise the likelihood. This can be \code{"bobyqa"} (from
 package \code{minqa}), \code{"nlminb"}, or \code{"nlm"}.}
 
-\item{manual.sep}{Logical. If \code{TRUE}, integration over
-individuals' spatially structured random effects is enforced in
-R, rather than automatically detected by TMB.}
+\item{manual.sep}{Logical. If \code{TRUE}, separability in
+integration over individuals' spatially structured random
+effects is enforced in R, rather than automatically detected by
+TMB.}
 }
 \description{
 Fits an SSCR model. Estimation is by maximum likelihood. The
