@@ -2,6 +2,9 @@
 #'
 #' Simulates SSCR data.
 #'
+#' @param fit A fitted model object returned by \link{fit.sccr}(). If
+#'     provided, simulation is based on this fitted model, and all
+#'     other arguments are ignored.
 #' @inheritParams fit.sscr
 #' @param D Animal density (individuals per hectare).
 #' @param det.pars List of detection function parameters.
@@ -9,10 +12,35 @@
 #' @param toa.pars List of time-of-arrival parameters.
 #'
 #' @export
-sim.sscr <- function(traps, mask, D, resp = NULL, resp.pars = NULL,
-                     detfn = "hhn", cov.structure = "none",
-                     re.multiplier = "er", det.pars = NULL,
-                     cov.pars = NULL, toa.pars = NULL){
+sim.sscr <- function(fit = NULL, traps, mask, D, resp = NULL,
+                     resp.pars = NULL, detfn = "hhn",
+                     cov.structure = "none", re.multiplier = "er",
+                     det.pars = NULL, cov.pars = NULL,
+                     toa.pars = NULL){
+    ## Overwriting arguments from a model object, if provided.
+    if (!missing(fit)){
+        traps <- fit$args$traps
+        mask <- fit$args$mask
+        D <- fit$ests["D"]
+        resp <- fit$args$resp
+        resp.pars <- fit$args$resp.pars
+        detfn <- fit$args$detfn
+        cov.structure <- fit$args$cov.structure
+        re.multiplier <- fit$args$re.multiplier
+        det.names <- fit$args$det.names
+        det.pars <- as.vector(fit$ests[det.names], mode = "list")
+        if (cov.structure != "none"){
+            cov.names <- fit$args$cov.names
+            cov.pars <- as.vector(fit$ests[cov.names], mode = "list")
+        } else {
+            cov.pars <- NULL
+        }
+        if (any(names(fit$ests) == "sigma.toa")){
+            toa.pars <- fit$ests["sigma.toa"]
+        } else {
+            toa.pars <- NULL
+        }
+    }
     if (is.null(resp.pars)){
         resp.pars <- 1
     }

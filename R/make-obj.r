@@ -265,7 +265,6 @@ make.obj <- function(survey.data, model.opts, any.cov){
     }
     get.fn.gr <- function(fun = "nll"){
         function(link.pars.unfixed){
-            #browser(expr = Rhess)
             link.pars <- numeric(n.pars)
             link.pars[fixed] <- link.pars.start.fixed
             link.pars[!fixed] <- link.pars.unfixed
@@ -448,7 +447,8 @@ make.obj <- function(survey.data, model.opts, any.cov){
         obj.vcov <- vcov.closure(survey.data, model.opts, obj.fn, par.dlink, gr = obj.gr)
     obj.organise <- organise.closure(survey.data, model.opts, cov.organise, get.fn.gr(fun = "det.probs"))
     obj <- list(par = link.pars.start.unfixed, fn = obj.fn, gr = obj.gr,
-                vcov = obj.vcov, organise = obj.organise)
+                vcov = obj.vcov, organise = obj.organise, det.names = det.names,
+                cov.names = cov.names)
     obj
 }
 

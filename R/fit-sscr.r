@@ -219,7 +219,8 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
     }
     fit$args <- list(traps = traps, mask = mask, resp = resp, resp.pars = resp.pars,
                      detfn = detfn, cov.structure = cov.structure,
-                     re.multiplier = re.multiplier)
+                     re.multiplier = re.multiplier, det.names = opt.obj$det.names,
+                     cov.names = opt.obj$cov.names)
     fit
 }
 
