@@ -4,7 +4,11 @@
 \alias{compile.sscr}
 \title{Compiling TMB C++ templates}
 \usage{
-compile.sscr()
+compile.sscr(template = NULL)
+}
+\arguments{
+\item{template}{The TMB template(s) to compile. If \code{NULL}, all
+will be compiled, which is probably what you want to do.}
 }
 \description{
 Compiles the \code{sscr} TMB templates into a shared object
