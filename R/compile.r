@@ -4,6 +4,9 @@
 #' file. This must be done a single time following installation or
 #' updating of the package.
 #'
+#' @param template The TMB template(s) to compile. If \code{NULL}, all
+#'     will be compiled, which is probably what you want to do.
+#' 
 #' @export
 compile.sscr <- function(template = NULL){
     wd <- getwd()
