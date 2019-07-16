@@ -5,7 +5,7 @@
 #' updating of the package.
 #'
 #' @export
-compile.sscr <- function(){
+compile.sscr <- function(template = NULL){
     wd <- getwd()
     dir <- paste(system.file(package = "sscr"), "/tmb/src", sep = "")
     setwd(dir)
@@ -14,8 +14,13 @@ compile.sscr <- function(){
     }
     files <- strsplit(list.files(), "[.]")
     base <- sapply(files, function(x) x[1])
-    ext <- sapply(files, function(x) x[2]) 
-    for (i in base[ext == "cpp"]){
+    ext <- sapply(files, function(x) x[2])
+    if (is.null(template)){
+        v <- base[ext == "cpp"]
+    } else {
+        v <- template
+    }
+    for (i in v){
         compile(paste(i, ".cpp", sep = ""))
         unlink(paste(i, ".o", sep = ""))
         file.rename(paste(i, ".so", sep = ""),
