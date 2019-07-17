@@ -57,30 +57,30 @@ test_that(
         fit.pois <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, resp = "pois",
                              detfn = "hhn", hess = TRUE)
         expect_equivalent(fit.pois$ests, c(2.87645050233774, 93.388169123886, 0.454913613852446, 
-                                           30.7750737144151, -128.981698520115), tol = 1e-4)
+                                           30.7750737144151), tol = 1e-4)
         expect_equivalent(fit.pois$se, c(0.5405034, 20.6192798, 0.1894562), tol = 1e-4)
         ## Poisson with detection function on probability scale.
         fit.pois.pr <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, resp = "pois", detfn = "hn")
-        expect_equivalent(fit.pois.pr$est, c(0.999999999795205, 117.513845050955, 0.431769352119301, 
-                                             32.424719196215, -124.387177667554), tol = 1e-4)
+        expect_equivalent(fit.pois.pr$ests, c(0.999999999795205, 117.513845050955, 0.431769352119301, 
+                                             32.424719196215), tol = 1e-4)
         ## Bernoulli.
         fit.bern <- fit.sscr(test.data$bin.capt, test.data$traps, test.data$mask, detfn = "hhn")
         expect_equivalent(fit.bern$ests, c(1.10544298833934, 144.339009111062, 0.312312925517947, 
-                                           44.8268350622443, -73.7787592050756), tol = 1e-4)
+                                           44.8268350622443), tol = 1e-4)
         ## Bernoulli with halfnormal detection function.
         fit.bern.pr <- fit.sscr(test.data$bin.capt, test.data$traps, test.data$mask, detfn = "hn")
         expect_equivalent(fit.bern.pr$ests, c(0.709787201866111, 157.488436993617, 0.308950967387457, 
-                                              45.3146339640442, -74.0448322726064), tol = 1e-4)
+                                              45.3146339640442), tol = 1e-4)
         ## Binomial.
         fit.binom <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, resp = "binom",
                               resp.pars = 10, detfn = "hhn")
         expect_equivalent(fit.binom$ests, c(0.519014374421606, 125.87869591362, 0.247980358116291, 
-                                            56.4560842896866, -136.734734751027), tol = 1e-4)
+                                            56.4560842896866), tol = 1e-4)
         ## Binomial with halfnormal detection function.
         fit.binom.pr <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, resp = "binom",
                                  resp.pars = 10, detfn = "hn")
         expect_equivalent(fit.binom.pr$ests, c(0.604976358068237, 137.677620551755, 0.20620406615787, 
-                                               67.8939084997556, -135.548541895984), tol = 1e-4)
+                                               67.8939084997556), tol = 1e-4)
     })
 
 test_that(
@@ -108,7 +108,7 @@ test_that(
                                 cov.structure = "independent", re.multiplier = "er",
                                 test = "nll")
         expect_equivalent(test.ind.hn$nll, 127.0738, tolerance = 1e-4, scale = 1)
-        ## With halfnormal detection function. ## PROBLEM?
+        ## With halfnormal detection function.
         test.ind.hn.detpr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                    mask = test.data$mask, resp = "pois", detfn = "hn",
                                    cov.structure = "independent", re.multiplier = "er",
@@ -119,13 +119,13 @@ test_that(
                                mask = test.data$mask, resp = "pois", detfn = "hhn",
                                cov.structure = "independent", re.multiplier = "er",
                                start = c(lambda0 = 2, sigma.u = 4), test = "nll")
-        expect_equivalent(test.sv.hn, 149.6288, tolerance = 1e-4, scale = 1)
-        ## ... with hazard rate detection function. ## PROBLEM?
+        expect_equivalent(test.sv.hn$nll, 149.6288, tolerance = 1e-4, scale = 1)
+        ## ... with hazard rate detection function.
         test.ind.hr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hhr",
                                 cov.structure = "independent", re.multiplier = "er",
                                 test = "nll")
-        expect_equivalent(test.ind.hr, 152.7691, tolerance = 1e-4, scale = 1)
+        expect_equivalent(test.ind.hr$nll, 152.7691, tolerance = 1e-4, scale = 1)
         ## Exponential covariance function.
         test.exp <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                              mask = test.data$mask, resp = "pois", detfn = "hhn",
@@ -139,7 +139,7 @@ test_that(
                                  test = "nll",
                                  manual.sep = FALSE)
         expect_equivalent(test.exp.man$nll, 125.2871, tolerance = 1e-4, scale = 1)
-        ## With halfnormal detection function. ## PROBLEM?
+        ## With halfnormal detection function.
         test.exp.detpr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hn",
                                 cov.structure = "exponential", re.multiplier = "er",
@@ -175,7 +175,7 @@ test_that(
                               cov.structure = "exponential", re.multiplier = "er",
                               test = "nll")
         expect_equivalent(test.bern$nll, 77.4819, tolerance = 1e-4, scale = 1)
-        ## With halfnormal detection function. ## PROBLEM?
+        ## With halfnormal detection function.
         test.bern.detpr <- fit.sscr(capt = test.data$bin.capt, traps = test.data$traps,
                                     mask = test.data$mask, detfn = "hn",
                                     cov.structure = "exponential", re.multiplier = "er",
