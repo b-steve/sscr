@@ -189,6 +189,26 @@ make.obj <- function(survey.data, model.opts, any.cov){
     par.names <- c(par.names, cov.names)
     pars.start <- c(pars.start, cov.start)
     link.ids <- c(link.ids, cov.link.ids)
+    ## Indices and start values for response distribution parameters.
+    resp.index.start <- length(pars.start) + 1
+    if (resp.id == 0 | resp.id == 1){
+        resp.indices <- length(pars.start) + 1
+        resp.names <- "N"
+        resp.start <- resp.pars
+        resp.link.ids <- 2
+        resp.map <- factor(NA)
+    } else if (resp.id == 2){
+        resp.indices <- length(pars.start) + 1
+        resp.names <- "nu"
+        resp.start <- resp.pars
+        resp.link.ids <- 0
+        resp.map <- 1
+        resp.map[resp.names %in% fix.names] <- NA
+    }
+    par.names <- c(par.names, resp.names)
+    pars.start <- c(pars.start, resp.start)
+    link.ids <- c(link.ids, resp.link.ids)
+    map[["link_resp_pars"]] <- resp.map
     ## Start value for TOA parameter.
     toa.indices <- -1
     if (toa.id == 1){
@@ -251,14 +271,15 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                    n_traps = n.traps,
                                                    detfn_id = detfn.id,
                                                    resp_id = resp.id,
-                                                   resp_pars = resp.pars,
                                                    cov_id = cov.id,
                                                    mult_id = mult.id,
                                                    link_det_ids = link.ids[det.indices],
                                                    link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices],
+                                                   link_resp_ids = link.ids[resp.indices],
                                                    log_offset = 1e-10),
                                        parameters = list(link_det_pars = link.pars.start[det.indices],
                                                          link_cov_pars = if (cov.id == 6) 1 else link.pars.start[cov.indices],
+                                                         link_resp_pars = link.pars.start[resp.indices],
                                                          link_sigma_toa = ifelse(toa.id, link.pars.start[toa.indices], 1),
                                                          link_D = ifelse(conditional.n | Rhess, 1, link.pars.start[D.indices]),
                                                          u = u.detprob),
@@ -304,7 +325,6 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                                n_mask = n.mask,
                                                                mask_area = mask.area,
                                                                resp_id = resp.id,
-                                                               resp_pars = resp.pars,
                                                                detfn_id = detfn.id,
                                                                cov_id = cov.id,
                                                                mult_id = mult.id,
@@ -312,9 +332,11 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                                toa_id = toa.id,
                                                                toa_ssq = toa.ssq.ind,
                                                                link_det_ids = link.ids[det.indices],
-                                                               link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices]),
+                                                               link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices],
+                                                               link_resp_ids = link.ids[resp.indices]),
                                                    parameters = list(link_det_pars = link.pars[det.indices],
                                                                      link_cov_pars = if (cov.id == 6) 1 else link.pars[cov.indices],
+                                                                     link_resp_pars = link.pars.start[resp.indices],
                                                                      link_sigma_toa = ifelse(toa.id, link.pars[toa.indices], 1),
                                                                      link_D = ifelse(conditional.n | Rhess, 1, link.pars[D.indices]),
                                                                      u = u.nll.ind),
@@ -360,7 +382,8 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                      toa_ssq = toa.ssq,
                                                      conditional_n = as.numeric(conditional.n | Rhess),
                                                      link_det_ids = link.ids[det.indices],
-                                                     link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices]),
+                                                     link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices],
+                                                     link_resp_ids = link.ids[resp.indices]),
                                          parameters = list(link_det_pars = link.pars[det.indices],
                                                            link_cov_pars = if (cov.id == 6) 1 else link.pars[cov.indices],
                                                            link_sigma_toa = ifelse(toa.id, link.pars[toa.indices], 1),
@@ -389,6 +412,9 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                         collapse = ", "),
                         "; Covariance parameters: "[cov.id != 6], paste(format(round(par.unlink(link.pars, cov.indices), 2), nsmall = 2),
                                                                         collapse = ", ")[cov.id != 6])
+                    if (resp.id == 2){
+                        cat("; nu: ", format(round(par.unlink(link.pars, resp.indices), 2), nsmall = 2), sep = "")
+                    }
                     if (!conditional.n){
                         cat("; D: ", format(round(par.unlink(link.pars, D.indices), 2), nsmall = 2), sep = "")
                     }

@@ -20,8 +20,6 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(detfn_id);
   // Indicator for response type.
   DATA_INTEGER(resp_id);
-  // Additional response parameters.
-  DATA_VECTOR(resp_pars)
   // Indicator for dependence structure.
   DATA_INTEGER(cov_id);
   // Indicator for random effect multiplier.
@@ -34,12 +32,18 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(link_cov_ids);
   // Number of covariance function parameters.
   int n_cov_pars = link_cov_ids.size();
+  // Indicators for additional response parameter link functions.
+  DATA_IVECTOR(link_resp_ids);
+  // Number of additional response parameters.
+  int n_resp_pars = link_resp_ids.size();
   // Numerical offset for the final log().
   DATA_SCALAR(log_offset);
   // Detection function parmaters.
   PARAMETER_VECTOR(link_det_pars);
   // Covariance parameters.
   PARAMETER_VECTOR(link_cov_pars);
+  // Additional response parameters.
+  PARAMETER_VECTOR(link_resp_pars)
   // Time-of-arrival parameter.
   PARAMETER(link_sigma_toa);
   // Density parameter.
@@ -68,8 +72,19 @@ Type objective_function<Type>::operator() ()
       cov_pars(i) = link_cov_pars(i);
     }
   }
-  // Back-transforming sigma_toa.
-  Type sigma_toa = exp(link_sigma_toa);
+  // Back-transforming additional response parameters.
+  vector<Type> resp_pars(n_resp_pars);
+  for (int i = 0; i < n_resp_pars; i++){
+    if (link_resp_ids(i) == 0){
+      resp_pars(i) = exp(link_resp_pars(i));
+    } else if (link_resp_ids(i) == 1){
+      resp_pars(i) = 1/(1 + exp(-link_resp_pars(i)));
+    } else if (link_resp_ids(i) == 2){
+      resp_pars(i) = link_resp_pars(i);
+    }
+  }
+  // Back-transforming sigma_toa, including readjustment to ms.
+  Type sigma_toa = exp(link_sigma_toa)/1000;
   // Back-transforming density parameter.
   Type D = exp(link_D);
   // Declaring latent variables.
