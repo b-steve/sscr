@@ -10,13 +10,18 @@
 #' @param det.pars List of detection function parameters.
 #' @param cov.pars List of covariance parameters.
 #' @param toa.pars List of time-of-arrival parameters.
+#' @param trunc.acs Logical. If \code{TRUE}, activity centres are
+#'     truncated to the region covered by the mask.
+#' @param mask.spacing Optional. The distance between adjacent mask
+#'     points. Providing a value will save processing time if activity
+#'     centres are being truncated to the mask region.
 #'
 #' @export
 sim.sscr <- function(fit = NULL, traps, mask, D, resp = NULL,
                      resp.pars = NULL, detfn = "hhn",
                      cov.structure = "none", re.multiplier = "er",
                      det.pars = NULL, cov.pars = NULL,
-                     toa.pars = NULL){
+                     toa.pars = NULL, trunc.acs = TRUE, mask.spacing = NULL){
     ## Overwriting arguments from a model object, if provided.
     if (!missing(fit)){
         traps <- fit$args$traps
@@ -77,9 +82,15 @@ sim.sscr <- function(fit = NULL, traps, mask, D, resp = NULL,
             stop("A value of mu.u must be supplied.")
         }
     }
+    ## Calculating mask spacing if not provided.
+    if (is.null(mask.spacing)){
+        mask.dists <- crossdist(mask[, 1], mask[, 2],
+                                mask[, 1], mask[, 2])
+        mask.spacing <- min(mask.dists[mask.dists > 0])
+    }
     ## Finding extent of mask object.
-    range.x <- range(mask[, 1])
-    range.y <- range(mask[, 2])
+    range.x <- range(mask[, 1]) + c(-mask.spacing, mask.spacing)/2
+    range.y <- range(mask[, 2]) + c(-mask.spacing, mask.spacing)/2
     total.area <- diff(range.x)*diff(range.y)
     ## Extracting number of traps.
     n.traps <- nrow(traps)
@@ -92,6 +103,20 @@ sim.sscr <- function(fit = NULL, traps, mask, D, resp = NULL,
     ## Distances from activity centres to traps.
     ac.dists <- crossdist(acs[, 1], acs[, 2],
                           traps[, 1], traps[, 2])
+    ## Truncating activity centres beyond the mask.
+    if (trunc.acs){
+        ## Function to check for mask-point proximity.
+        mask.proximity <- function(ac){
+            any(abs(ac[1] - mask[, 1]) < mask.spacing/2 &
+                abs(ac[2] - mask[, 2]) < mask.spacing/2)
+        }
+        keep.ac <- apply(acs, 1, mask.proximity)
+        ## Keeping only activity centres within a mask point's pixel.
+        acs.trunc <- acs[!keep.ac, ]
+        acs <- acs[keep.ac, ]
+        ac.dists <- ac.dists[keep.ac, ]
+        n <- nrow(acs)
+    }
     if (cov.structure == "OU"){
         ## Extracting movement parameters.
         tau <- cov.pars$tau
@@ -137,8 +162,7 @@ sim.sscr <- function(fit = NULL, traps, mask, D, resp = NULL,
         } else if (cov.structure == "individual"){
             mu.u <- cov.pars$mu.u
             sigma.u <- cov.pars$sigma.u
-            cov <- matrix(sigma.u, nrow = n.traps, ncol = n.traps)
-            stop("Full covariance not yet implemented.")
+            cov <- matrix(sigma.u^2, nrow = n.traps, ncol = n.traps)
         } else if (cov.structure == "lc_exponential"){
             stop("Linear combination of exponentials not yet implemented.")
         } else if (cov.structure == "sq_exponential"){
@@ -174,12 +198,16 @@ sim.sscr <- function(fit = NULL, traps, mask, D, resp = NULL,
     }
     ## Removing undetected individuals.
     if (sim.toa){
+        acs.missed <- acs[!apply(capt, 1, function(x) sum(x) > 0), ]
+        acs <- acs[apply(capt, 1, function(x) sum(x) > 0), ]
         toa <- toa[apply(capt, 1, function(x) sum(x) > 0), ]
         capt <- capt[apply(capt, 1, function(x) sum(x) > 0), ]
-        out <- list(capt = capt, toa = toa)
+        out <- list(capt = capt, toa = toa, acs = acs)
     } else {
+        acs.missed <- acs[!apply(capt, 1, function(x) sum(x) > 0), ]
+        acs <- acs[apply(capt, 1, function(x) sum(x) > 0), ]
         capt <- capt[apply(capt, 1, function(x) sum(x) > 0), ]
-        out <- capt
+        out <- list(capt = capt, acs = acs, acs.trunc = acs.trunc, acs.missed = acs.missed)
     }
     out
 }
