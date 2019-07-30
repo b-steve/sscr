@@ -2,7 +2,7 @@
 #'
 #' Simulates SSCR data.
 #'
-#' @param fit A fitted model object returned by \link{fit.sccr}(). If
+#' @param fit A fitted model object returned by \link{fit.sscr}(). If
 #'     provided, simulation is based on this fitted model, and all
 #'     other arguments are ignored.
 #' @inheritParams fit.sscr
