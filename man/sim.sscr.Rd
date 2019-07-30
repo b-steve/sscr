@@ -10,7 +10,7 @@ sim.sscr(fit = NULL, traps, mask, D, resp = NULL, resp.pars = NULL,
   trunc.acs = TRUE, mask.spacing = NULL)
 }
 \arguments{
-\item{fit}{A fitted model object returned by \link{fit.sccr}(). If
+\item{fit}{A fitted model object returned by \link{fit.sscr}(). If
 provided, simulation is based on this fitted model, and all
 other arguments are ignored.}
 
