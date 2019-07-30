@@ -91,12 +91,22 @@ Type objective_function<Type>::operator() ()
   matrix<Type> haz_mat(n_mask, n_traps);
   // Detection probabilities for mask/trap combinations.
   matrix<Type> prob_mat(n_mask, n_traps);
-  for (int i = 0; i < n_mask; i++){
-    for (int j = 0; j < n_traps; j++){
-      prob_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
+  // Needs to be done separately for CMP distribution.
+  if (resp_id == 2){
+    for (int i = 0; i < n_mask; i++){
+      for (int j = 0; j < n_traps; j++){
+	haz_mat(i, j) = prob_to_haz(detfn(mask_dists(i, j), det_pars, detfn_id));
+      }
     }
+    prob_mat = cmp_haz_to_prob(haz_mat, resp_pars(0));
+  } else {
+    for (int i = 0; i < n_mask; i++){
+      for (int j = 0; j < n_traps; j++){
+	prob_mat(i, j) = detfn(mask_dists(i, j), det_pars, detfn_id);
+      }
+    }
+    haz_mat = prob_to_haz(prob_mat);
   }
-  haz_mat = prob_to_haz(prob_mat);
   // The sum of mask probabilities.
   Type sum_det_probs = 0;
   for (int i = 0; i < n_mask; i++){
@@ -129,11 +139,13 @@ Type objective_function<Type>::operator() ()
 	} else if (mult_id == 1){
 	  e_count = prob_mat(j, k)*exp(u_use) + DBL_MIN;
 	}
-	e_prob = haz_to_prob(e_count);
 	if (resp_id == 0){
+	  e_prob = haz_to_prob(e_count);
 	  integrand_mask += dbinom_sscr(capt(i, k), resp_pars(0), e_prob, true);
 	} else if (resp_id == 1){
 	  integrand_mask += dpois_sscr(capt(i, k), e_count, true);
+	} else if (resp_id == 2){
+	  integrand_mask += dcompois2(capt(i, k), e_count, resp_pars(0), true);
 	}
       }
       // Time-of-arrival component.

@@ -13,8 +13,9 @@
 #'     coordinates of the detector locations.
 #' @param mask A mask object for integration over the survey area.
 #' @param resp Response distribution for capture history
-#'     elements. Either \code{"binom"} for a binomial distribution, or
-#'     \code{"pois"} for a Poisson distribution.
+#'     elements. Either \code{"binom"} for a binomial distribution,
+#'     \code{"pois"} for a Poisson distribution, or \code{"cmp"} for a
+#'     Conway-Maxwell-Poisson distribution.
 #' @param resp.pars A named vector of known, fixed parameters for the
 #'     response distribution. If \code{resp} is \code{"binom"}, then
 #'     this must have a single element named \code{"size"} giving the

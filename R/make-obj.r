@@ -12,7 +12,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
     ## Extracting response type.
     resp <- model.opts$resp
     resp.pars <- model.opts$resp.pars
-    resp.id <- switch(model.opts$resp, binom = 0, pois = 1)
+    resp.id <- switch(model.opts$resp, binom = 0, pois = 1, cmp = 2)
     if (is.null(resp.pars)){
         resp.pars <- 1
     }

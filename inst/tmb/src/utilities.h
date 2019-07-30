@@ -98,6 +98,40 @@ matrix<Type> prob_to_haz (const matrix<Type> &prob){
   return haz;
 }
 
+// Calculating detection probability for CMP distribution.
+// For scalars.
+template<class Type>
+Type cmp_haz_to_prob(const Type &haz, const Type &nu){
+  Type loglambda = compois_calc_loglambda(log(haz + DBL_MIN), nu);
+  return 1 - 1/exp(compois_calc_logZ(loglambda, nu));
+}
+
+// For vectors.
+template<class Type>
+vector<Type> cmp_haz_to_prob (const vector<Type> &haz, const Type &nu){
+  int n = haz.size();
+  vector<Type> prob(n);
+  for (int i = 0; i < n; i++){
+    prob(i) = cmp_haz_to_prob(haz(i), nu);
+  }
+  return prob;
+}
+
+// For matrices.
+template<class Type>
+matrix<Type> cmp_haz_to_prob (const matrix<Type> &haz, const Type &nu){
+  int nr = haz.col(1).size();
+  int nc = haz.row(1).size();
+  matrix<Type> prob(nr, nc);
+  for (int i = 0; i < nr; i++){
+    for (int j = 0; j < nc; j++){
+      prob(i, j) = cmp_haz_to_prob(haz(i, j), nu);
+    }
+  }
+  return prob;
+}
+
+
 /* // Logistic function. */
 
 /* // For scalars. */
