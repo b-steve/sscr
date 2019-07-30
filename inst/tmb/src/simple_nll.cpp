@@ -1,5 +1,5 @@
 // Template to calculate the negative log-likelihood for a model with
-// no random effects.
+// no random effects. NOT CURRENTLY USED IN THE PACKAGE.
 #include <TMB.hpp>
 #include <fenv.h>
 #include "utilities.h"
