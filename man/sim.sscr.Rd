@@ -6,7 +6,8 @@
 \usage{
 sim.sscr(fit = NULL, traps, mask, D, resp = NULL, resp.pars = NULL,
   detfn = "hhn", cov.structure = "none", re.multiplier = "er",
-  det.pars = NULL, cov.pars = NULL, toa.pars = NULL)
+  det.pars = NULL, cov.pars = NULL, toa.pars = NULL,
+  trunc.acs = TRUE, mask.spacing = NULL)
 }
 \arguments{
 \item{fit}{A fitted model object returned by \link{fit.sccr}(). If
@@ -60,6 +61,13 @@ baseline encounter probability.}
 \item{cov.pars}{List of covariance parameters.}
 
 \item{toa.pars}{List of time-of-arrival parameters.}
+
+\item{trunc.acs}{Logical. If \code{TRUE}, activity centres are
+truncated to the region covered by the mask.}
+
+\item{mask.spacing}{Optional. The distance between adjacent mask
+points. Providing a value will save processing time if activity
+centres are being truncated to the mask region.}
 }
 \description{
 Simulates SSCR data.
