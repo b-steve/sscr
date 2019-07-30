@@ -12,6 +12,8 @@
 #' @param toa.pars List of time-of-arrival parameters.
 #' @param trunc.acs Logical. If \code{TRUE}, activity centres are
 #'     truncated to the region covered by the mask.
+#' @param keep.acs Logical. If \code{TRUE}, activity centre locations
+#'     are returned along with the captures histories.
 #' @param mask.spacing Optional. The distance between adjacent mask
 #'     points. Providing a value will save processing time if activity
 #'     centres are being truncated to the mask region.
@@ -21,7 +23,8 @@ sim.sscr <- function(fit = NULL, traps, mask, D, resp = NULL,
                      resp.pars = NULL, detfn = "hhn",
                      cov.structure = "none", re.multiplier = "er",
                      det.pars = NULL, cov.pars = NULL,
-                     toa.pars = NULL, trunc.acs = TRUE, mask.spacing = NULL){
+                     toa.pars = NULL, trunc.acs = TRUE, keep.acs = FALSE,
+                     mask.spacing = NULL){
     ## Overwriting arguments from a model object, if provided.
     if (!missing(fit)){
         traps <- fit$args$traps
@@ -116,6 +119,8 @@ sim.sscr <- function(fit = NULL, traps, mask, D, resp = NULL,
         acs <- acs[keep.ac, ]
         ac.dists <- ac.dists[keep.ac, ]
         n <- nrow(acs)
+    } else {
+        acs.trunc <- NULL
     }
     if (cov.structure == "OU"){
         ## Extracting movement parameters.
@@ -202,12 +207,22 @@ sim.sscr <- function(fit = NULL, traps, mask, D, resp = NULL,
         acs <- acs[apply(capt, 1, function(x) sum(x) > 0), ]
         toa <- toa[apply(capt, 1, function(x) sum(x) > 0), ]
         capt <- capt[apply(capt, 1, function(x) sum(x) > 0), ]
-        out <- list(capt = capt, toa = toa, acs = acs)
+        if (keep.acs){
+            out <- list(capt = capt, toa = toa, acs = acs,
+                        acs.trunc = acs.trunc, acs.missed = acs.missed)
+        } else {
+            out <- list(capt = capt, toa = toa)
+        }
     } else {
         acs.missed <- acs[!apply(capt, 1, function(x) sum(x) > 0), ]
         acs <- acs[apply(capt, 1, function(x) sum(x) > 0), ]
         capt <- capt[apply(capt, 1, function(x) sum(x) > 0), ]
-        out <- list(capt = capt, acs = acs, acs.trunc = acs.trunc, acs.missed = acs.missed)
+        if (keep.acs){
+            out <- list(capt = capt, acs = acs, acs.trunc = acs.trunc,
+                        acs.missed = acs.missed)
+        } else {
+            out <- capt
+        }
     }
     out
 }

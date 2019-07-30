@@ -7,35 +7,38 @@ test_that(
         ## Poisson response.
         set.seed(4321)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
-                             resp = "pois", detfn = "hhn",
-                             cov.structure = "none", det.pars = list(lambda0 = 3, sigma = 50))
-        expect_equivalent(sim.data[21, ], c(0, 0, 0, 0, 1, 4, 0, 4, 1))
+                             resp = "pois", detfn = "hhn", cov.structure = "none",
+                             det.pars = list(lambda0 = 3, sigma = 50), trunc.acs = FALSE)
+        expect_equivalent(sim.data[25, ], c(0, 0, 0, 0, 0, 2, 0, 1, 3))
         ## ... With detection function on the probability scale.
         set.seed(2468)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
-                             resp = "pois", detfn = "hn",
-                             cov.structure = "none", det.pars = list(g0 = 0.9, sigma = 50))
-        expect_equivalent(sim.data[11, ], c(0, 0, 0, 0, 2, 1, 0, 0, 0))
+                             resp = "pois", detfn = "hn", cov.structure = "none",
+                             det.pars = list(g0 = 0.9, sigma = 50), trunc.acs = FALSE)
+        expect_equivalent(sim.data[19, ], c(0, 0, 0, 2, 0, 0, 1, 0, 0))
         ## Binomial response.
         set.seed(1234)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
                              resp = "binom", resp.pars = 5, detfn = "hhn",
-                              cov.structure = "none", det.pars = list(lambda0 = 3, sigma = 50))
-        expect_equivalent(sim.data[8, ], c(1, 0, 0, 5, 1, 0, 1, 0, 0))
+                             cov.structure = "none", det.pars = list(lambda0 = 3, sigma = 50),
+                             trunc.acs = FALSE)
+        expect_equivalent(sim.data[23, ], c(0, 5, 3, 0, 1, 0, 0, 0, 0))
         ## With squared-exponential covariance function.
         set.seed(8642)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
                              resp = "pois", detfn = "hhn", re.multiplier = "er",
                              cov.structure = "sq_exponential",
                              det.pars = list(lambda0 = 3, sigma = 50),
-                             cov.pars = list(sigma.u = 1.5, rho = 100))
-        expect_equivalent(sim.data[13, ], c(0, 0, 0, 2, 5, 0, 1, 16, 0))
+                             cov.pars = list(sigma.u = 1.5, rho = 100),
+                             trunc.acs = FALSE)
+        expect_equivalent(sim.data[5, ], c(2, 12, 0, 0, 5, 1, 0, 0, 0))
         ## With counts from an OU process.
         set.seed(7531)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 0.5,
                              cov.structure = "OU",
-                             cov.pars = list(tau = 30, sigma = 50, n.steps = 100, epsilon = 10))
-        expect_equivalent(sim.data[1, ], c(0, 1, 0, 0, 4, 0, 0, 0, 0))
+                             cov.pars = list(tau = 30, sigma = 50, n.steps = 100, epsilon = 10),
+                             trunc.acs = FALSE)
+        expect_equivalent(sim.data[5, ], c(4, 4, 0, 0, 0, 0, 0, 0, 0))
         ## With time-of-arrival information.
         set.seed(3579)
         sim.data <- sim.sscr(traps = test.data$traps, mask = test.data$mask, D = 1.5,
@@ -43,10 +46,10 @@ test_that(
                              cov.structure = "sq_exponential",
                              det.pars = list(lambda0 = 3, sigma = 50),
                              cov.pars = list(mu.u = 1, sigma.u = 1.5, rho = 100),
-                             toa.pars = list(sigma.toa = 4, sound.speed = 330))
-        expect_equivalent(sim.data$toa[14, ], c(0.386203919047886, 0, 0, 0.124416634017569,
-                                                0.219837824942237, 0, 0.251232089686846,
-                                                0.301623281164531, 0))
+                             toa.pars = list(sigma.toa = 4, sound.speed = 330),
+                             trunc.acs = FALSE)
+        expect_equivalent(sim.data$toa[16, ], c(0.168463914474658, 0.468831521389697, 0, 0.383449201593517, 
+                                                0.584800381434096, 0, 0, 0, 0))
     })
     
 
