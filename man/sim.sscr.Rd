@@ -7,7 +7,7 @@
 sim.sscr(fit = NULL, traps, mask, D, resp = NULL, resp.pars = NULL,
   detfn = "hhn", cov.structure = "none", re.multiplier = "er",
   det.pars = NULL, cov.pars = NULL, toa.pars = NULL,
-  trunc.acs = TRUE, mask.spacing = NULL)
+  trunc.acs = TRUE, keep.acs = FALSE, mask.spacing = NULL)
 }
 \arguments{
 \item{fit}{A fitted model object returned by \link{fit.sscr}(). If
@@ -65,6 +65,9 @@ baseline encounter probability.}
 
 \item{trunc.acs}{Logical. If \code{TRUE}, activity centres are
 truncated to the region covered by the mask.}
+
+\item{keep.acs}{Logical. If \code{TRUE}, activity centre locations
+are returned along with the captures histories.}
 
 \item{mask.spacing}{Optional. The distance between adjacent mask
 points. Providing a value will save processing time if activity
