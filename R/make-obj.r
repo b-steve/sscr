@@ -190,12 +190,12 @@ make.obj <- function(survey.data, model.opts, any.cov){
     pars.start <- c(pars.start, cov.start)
     link.ids <- c(link.ids, cov.link.ids)
     ## Indices and start values for response distribution parameters.
-    resp.index.start <- length(pars.start) + 1
     if (resp.id == 0 | resp.id == 1){
         resp.indices <- length(pars.start) + 1
         resp.names <- "N"
         resp.start <- resp.pars
         resp.link.ids <- 2
+        fix.names <- c(fix.names, "N")
         resp.map <- factor(NA)
     } else if (resp.id == 2){
         resp.indices <- length(pars.start) + 1
@@ -203,8 +203,8 @@ make.obj <- function(survey.data, model.opts, any.cov){
         resp.start <- resp.pars
         resp.link.ids <- 0
         resp.map <- 1
-        resp.map[resp.names %in% fix.names] <- NA
     }
+    resp.map[resp.names %in% fix.names] <- NA
     par.names <- c(par.names, resp.names)
     pars.start <- c(pars.start, resp.start)
     link.ids <- c(link.ids, resp.link.ids)
@@ -234,7 +234,6 @@ make.obj <- function(survey.data, model.opts, any.cov){
         map[["link_D"]] <- factor(NA)
     }
     model.opts$link.ids <- link.ids
-    model.opts$par.names <- par.names
     ## Getting par.link and par.unlink.
     fixed <- par.names %in% fix.names
     par.link <- link.closure(link.ids, fixed)
@@ -250,6 +249,22 @@ make.obj <- function(survey.data, model.opts, any.cov){
     link.pars.start.fixed <- link.pars.start[fixed]
     link.pars.start.unfixed <- link.pars.start[!(fixed)]
     detprob.objs <- list()
+    ## Keep stuff that is important for some reason.
+    keep <- rep(TRUE, n.pars)
+    if (any(toa.indices != -1) & (length(levels(map$link_sigma_toa)) == 0)){
+        keep[toa.indices] <- FALSE
+    }
+    if (any(det.indices != -1) & (length(levels(map$link_det_pars)) == 0)){
+        keep[det.indices] <- FALSE
+    }
+    if (any(cov.indices != -1) & (length(levels(map$link_cov_pars)) == 0)){
+        keep[cov.indices] <- FALSE
+    }
+    if (any(resp.indices != -1) & (length(levels(map$link_resp_pars)) == 0)){
+        keep[resp.indices] <- FALSE
+    }
+    model.opts$par.names <- par.names[keep]
+    fixed.keep <- fixed[keep]
     ## Making detprob AD objects.
     if (cov.id == 6){
         u.detprob <- 0
@@ -290,11 +305,12 @@ make.obj <- function(survey.data, model.opts, any.cov){
             link.pars <- numeric(n.pars)
             link.pars[fixed] <- link.pars.start.fixed
             link.pars[!fixed] <- link.pars.unfixed
+            keep.tmb <- keep
             if (Rhess){
-                link.pars.tmb <- link.pars[-D.indices]
-            } else {
-                link.pars.tmb <- link.pars
+                keep.tmb[D.indices] <- FALSE
             }
+            link.pars.tmb <- link.pars[keep.tmb]
+            link.pars <- link.pars[keep]
             det.probs <- numeric(n.mask)
             neglog.det.probs <- numeric(n.mask)
             neglog.det.probs.grads <- matrix(0, nrow = length(link.pars.tmb), ncol = n.mask)
@@ -426,14 +442,15 @@ make.obj <- function(survey.data, model.opts, any.cov){
             } else if (fun == "gr"){
                 if (Rhess){
                     out <- numeric(length(link.pars))
-                    out[-D.indices] <- nll.obj$gr(link.pars.tmb) + exp(link.pars[D.indices])*mask.area*apply(neglog.det.probs.grads, 1, function(x) sum(-exp(-neglog.det.probs)*x))
-                    out[D.indices] <- mask.area*sum(det.probs)*exp(link.pars[D.indices]) - n
+                    D.indices.updated <- sum(keep[1:D.indices])
+                    out[-D.indices.updated] <- nll.obj$gr(link.pars.tmb) + exp(link.pars[D.indices.updated])*mask.area*apply(neglog.det.probs.grads, 1, function(x) sum(-exp(-neglog.det.probs)*x))
+                    out[D.indices.updated] <- mask.area*sum(det.probs)*exp(link.pars[D.indices.updated]) - n
                 } else if (!conditional.n){
-                    out <- nll.obj$gr(link.pars.tmb) + exp(link.pars[D.indices])*mask.area*apply(neglog.det.probs.grads, 1, function(x) sum(-exp(-neglog.det.probs)*x))
+                    out <- nll.obj$gr(link.pars.tmb) + exp(link.pars[D.indices.updated])*mask.area*apply(neglog.det.probs.grads, 1, function(x) sum(-exp(-neglog.det.probs)*x))
                 } else {
                     out <- nll.obj$gr(link.pars.tmb) + n*apply(neglog.det.probs.grads, 1, function(x) sum(-exp(-neglog.det.probs)*x))/sum(det.probs)    
                 }
-                out <- out[!fixed]
+                out <- out[!fixed.keep]
                 if (trace){
                     cat("Partial derivatives: ", paste(out, collapse = " "), "\n")
                 }
@@ -451,6 +468,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
             all.pars <- numeric(n.pars)
             all.pars[fixed] <- link.pars.start.fixed
             all.pars[!fixed] <- pars
+            all.pars <- all.pars[keep]
             organise.fun(pars, all.pars, fixed, objective, survey.data, model.opts, det.probs.fun)
         }
     }
@@ -463,9 +481,9 @@ make.obj <- function(survey.data, model.opts, any.cov){
             jacobian <- diag(n.pars)
             diag(jacobian) <- dlink.fun(pars, unfixed = TRUE)
             vcov <- jacobian %*% vcov.link %*% t(jacobian)
-            dimnames(vcov) <- list(model.opts$par.names[!fixed], model.opts$par.names[!fixed])
-            dimnames(vcov.link) <- list(paste(model.opts$par.names[!fixed], "link", sep = "."),
-                                        paste(model.opts$par.names[!fixed], "link", sep = "."))
+            dimnames(vcov) <- list(model.opts$par.names[!fixed.keep], model.opts$par.names[!fixed.keep])
+            dimnames(vcov.link) <- list(paste(model.opts$par.names[!fixed.keep], "link", sep = "."),
+                                        paste(model.opts$par.names[!fixed.keep], "link", sep = "."))
             out <- list(vcov = vcov, vcov.link = vcov.link)
             out
         }

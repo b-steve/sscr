@@ -204,12 +204,12 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
             if (trace){
                 cat("Computing Hessian...\n")
             }
-            model.opts.hess <-  list(resp = resp, resp.pars = resp.pars, detfn = detfn,
-                                     cov.structure = cov.structure,
-                                     re.multiplier = re.multiplier,
-                                     start = fit$ests, fix.names = fix.names,
-                                     conditional.n = FALSE, Rhess = TRUE,
-                                     manual.sep = manual.sep)
+            model.opts.hess <- list(resp = resp, resp.pars = resp.pars, detfn = detfn,
+                                    cov.structure = cov.structure,
+                                    re.multiplier = re.multiplier,
+                                    start = fit$ests, fix.names = fix.names,
+                                    conditional.n = FALSE, Rhess = TRUE,
+                                    manual.sep = manual.sep)
             opt.obj.hess <- make.obj(survey.data, model.opts.hess, any.cov)
             vcov.save <- opt.obj.hess$vcov(opt.obj.hess$par)
             fit$vcov <- vcov.save[[1]]
