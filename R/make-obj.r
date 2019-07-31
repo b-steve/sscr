@@ -202,7 +202,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
         resp.names <- "nu"
         resp.start <- resp.pars
         resp.link.ids <- 0
-        resp.map <- 1
+        resp.map <- factor(seq_along(resp.start))
     }
     resp.map[resp.names %in% fix.names] <- NA
     par.names <- c(par.names, resp.names)
