@@ -66,7 +66,7 @@ Type objective_function<Type>::operator() ()
   // Latent variables.
   PARAMETER_MATRIX(u);
   // Setting a minimum value.
-  double dbl_min = 1e-10;
+  double dbl_min = 1e-50;
   // Back-transforming detection function parameters.
   vector<Type> det_pars(n_det_pars);
   for (int i = 0; i < n_det_pars; i++){

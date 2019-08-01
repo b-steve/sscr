@@ -36,7 +36,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(link_pars);
   int n_pars = link_pars.size();
   // Setting a minimum value.
-  double dbl_min = 1e-10;
+  double dbl_min = 1e-50;
   // Back-transforming parameters.
   vector<Type> pars(n_pars);
   for (int i = 0; i < n_pars; i++){
