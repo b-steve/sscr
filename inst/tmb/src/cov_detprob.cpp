@@ -50,6 +50,8 @@ Type objective_function<Type>::operator() ()
   PARAMETER(link_D);
   // Latent variables.
   PARAMETER_VECTOR(u);
+  // Setting a minimum value.
+  double dbl_min = 1e-10;
   // Back-transforming detection function parameters.
   vector<Type> det_pars(n_det_pars);
   for (int i = 0; i < n_det_pars; i++){
@@ -119,9 +121,9 @@ Type objective_function<Type>::operator() ()
     }
     // Calculating actual hazard rate and probability.
     if (mult_id == 0){
-      haz = base_haz*exp(u_use) + DBL_MIN;
+      haz = base_haz*exp(u_use) + dbl_min;
     } else if (mult_id == 1){
-      haz = base_prob*exp(u_use) + DBL_MIN;
+      haz = base_prob*exp(u_use) + dbl_min;
     }
     // Converting to a probability.
     if (resp_id == 2){

@@ -65,6 +65,8 @@ Type objective_function<Type>::operator() ()
   PARAMETER(link_D);
   // Latent variables.
   PARAMETER_MATRIX(u);
+  // Setting a minimum value.
+  double dbl_min = 1e-10;
   // Back-transforming detection function parameters.
   vector<Type> det_pars(n_det_pars);
   for (int i = 0; i < n_det_pars; i++){
@@ -150,9 +152,9 @@ Type objective_function<Type>::operator() ()
 	}
 	// Expected counts and probabilities.
 	if (mult_id == 0){
-	  e_count = haz_mat(j, k)*exp(u_use) + DBL_MIN;
+	  e_count = haz_mat(j, k)*exp(u_use) + dbl_min;
 	} else if (mult_id == 1){
-	  e_count = prob_mat(j, k)*exp(u_use) + DBL_MIN;
+	  e_count = prob_mat(j, k)*exp(u_use) + dbl_min;
 	}
 	if (resp_id == 0){
 	  e_prob = haz_to_prob(e_count);
@@ -169,7 +171,7 @@ Type objective_function<Type>::operator() ()
       }
       integrand += exp(integrand_mask);
     }
-    log_sum_integrands += log(integrand + DBL_MIN);
+    log_sum_integrands += log(integrand + dbl_min);
   }
   f -= log_sum_integrands;
   // Extra bit that falls out of log-likelihood.

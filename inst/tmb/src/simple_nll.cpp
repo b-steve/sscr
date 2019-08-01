@@ -35,6 +35,8 @@ Type objective_function<Type>::operator() ()
   // Declaring parameters.
   PARAMETER_VECTOR(link_pars);
   int n_pars = link_pars.size();
+  // Setting a minimum value.
+  double dbl_min = 1e-10;
   // Back-transforming parameters.
   vector<Type> pars(n_pars);
   for (int i = 0; i < n_pars; i++){
@@ -107,7 +109,7 @@ Type objective_function<Type>::operator() ()
       }
       integrand += exp(integrand_mask);
     }
-    log_sum_integrands += log(integrand + DBL_MIN);
+    log_sum_integrands += log(integrand + dbl_min);
   }
   Type f = -log_sum_integrands;
   Type esa = mask_area*sum_prob_det;
