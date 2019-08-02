@@ -97,14 +97,6 @@ test_that(
         expect_equivalent(fit.grad$gr, c(53.936454081332, 424.759615492023, 41.4534610100935, -9.18292928534691, 
                                          260.095722145605),
                           tolerance = 1e-4, scale = 1)
-        ## ... without manual separability.
-        fit.grad.man <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
-                                 mask = test.data$mask, resp = "pois", detfn = "hhn",
-                                 test.conditional.n = FALSE, cov.structure = "exponential",
-                                 re.multiplier = "er", test = "gr", manual.sep = FALSE)
-        expect_equivalent(fit.grad.man$gr, c(53.936454081332, 424.759615492023, 41.4534610100935,
-                                             -9.18292928534691, 260.095722145605),
-                          tolerance = 1e-4, scale = 1)
         ## Independent random effects.
         test.ind.hn <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hhn",
@@ -135,12 +127,6 @@ test_that(
                              cov.structure = "exponential", re.multiplier = "er",
                              test = "nll")
         expect_equivalent(test.exp$nll, 125.2871, tolerance = 1e-4, scale = 1)
-        ## ... without manual separability.
-        test.exp.man <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
-                                 mask = test.data$mask, resp = "pois", detfn = "hhn",
-                                 cov.structure = "exponential", re.multiplier = "er",
-                                 test = "nll",
-                                 manual.sep = FALSE)
         expect_equivalent(test.exp.man$nll, 125.2871, tolerance = 1e-4, scale = 1)
         ## With halfnormal detection function.
         test.exp.detpr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,

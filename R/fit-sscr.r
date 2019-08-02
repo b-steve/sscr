@@ -64,10 +64,6 @@
 #' @param optim.fun A character string representing the R function to
 #'     maximise the likelihood. This can be \code{"bobyqa"} (from
 #'     package \code{minqa}), \code{"nlminb"}, or \code{"nlm"}.
-#' @param manual.sep Logical. If \code{TRUE}, separability in
-#'     integration over individuals' spatially structured random
-#'     effects is enforced in R, rather than automatically detected by
-#'     TMB.
 #' 
 #' @export
 fit.sscr <- function(capt, traps, mask, resp = "binom",
@@ -76,7 +72,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
                      start = NULL, fix = NULL, toa = NULL,
                      trace = FALSE, test = FALSE,
                      test.conditional.n = TRUE, hess = FALSE,
-                     optim.fun = "nlminb", manual.sep = TRUE){
+                     optim.fun = "nlminb"){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -118,6 +114,9 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
         }
     }
     start <- c(start, recursive = TRUE)
+    ## Hard-coding manual separability to avoid having to maintain two
+    ## templates.
+    manual.sep <- TRUE
     ## Packaging the data up into a list.
     survey.data <- list(capt = capt,
                         mask.dists = mask.dists,

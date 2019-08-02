@@ -380,32 +380,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
                         apply(gr.contribs, 2, sum)
                     }
                 } else {
-                    nll.obj <- MakeADFun(data = list(capt = capt,
-                                                     n_dets = n.dets,
-                                                     mask_dists = mask.dists,
-                                                     trap_dists = trap.dists,
-                                                     n = n,
-                                                     n_traps = n.traps,
-                                                     n_mask = n.mask,
-                                                     mask_area = mask.area,
-                                                     resp_id = resp.id,
-                                                     resp_pars = resp.pars,
-                                                     detfn_id = detfn.id,
-                                                     cov_id = cov.id,
-                                                     mult_id = mult.id,
-                                                     det_probs = det.probs,
-                                                     toa_id = toa.id,
-                                                     toa_ssq = toa.ssq,
-                                                     conditional_n = as.numeric(conditional.n | Rhess),
-                                                     link_det_ids = link.ids[det.indices],
-                                                     link_cov_ids = if (cov.id == 6) 0 else link.ids[cov.indices],
-                                                     link_resp_ids = link.ids[resp.indices]),
-                                         parameters = list(link_det_pars = link.pars[det.indices],
-                                                           link_cov_pars = if (cov.id == 6) 1 else link.pars[cov.indices],
-                                                           link_sigma_toa = ifelse(toa.id, link.pars[toa.indices], 1),
-                                                           link_D = ifelse(conditional.n | Rhess, 1, link.pars[D.indices]),
-                                                           u = u.nll),
-                                         map = map, random = random.comp, DLL = "cov_nll", silent = TRUE)
+                    stop("Non-manual separability no longer supported.")
                 }
             }
             if (fun == "nll"){
