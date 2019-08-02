@@ -127,7 +127,6 @@ test_that(
                              cov.structure = "exponential", re.multiplier = "er",
                              test = "nll")
         expect_equivalent(test.exp$nll, 125.2871, tolerance = 1e-4, scale = 1)
-        expect_equivalent(test.exp.man$nll, 125.2871, tolerance = 1e-4, scale = 1)
         ## With halfnormal detection function.
         test.exp.detpr <- fit.sscr(capt = test.data$capt, traps = test.data$traps,
                                 mask = test.data$mask, resp = "pois", detfn = "hn",
