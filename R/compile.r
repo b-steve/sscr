@@ -33,6 +33,7 @@ compile.sscr <- function(template = NULL){
 }
 
 #' @import TMB Rcpp
+#' @importFrom COMPoissonReg rcmp
 #' @importFrom mvtnorm rmvnorm
 #' @importFrom minqa bobyqa
 #' @importFrom numDeriv grad

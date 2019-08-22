@@ -8,6 +8,7 @@ Maintainer: Ben Stevenson <ben.stevenson@auckland.ac.nz>
 Depends:
     Rcpp
 Imports:
+    COMPoissonReg,
     minqa,
     mvtnorm,
     numDeriv,
