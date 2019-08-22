@@ -116,6 +116,13 @@ Type objective_function<Type>::operator() ()
       }
     }
     prob_mat = cmp_haz_to_prob(haz_mat, resp_pars(0));
+  } else if (resp_id == 3){
+    for (int i = 0; i < n_mask; i++){
+      for (int j = 0; j < n_traps; j++){
+	haz_mat(i, j) = prob_to_haz(detfn(mask_dists(i, j), det_pars, detfn_id));
+      }
+    }
+    prob_mat = nb_haz_to_prob(haz_mat, resp_pars(0));
   } else {
     for (int i = 0; i < n_mask; i++){
       for (int j = 0; j < n_traps; j++){
@@ -163,6 +170,8 @@ Type objective_function<Type>::operator() ()
 	  integrand_mask += dpois_sscr(capt(i, k), e_count, true);
 	} else if (resp_id == 2){
 	  integrand_mask += dcompois2(capt(i, k), e_count, resp_pars(0), true);
+	} else if (resp_id == 3){
+	  integrand_mask += dnbinom_sscr(capt(i, k), e_count, resp_pars(0), true);
 	}
       }
       // Time-of-arrival component.

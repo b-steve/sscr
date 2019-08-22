@@ -33,6 +33,13 @@ Type dpois_sscr (const int &x, const Type &lambda, const int &give_log){
   return out;
 }
 
+// Negative binomial distribution.
+template<class Type>
+Type dnbinom_sscr(const int &x, const Type &mu, const Type &size, const int &give_log){
+  Type x_var = mu + pow(mu, 2)/size;
+  dbinom_robust(x, log(mu + DBL_MIN), log(x_var - mu + DBL_MIN), give_log);
+}
+
 // Converting hazards to probabilities.
 
 // For scalars.
@@ -126,6 +133,39 @@ matrix<Type> cmp_haz_to_prob (const matrix<Type> &haz, const Type &nu){
   for (int i = 0; i < nr; i++){
     for (int j = 0; j < nc; j++){
       prob(i, j) = cmp_haz_to_prob(haz(i, j), nu);
+    }
+  }
+  return prob;
+}
+
+
+// Calculating detection probability for NB distribution.
+// For scalars.
+template<class Type>
+Type nb_haz_to_prob(const Type &haz, const Type &size){
+  return 1 - pow((size/(size + haz)), size);
+}
+
+// For vectors.
+template<class Type>
+vector<Type> nb_haz_to_prob (const vector<Type> &haz, const Type &size){
+  int n = haz.size();
+  vector<Type> prob(n);
+  for (int i = 0; i < n; i++){
+    prob(i) = nb_haz_to_prob(haz(i), size);
+  }
+  return prob;
+}
+
+// For matrices.
+template<class Type>
+matrix<Type> nb_haz_to_prob (const matrix<Type> &haz, const Type &size){
+  int nr = haz.col(1).size();
+  int nc = haz.row(1).size();
+  matrix<Type> prob(nr, nc);
+  for (int i = 0; i < nr; i++){
+    for (int j = 0; j < nc; j++){
+      prob(i, j) = nb_haz_to_prob(haz(i, j), size);
     }
   }
   return prob;

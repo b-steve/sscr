@@ -104,10 +104,13 @@ Type objective_function<Type>::operator() ()
   // Probability of capture.
   for (int i = 0; i < n_traps; i++){
     // Calculating baseline hazard rate and probability. Needs to be
-    // done separately for CMP distribution.
+    // done separately for CMP and NB distributions.
     if (resp_id == 2){
       base_haz = prob_to_haz(detfn(mask_dists(i), det_pars, detfn_id));
       base_prob = cmp_haz_to_prob(base_haz, resp_pars(0));
+    } else if (resp_id == 3){
+      base_haz = prob_to_haz(detfn(mask_dists(i), det_pars, detfn_id));
+      base_prob = nb_haz_to_prob(base_haz, resp_pars(0));
     } else {
       base_prob = detfn(mask_dists(i), det_pars, detfn_id);
       base_haz = prob_to_haz(base_prob);
@@ -128,6 +131,8 @@ Type objective_function<Type>::operator() ()
     // Converting to a probability.
     if (resp_id == 2){
       prob = cmp_haz_to_prob(haz, resp_pars(0));
+    } else if (resp_id == 2){
+      prob = nb_haz_to_prob(haz, resp_pars(0));
     } else {
       prob = haz_to_prob(haz);
     }

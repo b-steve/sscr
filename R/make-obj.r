@@ -12,7 +12,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
     ## Extracting response type.
     resp <- model.opts$resp
     resp.pars <- model.opts$resp.pars
-    resp.id <- switch(model.opts$resp, binom = 0, pois = 1, cmp = 2)
+    resp.id <- switch(model.opts$resp, binom = 0, pois = 1, cmp = 2, nb = 3)
     if (is.null(resp.pars)){
         resp.pars <- 1
     }
@@ -200,6 +200,12 @@ make.obj <- function(survey.data, model.opts, any.cov){
     } else if (resp.id == 2){
         resp.indices <- length(pars.start) + 1
         resp.names <- "nu"
+        resp.start <- resp.pars
+        resp.link.ids <- 0
+        resp.map <- factor(seq_along(resp.start))
+    } else if (resp.id == 3){
+        resp.indices <- length(pars.start) + 1
+        resp.names <- "size"
         resp.start <- resp.pars
         resp.link.ids <- 0
         resp.map <- factor(seq_along(resp.start))
