@@ -23,14 +23,18 @@ coordinates of the detector locations.}
 
 \item{resp}{Response distribution for capture history
 elements. Either \code{"binom"} for a binomial distribution,
-\code{"pois"} for a Poisson distribution, or \code{"cmp"} for a
+\code{"pois"} for a Poisson distribution, \code{"nb"} for a
+negative binomial distribution, or \code{"cmp"} for a
 Conway-Maxwell-Poisson distribution.}
 
-\item{resp.pars}{A named vector of known, fixed parameters for the
+\item{resp.pars}{A named vector of additional parameters for the
 response distribution. If \code{resp} is \code{"binom"}, then
-this must have a single element named \code{"size"} giving the
-fixed number of trials; if this argument is not provided, then
-the default is 1.}
+this should have a single element named giving the fixed number
+of trials. If \code{resp} is \code{"cmp"}, then this should have
+a single element for the start value of the estimated parameter
+\code{nu} (see \link{rcmp}). If \code{resp} is \code{"nb"}, then
+this should have a single element for the start value of the
+estimated parameter \code{size} (see \link{rnbinom}).}
 
 \item{detfn}{Detection function, given by a character string. Use
 \code{"hn"}, for halfnormal, \code{"hhn"} for hazard
