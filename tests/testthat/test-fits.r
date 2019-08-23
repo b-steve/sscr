@@ -58,7 +58,11 @@ test_that(
     {
         ## Poisson.
         fit.pois <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, resp = "pois",
-                             detfn = "hhn", hess = TRUE)
+                             start = c(lambda0 = 4.5, sigma = 100),
+                             detfn = "hhn", hess = TRUE, trace = TRUE)
+        fit.nb <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, resp = "nb",
+                           resp.pars = 1, start = c(lambda0 = 4.5, sigma = 1),
+                           detfn = "hhn", hess = TRUE, trace = TRUE)
         expect_equivalent(fit.pois$ests, c(2.87645050233774, 93.388169123886, 0.454913613852446, 
                                            30.7750737144151), tol = 1e-4)
         expect_equivalent(fit.pois$se, c(0.5405034, 20.6192798, 0.1894562), tol = 1e-4)
