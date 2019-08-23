@@ -131,7 +131,7 @@ Type objective_function<Type>::operator() ()
     // Converting to a probability.
     if (resp_id == 2){
       prob = cmp_haz_to_prob(haz, resp_pars(0));
-    } else if (resp_id == 2){
+    } else if (resp_id == 3){
       prob = nb_haz_to_prob(haz, resp_pars(0));
     } else {
       prob = haz_to_prob(haz);
