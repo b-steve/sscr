@@ -411,6 +411,8 @@ make.obj <- function(survey.data, model.opts, any.cov){
                                                                         collapse = ", ")[cov.id != 6])
                     if (resp.id == 2){
                         cat("; nu: ", format(round(par.unlink(link.pars, resp.indices), 2), nsmall = 2), sep = "")
+                    } else if (resp.id == 3){
+                        cat("; size: ", format(round(par.unlink(link.pars, resp.indices), 2), nsmall = 2), sep = "")
                     }
                     if (!conditional.n){
                         cat("; D: ", format(round(par.unlink(link.pars, D.indices), 2), nsmall = 2), sep = "")
