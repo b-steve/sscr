@@ -36,8 +36,13 @@ Type dpois_sscr (const int &x, const Type &lambda, const int &give_log){
 // Negative binomial distribution.
 template<class Type>
 Type dnbinom_sscr(const Type &x, const Type &mu, const Type &size, const int &give_log){
-  Type x_var = mu + pow(mu, 2)/size;
-  return dbinom_robust(x, log(mu + DBL_MIN), log(x_var - mu + DBL_MIN), give_log);
+  Type p = size/(size + mu);
+  Type out;
+  out = exp(lgamma(x + size) - lgamma(size) - lgamma(x + Type(1)))*pow(p, size)*pow(1 - p, x);
+  if (give_log){
+    out = log(out + DBL_MIN);
+  }
+  return out;
 }
 
 // Converting hazards to probabilities.
