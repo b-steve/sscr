@@ -88,7 +88,7 @@ test_that(
         ## Negative binomial.
         fit.nb <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, resp = "nb",
                            resp.pars = 1, start = c(lambda0 = 4.5, sigma = 100),
-                           detfn = "hhn", hess = TRUE, trace = TRUE)
+                           detfn = "hhn", hess = FALSE, trace = TRUE)
         expect_equivalent(fit.nb$ests, c(2.28200766886256, 114.946624181492, 0.750603796926467, 
                                          0.376653038845611, 37.1694863870156), tol = 1e-4)
     })
