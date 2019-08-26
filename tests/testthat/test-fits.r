@@ -60,9 +60,6 @@ test_that(
         fit.pois <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, resp = "pois",
                              start = c(lambda0 = 4.5, sigma = 100),
                              detfn = "hhn", hess = TRUE, trace = TRUE)
-        fit.nb <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, resp = "nb",
-                           resp.pars = 1, start = c(lambda0 = 4.5, sigma = 1),
-                           detfn = "hhn", hess = TRUE, trace = TRUE)
         expect_equivalent(fit.pois$ests, c(2.87645050233774, 93.388169123886, 0.454913613852446, 
                                            30.7750737144151), tol = 1e-4)
         expect_equivalent(fit.pois$se, c(0.5405034, 20.6192798, 0.1894562), tol = 1e-4)
@@ -88,6 +85,12 @@ test_that(
                                  resp.pars = 10, detfn = "hn")
         expect_equivalent(fit.binom.pr$ests, c(0.604976358068237, 137.677620551755, 0.20620406615787, 
                                                67.8939084997556), tol = 1e-4)
+        ## Negative binomial.
+        fit.nb <- fit.sscr(test.data$capt, test.data$traps, test.data$mask, resp = "nb",
+                           resp.pars = 1, start = c(lambda0 = 4.5, sigma = 100),
+                           detfn = "hhn", hess = TRUE, trace = TRUE)
+        expect_equivalent(fit.nb$ests, c(2.28200766886256, 114.946624181492, 0.750603796926467, 
+                                         0.376653038845611, 37.1694863870156), tol = 1e-4)
     })
 
 test_that(
