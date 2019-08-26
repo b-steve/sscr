@@ -83,6 +83,8 @@ Type objective_function<Type>::operator() ()
       resp_pars(i) = 1/(1 + exp(-link_resp_pars(i)));
     } else if (link_resp_ids(i) == 2){
       resp_pars(i) = link_resp_pars(i);
+    } else if (link_resp_ids(i) == 3){
+      resp_pars(i) = exp(link_resp_pars(i)) + 1;
     }
   }
   // Back-transforming sigma_toa, including readjustment to ms.
@@ -111,6 +113,9 @@ Type objective_function<Type>::operator() ()
     } else if (resp_id == 3){
       base_haz = prob_to_haz(detfn(mask_dists(i), det_pars, detfn_id));
       base_prob = nb_haz_to_prob(base_haz, resp_pars(0));
+    } else if (resp_id == 4){
+      base_haz = prob_to_haz(detfn(mask_dists(i), det_pars, detfn_id));
+      base_prob = nba_haz_to_prob(base_haz, resp_pars(0));
     } else {
       base_prob = detfn(mask_dists(i), det_pars, detfn_id);
       base_haz = prob_to_haz(base_prob);
@@ -133,6 +138,8 @@ Type objective_function<Type>::operator() ()
       prob = cmp_haz_to_prob(haz, resp_pars(0));
     } else if (resp_id == 3){
       prob = nb_haz_to_prob(haz, resp_pars(0));
+    } else if (resp_id == 4){
+      prob = nba_haz_to_prob(haz, resp_pars(0));
     } else {
       prob = haz_to_prob(haz);
     }

@@ -12,7 +12,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
     ## Extracting response type.
     resp <- model.opts$resp
     resp.pars <- model.opts$resp.pars
-    resp.id <- switch(model.opts$resp, binom = 0, pois = 1, cmp = 2, nb = 3)
+    resp.id <- switch(model.opts$resp, binom = 0, pois = 1, cmp = 2, nb = 3, nba = 4)
     if (is.null(resp.pars)){
         resp.pars <- 1
     }
@@ -56,7 +56,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
         }
     }
     ## Indices and start values for detection function parameters.
-    ## Link 0 is log, 1 is qlogis, 2 is identity.
+    ## Link 0 is log, 1 is qlogis, 2 is identity, 3 is log(x - 1).
     ## For detection functions on the hazard scale.
     if (detfn.id == 0){
         ## ... For a halfnormal detection function.
@@ -208,6 +208,12 @@ make.obj <- function(survey.data, model.opts, any.cov){
         resp.names <- "size"
         resp.start <- resp.pars
         resp.link.ids <- 0
+        resp.map <- factor(seq_along(resp.start))
+    } else if (resp.id == 4){
+        resp.indices <- length(pars.start) + 1
+        resp.names <- "tau"
+        resp.start <- resp.pars
+        resp.link.ids <- 3
         resp.map <- factor(seq_along(resp.start))
     }
     resp.map[resp.names %in% fix.names] <- NA
@@ -413,6 +419,8 @@ make.obj <- function(survey.data, model.opts, any.cov){
                         cat("; nu: ", format(round(par.unlink(link.pars, resp.indices), 2), nsmall = 2), sep = "")
                     } else if (resp.id == 3){
                         cat("; size: ", format(round(par.unlink(link.pars, resp.indices), 2), nsmall = 2), sep = "")
+                    } else if (resp.id == 4){
+                        cat("; tau: ", format(round(par.unlink(link.pars, resp.indices), 2), nsmall = 2), sep = "")
                     }
                     if (!conditional.n){
                         cat("; D: ", format(round(par.unlink(link.pars, D.indices), 2), nsmall = 2), sep = "")
@@ -569,6 +577,6 @@ dlink.closure <- function(link.ids, fixed){
     }
 }
 
-links <- list(log, qlogis, identity)
-unlinks <- list(exp, plogis, identity)
-dlinks <- list(exp, dlogis, function(x) rep(1, length(x)))
+links <- list(log, qlogis, identity, function(x) log(x - 1))
+unlinks <- list(exp, plogis, identity, function(x) exp(x) + 1)
+dlinks <- list(exp, dlogis, function(x) rep(1, length(x)), exp)

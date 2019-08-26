@@ -45,6 +45,13 @@ Type dnbinom_sscr(const Type &x, const Type &mu, const Type &size, const int &gi
   return out;
 }
 
+// Negative binomial-alpha distribution.
+template<class Type>
+Type dnbinomalpha_sscr(const Type &x, const Type &mu, const Type &tau, const int &give_log){
+  Type size = mu/(tau - 1);
+  return dnbinom_sscr(x, mu, size, give_log);
+}
+
 // Converting hazards to probabilities.
 
 // For scalars.
@@ -171,6 +178,39 @@ matrix<Type> nb_haz_to_prob (const matrix<Type> &haz, const Type &size){
   for (int i = 0; i < nr; i++){
     for (int j = 0; j < nc; j++){
       prob(i, j) = nb_haz_to_prob(haz(i, j), size);
+    }
+  }
+  return prob;
+}
+
+// For the NB-alpha distribution.
+// For scalars.
+template<class Type>
+Type nba_haz_to_prob(const Type &haz, const Type &tau){
+  Type size = haz/(tau - 1);
+  return nb_haz_to_prob(haz, size);
+}
+
+// For vectors.
+template<class Type>
+vector<Type> nba_haz_to_prob(const vector<Type> &haz, const Type &tau){
+  int n = haz.size();
+  vector<Type> prob(n);
+  for (int i = 0; i < n; i++){
+    prob(i) = nba_haz_to_prob(haz(i), tau);
+  }
+  return prob;
+}
+
+// For matrices.
+template<class Type>
+matrix<Type> nba_haz_to_prob(const matrix<Type> &haz, const Type &tau){
+  int nr = haz.col(1).size();
+  int nc = haz.row(1).size();
+  matrix<Type> prob(nr, nc);
+  for (int i = 0; i < nr; i++){
+    for (int j = 0; j < nc; j++){
+      prob(i, j) = nba_haz_to_prob(haz(i, j), tau);
     }
   }
   return prob;
