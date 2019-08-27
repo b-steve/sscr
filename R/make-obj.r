@@ -91,7 +91,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
         det.indices <- 1:2
         det.start <- numeric(2)
         det.start[1] <- ifelse(any(start.names == "lambda0"), start["lambda0"],
-                        ifelse(resp.id == 0, max(capt)/(2*resp.pars), max(capt)))
+                        ifelse(resp.id == 0, max(capt)/(2*resp.pars), max(capt)/2))
         det.start[2] <- ifelse(any(start.names == "sigma"), start["sigma"],
                                max(apply(mask.dists, 1, min))/5)
         det.link.ids <- c(0, 0)
