@@ -13,8 +13,17 @@ make.obj <- function(survey.data, model.opts, any.cov){
     resp <- model.opts$resp
     resp.pars <- model.opts$resp.pars
     resp.id <- switch(model.opts$resp, binom = 0, pois = 1, cmp = 2, nb = 3, nba = 4)
-    if (is.null(resp.pars)){
+    if (resp.id == 1){
         resp.pars <- 1
+    }
+    if (is.null(resp.pars)){
+        if (resp.id == 0 | resp.id == 2){
+            resp.pars <- 1
+        } else if (resp.id == 3){
+            resp.pars  <- 10
+        } else if (resp.id == 4){
+            resp.pars <- 2
+        }
     }
     ## Extracting detection function and scale.
     detfn <- model.opts$detfn
