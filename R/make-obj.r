@@ -386,7 +386,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
                             nll.contribs[i] <- ind.objs[[i]]$fn(pars)
                         }
                         if (trace){
-                            cat("Calculating NLL with manual separability...\n")
+                            cat("Calculating NLL...\n")
                         }
                         sum(nll.contribs)
                     }
@@ -396,7 +396,7 @@ make.obj <- function(survey.data, model.opts, any.cov){
                             gr.contribs[i, ] <- ind.objs[[i]]$gr(pars)
                         }
                         if (trace){
-                            cat("Calculating gradients with manual separability...\n")
+                            cat("Calculating gradients...\n")
                         }
                         apply(gr.contribs, 2, sum)
                     }
