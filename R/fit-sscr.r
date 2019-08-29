@@ -67,6 +67,10 @@
 #'     carried out conditioning in the number of detections.
 #' @param hess Logical. If \code{TRUE}, a Hessian is computed and a
 #'     variance-covariance matrix is returned.
+#' @param exact.gr Logical. If \code{TRUE}, partial derivatives of the
+#'     likelihood with respect to parameters are calculated
+#'     analytically via automatic differentiation. If \code{FALSE}
+#'     they are approximated numerically.
 #' @param optim.fun A character string representing the R function to
 #'     maximise the likelihood. This can be \code{"bobyqa"} (from
 #'     package \code{minqa}), \code{"nlminb"}, or \code{"nlm"}.
@@ -78,7 +82,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
                      start = NULL, fix = NULL, toa = NULL,
                      trace = FALSE, test = FALSE,
                      test.conditional.n = TRUE, hess = FALSE,
-                     optim.fun = "nlminb"){
+                     exact.gr = TRUE, optim.fun = "nlminb"){
     ## Loading DLLs.
     dll.dir <- paste(system.file(package = "sscr"), "/tmb/bin/", sep = "")
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
@@ -143,6 +147,13 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
         any.cov <- TRUE
     }
     opt.obj <- make.obj(survey.data, model.opts, any.cov)
+    ## Overwriting gradient function.
+    if (!exact.grad){
+        opt.obj$gr <- function(x){
+            message("Approximating gradients numerically...")
+            grad(opt.obj.test$fn, x)
+        }
+    }
     ## Fitting model or testing likelihood.
     if (is.logical(test)){
         if (test){
