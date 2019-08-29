@@ -8,7 +8,7 @@ fit.sscr(capt, traps, mask, resp = "binom", resp.pars = NULL,
   detfn = "hhn", cov.structure = "none", re.multiplier = "er",
   start = NULL, fix = NULL, toa = NULL, trace = FALSE,
   test = FALSE, test.conditional.n = TRUE, hess = FALSE,
-  optim.fun = "nlminb")
+  exact.gr = TRUE, optim.fun = "nlminb")
 }
 \arguments{
 \item{capt}{A capture history object. It should be a matrix, where
@@ -86,6 +86,11 @@ carried out conditioning in the number of detections.}
 
 \item{hess}{Logical. If \code{TRUE}, a Hessian is computed and a
 variance-covariance matrix is returned.}
+
+\item{exact.gr}{Logical. If \code{TRUE}, partial derivatives of the
+likelihood with respect to parameters are calculated
+analytically via automatic differentiation. If \code{FALSE}
+they are approximated numerically.}
 
 \item{optim.fun}{A character string representing the R function to
 maximise the likelihood. This can be \code{"bobyqa"} (from
