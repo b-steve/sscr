@@ -148,10 +148,10 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
     }
     opt.obj <- make.obj(survey.data, model.opts, any.cov)
     ## Overwriting gradient function.
-    if (!exact.grad){
+    if (!exact.gr){
         opt.obj$gr <- function(x){
+            grad(opt.obj$fn, x)
             message("Approximating gradients numerically...")
-            grad(opt.obj.test$fn, x)
         }
     }
     ## Fitting model or testing likelihood.
@@ -175,7 +175,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
         fit$nll <- opt.obj.test$fn(opt.obj.test$par)
         if (test %in% c("gr", "hess")){
             ## Creating numerical gradient function for non-exact methods.
-            if (is.null(opt.obj.test$gr)){
+            if (is.null(opt.obj.test$gr) | !exact.gr){
                 opt.obj.test$gr <- function(x){
                     message("Determining test gradients numerically...")
                     grad(opt.obj.test$fn, x)
