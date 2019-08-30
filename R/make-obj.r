@@ -154,7 +154,17 @@ make.obj <- function(survey.data, model.opts, any.cov){
     } else if (cov.id == 2){
         ## Matern.
         cov.indices <- cov.index.start:(cov.index.start + 3)
-        stop("Matern covariance function not yet implemented.")
+        cov.start <- numeric(4)
+        cov.start[1] <- ifelse(any(start.names == "mu.u"),
+                               start["mu.u"], 0)
+        cov.start[2] <- ifelse(any(start.names == "sigma.u"),
+                               start["sigma.u"], sd(capt))
+        cov.start[3] <- ifelse(any(start.names == "phi"),
+                               start["phi"], min(trap.dists[trap.dists > 0]))
+        cov.start[4] <- ifelse(any(start.names == "kappa"),
+                               start["kappa"], 1)
+        cov.link.ids <- c(2, 0, 0, 0)
+        cov.names <- c("mu.u", "sigma.u", "phi", "kappa")
     } else if (cov.id == 3){
         ## Individual.
         cov.indices <- cov.index.start:(cov.index.start + 1)

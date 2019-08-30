@@ -170,6 +170,8 @@ Type objective_function<Type>::operator() ()
 	    sigma_u_mat(k, j) = pow(cov_pars(1), 2)*exp(-trap_dists(j, k)/cov_pars(2));
 	  } else if (cov_id == 2){
 	    // Matern covariance function.
+	    sigma_u_mat(j, k) = pow(cov_pars(1), 2)*matern(trap_dists(j, k), cov_pars(2), cov_pars(3));
+	    sigma_u_mat(k, j) = pow(cov_pars(1), 2)*matern(trap_dists(j, k), cov_pars(2), cov_pars(3));
 	  } else if (cov_id == 3){
 	    // Total dependence (individual-level random effect).
 	    sigma_u_mat(j, k) = pow(cov_pars(1), 2);
