@@ -4,10 +4,23 @@
 \alias{sim.sscr}
 \title{Simulating SCR data with second-order spatial dependence}
 \usage{
-sim.sscr(fit = NULL, traps, mask, D, resp = NULL, resp.pars = NULL,
-  detfn = "hhn", cov.structure = "none", re.multiplier = "er",
-  det.pars = NULL, cov.pars = NULL, toa.pars = NULL,
-  trunc.acs = TRUE, keep.acs = FALSE, mask.spacing = NULL)
+sim.sscr(
+  fit = NULL,
+  traps,
+  mask,
+  D,
+  resp = NULL,
+  resp.pars = NULL,
+  detfn = "hhn",
+  cov.structure = "none",
+  re.multiplier = "er",
+  det.pars = NULL,
+  cov.pars = NULL,
+  toa.pars = NULL,
+  trunc.acs = TRUE,
+  keep.acs = FALSE,
+  mask.spacing = NULL
+)
 }
 \arguments{
 \item{fit}{A fitted model object returned by \link{fit.sscr}(). If

@@ -9,13 +9,13 @@ Depends:
     Rcpp
 Imports:
     COMPoissonReg,
-    minqa,
     mvtnorm,
     numDeriv,
     spatstat,
     stats,
     TMB
 Suggests:
+    minqa,
     testthat
 LinkingTo: Rcpp
 Description: Functions to fit various second-order spatial correlation
@@ -24,3 +24,4 @@ License: file LICENSE
 URL: https://github.com/b-steve/sscr
 LazyData: true
 RoxygenNote: 7.1.1
+

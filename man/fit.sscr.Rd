@@ -4,11 +4,25 @@
 \alias{fit.sscr}
 \title{Fitting an SCR model with second-order spatial dependence}
 \usage{
-fit.sscr(capt, traps, mask, resp = "binom", resp.pars = NULL,
-  detfn = "hhn", cov.structure = "none", re.multiplier = "er",
-  start = NULL, fix = NULL, toa = NULL, trace = FALSE,
-  test = FALSE, test.conditional.n = TRUE, hess = FALSE,
-  exact.gr = TRUE, optim.fun = "nlminb")
+fit.sscr(
+  capt,
+  traps,
+  mask,
+  resp = "binom",
+  resp.pars = NULL,
+  detfn = "hhn",
+  cov.structure = "none",
+  re.multiplier = "er",
+  start = NULL,
+  fix = NULL,
+  toa = NULL,
+  trace = FALSE,
+  test = FALSE,
+  test.conditional.n = TRUE,
+  hess = FALSE,
+  exact.gr = TRUE,
+  optim.fun = "nlminb"
+)
 }
 \arguments{
 \item{capt}{A capture history object. It should be a matrix, where

@@ -198,13 +198,17 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
                         grads = opt.obj$gr(raw.fit$par),
                         ll = -raw.fit$objective)
         } else if (optim.fun == "bobyqa"){
-            raw.fit <- bobyqa(par = opt.obj$par, fn = opt.obj$fn)
-            ests.save <- opt.obj$organise(raw.fit$par, raw.fit$fval)
-            fit <- list(ests = ests.save[[1]],
-                        ests.link = ests.save[[2]],
-                        grads = opt.obj$gr(raw.fit$par),
-                        bobyqa.code = raw.fit$ierr,
-                        ll = -raw.fit$fval)
+            if(requireNamespace(x, quietly = TRUE)){
+                raw.fit <- minqa::bobyqa(par = opt.obj$par, fn = opt.obj$fn)
+                ests.save <- opt.obj$organise(raw.fit$par, raw.fit$fval)
+                fit <- list(ests = ests.save[[1]],
+                            ests.link = ests.save[[2]],
+                            grads = opt.obj$gr(raw.fit$par),
+                            bobyqa.code = raw.fit$ierr,
+                            ll = -raw.fit$fval)
+            } else {
+                stop("Install the 'minqa' package to use the bobyqa optimiser.")
+            }
         } else if (optim.fun == "nlm"){
             f <- function(par){
                 out <- opt.obj$fn(par)
