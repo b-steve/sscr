@@ -11,7 +11,7 @@ Imports:
     COMPoissonReg,
     mvtnorm,
     numDeriv,
-    spatstat,
+    spatstat.geom,
     stats,
     TMB
 Suggests:

@@ -36,7 +36,7 @@ compile.sscr <- function(template = NULL){
 #' @importFrom COMPoissonReg rcmp
 #' @importFrom mvtnorm rmvnorm
 #' @importFrom numDeriv grad
-#' @importFrom spatstat crossdist
+#' @importFrom spatstat.geom crossdist
 #' @importFrom stats dist dpois nlm nlminb optimHess plogis qlogis rbinom rnorm rpois runif sd
 #' @useDynLib sscr
 NULL
