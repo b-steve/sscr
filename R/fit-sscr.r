@@ -198,7 +198,7 @@ fit.sscr <- function(capt, traps, mask, resp = "binom",
                         grads = opt.obj$gr(raw.fit$par),
                         ll = -raw.fit$objective)
         } else if (optim.fun == "bobyqa"){
-            if(requireNamespace(x, quietly = TRUE)){
+            if(requireNamespace("minqa", quietly = TRUE)){
                 raw.fit <- minqa::bobyqa(par = opt.obj$par, fn = opt.obj$fn)
                 ests.save <- opt.obj$organise(raw.fit$par, raw.fit$fval)
                 fit <- list(ests = ests.save[[1]],
