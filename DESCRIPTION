@@ -18,8 +18,8 @@ Suggests:
     minqa,
     testthat
 LinkingTo: Rcpp
-Description: Functions to fit various second-order spatial correlation
-    structures in spatial capture-recapture models.
+Description: Functions to fit various spatial correlation structures
+    for detections of individuals in spatial capture-recapture models.
 License: file LICENSE
 URL: https://github.com/b-steve/sscr
 LazyData: true
